@@ -3,11 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import styles from "./Login.module.css";
 import { getAuthErrorMessage } from "@/utils/firebaseErrors";
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useSession } from "../context/SessionContext";
-import styles from "./Login.module.css";
-import { getAuthErrorMessage } from "@/utils/firebaseErrors";
 
 const carouselImages = [
   // 🔁 Sustituye por tus rutas reales
@@ -32,10 +27,7 @@ export default function Register() {
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
-    const id = setInterval(
-      () => setSlide((s) => (s + 1) % carouselImages.length),
-      4500
-    );
+    const id = setInterval(() => setSlide((s) => (s + 1) % carouselImages.length), 4500);
     return () => clearInterval(id);
   }, []);
 
@@ -57,28 +49,15 @@ export default function Register() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const msg = validate();
-    if (msg) { setError(msg); return; }
+    if (msg) {
+      setError(msg);
+      return;
+    }
     setError("");
     setLoading(true);
     try {
       const ok = await registerUser({ name, username, email, password });
       if (!ok) throw new Error("No se pudo crear la cuenta.");
-      navigate("/registro", { replace: true });
-    } catch (err: unknown) {
-      setError(
-        getAuthErrorMessage(
-          err,
-          "Ocurrió un error al crear la cuenta. Inténtalo de nuevo."
-        )
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-      if (register) {
-        const ok = await register({ name, username, email, password });
-        if (!ok) throw new Error("No se pudo crear la cuenta.");
-      }
       navigate("/registro", { replace: true });
     } catch (err: unknown) {
       setError(
@@ -184,8 +163,8 @@ export default function Register() {
               >
                 {/* mismo icono del login */}
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" stroke="currentColor" strokeWidth="2" fill="none"/>
-                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" stroke="currentColor" strokeWidth="2" fill="none" />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none" />
                 </svg>
               </button>
             </div>
@@ -207,8 +186,8 @@ export default function Register() {
                 aria-label={showPwd2 ? "Ocultar contraseña" : "Mostrar contraseña"}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" stroke="currentColor" strokeWidth="2" fill="none"/>
-                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none"/>
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" stroke="currentColor" strokeWidth="2" fill="none" />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none" />
                 </svg>
               </button>
             </div>
@@ -216,7 +195,9 @@ export default function Register() {
             {error && <p className={styles.error}>{error}</p>}
 
             <button type="submit" className={styles.cta} disabled={loading}>
-              <span className={styles.ctaIcon} aria-hidden>👤</span>
+              <span className={styles.ctaIcon} aria-hidden>
+                👤
+              </span>
               {loading ? "Creando..." : "Crear Cuenta"}
             </button>
           </form>
