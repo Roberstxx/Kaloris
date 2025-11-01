@@ -1,0 +1,94 @@
+/* ===== Settings.module.css ===== */
+
+.wrap {
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+}
+
+.title {
+  margin: 0 0 1.25rem;
+  font-size: 1.75rem;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.grid {
+  /* centrado y responsive */
+  max-width: 920px;
+  margin: 0 auto;
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Tarjetas */
+.card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 1.25rem;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: 1rem;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+/* Bloques tipo key-value */
+.kv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  row-gap: .5rem;
+  column-gap: .75rem;
+  margin: 0 0 1rem;
+}
+
+.kv dt {
+  color: var(--text-secondary);
+}
+
+.kv dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Acciones */
+.actions {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+/* Zona de sesión ligeramente destacada */
+.session {
+  background: color-mix(in srgb, var(--danger) 6%, var(--surface-elevated));
+  border-color: color-mix(in srgb, var(--danger) 16%, var(--border));
+}
+
+/* Botón con icono: espacio consistente */
+.btnIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+/* Pequeño sutil para subtítulos o notas */
+.muted {
+  color: var(--text-tertiary);
+  font-size: .9rem;
+}

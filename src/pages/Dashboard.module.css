@@ -1,60 +1,367 @@
-/* === Existente === */
-.page { min-height: 100vh; background: var(--bg); }
-.header { background: var(--surface-elevated); border-bottom: 1px solid var(--border); padding: 1rem 0; position: sticky; top: 0; z-index: 100; }
-.headerContent { display: flex; align-items: center; justify-content: space-between; }
-.logo { margin: 0; font-size: 1.25rem; background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.nav { display: flex; gap: 0.5rem; align-items: center; }
-.navLink { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius); color: var(--text-secondary); transition: var(--transition); }
-.navLink:hover { background: var(--surface); color: var(--brand); }
-.hero { text-align: center; margin: 2rem 0; }
-.hero h2 { margin: 0 0 0.5rem; font-size: 2rem; }
-.hero p { color: var(--text-secondary); margin: 0; }
-.section { margin: 3rem 0; }
-.section h3 { margin: 0 0 1.5rem; }
-.sectionHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-.actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.foodGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
-.intakeList { display: flex; flex-direction: column; gap: 0.75rem; }
-.empty { text-align: center; color: var(--text-tertiary); padding: 2rem; font-style: italic; }
-.manualForm { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
 
-
-/* === Responsive 2 columnas SOLO en pantallas anchas === */
-.responsiveGrid { 
-  display: block; /* por defecto: 1 columna */
+/* --- 1. Layout de Página --- */
+.page {
+  min-height: 100vh;
+  background: var(--bg);
+  overflow-x: hidden; 
 }
 
-.leftSticky { 
-  position: static; 
-  top: auto; 
+/* --- 2. Header --- */
+.header {
+  background: var(--surface-elevated);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 0;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  margin: 0;
+  font-size: 1.25rem;
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.nav {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.navLink {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+.navLink:hover {
+  background: var(--surface);
+  color: var(--brand);
 }
 
-.rightFlow { 
-  min-width: 0; 
-}
-
-@media (min-width: 1200px) {
-  .responsiveGrid {
-    display: grid;
-    grid-template-columns: minmax(320px, 380px) 1fr;
-    gap: 2rem;
-    align-items: start;
-  }
-  .leftSticky {
-    position: sticky;
-    top: 96px;
-  }
-}
-
-/* === Ancho mayor del container (reduce márgenes laterales) === */
+/* --- 3. Contenedor Principal --- */
 .wide {
-  max-width: 1400px;
-  padding-left: 16px;
-  padding-right: 16px;
+  padding: 0 24px;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: none;
+  margin: 0;
 }
 
-@media (min-width: 1600px) {
-  .wide {
-    max-width: 1520px;
+/* --- 4. El Grid de 3 Columnas --- */
+.grid121 {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(600px, 2fr) minmax(280px, 1fr);
+  gap: 30px;
+  align-items: start;
+  padding: 24px 0 40px;
+}
+
+/* --- 5. Columnas "Sticky" - TODAS CON ALTURA FIJA --- */
+
+/* Columna Izquierda: Sin scroll, altura fija */
+.leftCol {
+  position: sticky;
+  top: 88px;
+  align-self: start;
+  height: calc(100vh - 128px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+/* Columna Central: Sin sticky, crece naturalmente */
+.centerCol {
+  min-width: 0;
+}
+
+/* Columna Derecha: Altura fija y flex para el total */
+.rightCol {
+  position: sticky;
+  top: 88px;
+  align-self: start;
+  height: calc(100vh - 128px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+/* --- Widgets Internos --- */
+.widget {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.widget h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* --- Lógica de Widgets Columna Izquierda --- */
+/* Primer widget (Consumo de Energía): ocupa más espacio */
+.leftCol .widget:first-child {
+  flex: 1.1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+
+
+/* --- Lógica de Widgets Columna Derecha --- */
+/* Primer widget (Mi Diario): crece para llenar espacio */
+.rightCol .widget:first-child {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Segundo widget (Total por Comida): tamaño fijo */
+.rightCol .widget:last-child {
+  flex-shrink: 0;
+}
+
+/* Lista de intake con scroll interno */
+.intakeList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 6px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* --- Estilos de Widgets --- */
+.hi {
+  font-size: 1.65rem;
+  margin: 0 0 0.1rem;
+  flex-shrink: 0;
+}
+.metaLine {
+  margin: 0 0 10px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  font-size: 0.875rem;
+}
+.widgetEnergy h3 {
+  margin: 0 0 0.5rem;
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+.ringWrap {
+  text-align: center;
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 0;
+}
+.progressText {
+  margin-top: 8px;
+}
+.consumed {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--success);
+}
+.target {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.goalStatus {
+  margin-top: auto;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  border-left: 5px solid var(--success);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.goalStatus p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+.goalIcon {
+  font-size: 1.1rem;
+}
+
+.centerCol .widget + .widget {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 200px);
+  overflow: hidden;
+}
+.sectionHeaderTight {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.foodGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+  overflow-y: auto;
+  padding-right: 6px;
+  flex: 1;
+  min-height: 0;
+}
+.manualCard {
+  background: var(--surface-elevated);
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  flex-shrink: 0;
+}
+.manualRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.mealSummary {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+}
+.mealSummary li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background: var(--surface-elevated);
+}
+.mealTotal {
+  border-top: 2px solid var(--success);
+}
+.sideActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.empty {
+  color: var(--text-secondary);
+  padding: 10px 0;
+}
+
+/* ===== Mantener la barra de progreso visible ===== */
+
+/* 1) Base: si ya usas .grid121 con 3 columnas, no cambia nada aquí */
+
+/* 2) Hasta 1200px: pasamos a 2 columnas y subimos la izquierda (progreso) arriba */
+@media (max-width: 1200px) {
+  .grid121 {
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(280px, 1fr);
+    /* Usamos áreas para ordenar sin tocar el TSX */
+    grid-template-areas:
+      "left  right"
+      "center right";
+    gap: 20px;
+  }
+
+  .leftCol   { grid-area: left;  position: static; height: auto; overflow: visible; }
+  .centerCol { grid-area: center; }
+  .rightCol  { grid-area: right; position: static; height: auto; overflow: visible; }
+
+  /* Si tenías límites de altura en widgets, libéralos en tablet */
+  .centerCol .widget,
+  .leftCol .widget,
+  .rightCol .widget { max-height: none; overflow: visible; }
+}
+
+/* 3) Hasta 900px: 1 columna en orden lógico: progreso → centro → derecha */
+@media (max-width: 900px) {
+  .grid121 {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "left"
+      "center"
+      "right";
+    gap: 16px;
+  }
+
+  .leftCol, .centerCol, .rightCol {
+    position: static;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Header flexible en móvil */
+  .headerContent { flex-wrap: wrap; row-gap: 8px; }
+}
+
+/* (Opcional) Versión compacta del progreso en móvil, si tienes un contenedor identificable */
+@media (max-width: 900px) {
+  .progressFull { display: none; }
+  .progressCompact { display: block; }
+}
+/* Asegúrate de que en escritorio/mayor ancho la versión full esté visible */
+.progressFull { display: block; }
+.progressCompact { display: none; }
+
+
+/* ===== Scroll del "Mi Diario de Hoy" en tablet/móvil ===== */
+
+/* Tablet: limita el alto del primer widget de la derecha (Mi Diario) y habilita scroll */
+@media (max-width: 1200px) {
+  .rightCol .widget:first-child {
+    /* ocupa ~60% del alto de pantalla; ajusta si quieres más/menos */
+    max-height: 60vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .intakeList {
+    overflow-y: auto;   /* ya lo tienes, lo reforzamos aquí */
+    min-height: 0;      /* evita que “empuje” al contenedor */
+  }
+}
+
+/* Móvil: más compacto para que sólo se vean ~4 items antes del scroll */
+@media (max-width: 900px) {
+  .rightCol .widget:first-child {
+    max-height: 48vh;   /* ~4 tarjetas visibles, el resto con scroll */
+    display: flex;
+    flex-direction: column;
+  }
+  .intakeList {
+    overflow-y: auto;
+    min-height: 0;
   }
 }
