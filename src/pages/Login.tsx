@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { FirebaseError } from "firebase/app";
 import { Link, NavigateFunction, useNavigate } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import styles from "./Login.module.css";
+import { getAuthErrorMessage } from "@/utils/firebaseErrors";
 
 const carouselImages = [
   // 🔁 Sustituye por tus rutas reales
@@ -46,30 +46,12 @@ export default function Login() {
         setError("Correo o contraseña incorrectos");
       }
     } catch (err) {
-      let message = "No se pudo iniciar sesión. Inténtalo de nuevo.";
-
-      if (err instanceof FirebaseError) {
-        switch (err.code) {
-          case "auth/user-not-found":
-            message = "No encontramos una cuenta con ese correo. Regístrate para continuar.";
-            break;
-          case "auth/wrong-password":
-            message = "La contraseña no coincide con el correo ingresado.";
-            break;
-          case "auth/invalid-credential":
-            message = "El correo o la contraseña no son correctos.";
-            break;
-          case "auth/invalid-email":
-            message = "El correo que ingresaste no es válido.";
-            break;
-          default:
-            message = "Ocurrió un error inesperado al iniciar sesión. Vuelve a intentarlo.";
-        }
-      } else if (err instanceof Error) {
-        message = "Ocurrió un error inesperado al iniciar sesión. Vuelve a intentarlo.";
-      }
-
-      setError(message);
+      setError(
+        getAuthErrorMessage(
+          err,
+          "Ocurrió un error inesperado al iniciar sesión. Vuelve a intentarlo."
+        )
+      );
     }
   };
 
