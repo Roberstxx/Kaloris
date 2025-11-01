@@ -1,0 +1,42 @@
+/* src/components/MacrosSummary.module.css */
+
+.root {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.row {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.rowHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.bar {
+  height: 8px;
+  background: var(--border-light);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 8px;
+  width: var(--w, 0%);
+  background: var(--brand);
+  border-radius: 9999px;
+}
+
+.meta {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* Responsive suave (no cambia el diseño, solo aire en pantallas chicas) */
+@media (max-width: 900px) {
+  .rowHeader { font-size: 0.95rem; }
+}
