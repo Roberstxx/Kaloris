@@ -40,6 +40,25 @@ function isProfileComplete(profile: ExtraProfile): boolean {
   });
 }
 
+const REQUIRED_PROFILE_FIELDS: (keyof ExtraProfile)[] = [
+  "sex",
+  "age",
+  "weightKg",
+  "heightCm",
+  "activity",
+  "tdee",
+];
+
+function isProfileComplete(profile: ExtraProfile): boolean {
+  return REQUIRED_PROFILE_FIELDS.every((key) => {
+    const value = profile[key];
+    if (typeof value === "number") {
+      return Number.isFinite(value) && value > 0;
+    }
+    return Boolean(value);
+  });
+}
+
 // Usuario que expone el contexto (compatible con tu app)
 export type AppUser = {
   id: string;
