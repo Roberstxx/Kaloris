@@ -64,6 +64,14 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/0e48d68b-4c68-4a51-ac2a-5b4ffa222973) and click on Share -> Publish.
 
+## Deploying to Vercel
+
+1. Create a new Vercel project and import this repository.
+2. In **Project Settings → Environment Variables** add the Firebase credentials. You can copy `.env.example` as a reference – every key must keep the `VITE_` prefix so Vite exposes it in the browser build.
+3. Deploy using the default **Build Command** `npm run build` and **Output Directory** `dist`. The included `vercel.json` already configures these values and adds a catch-all rewrite so the React Router routes (e.g. `/login`, `/dashboard`) load correctly on refresh.
+
+After the first deployment, any push to the main branch will trigger a new build automatically.
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!
