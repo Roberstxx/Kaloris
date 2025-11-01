@@ -1,0 +1,254 @@
+/* === LOGIN CLEAN STYLE (50/50 + campos más delgados) === */
+
+/* ===== LAYOUT SPLIT ===== */
+.pageSplit {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;            /* móvil: una columna */
+  background-color: floralwhite;          /* tu fondo actual */
+overflow-x: hidden;
+}
+
+@media (min-width: 900px) {
+  .pageSplit { grid-template-columns: 1fr 1fr; }  /* desktop: 50/50 */
+}
+
+/* ===== PANEL IZQUIERDO (CARRUSEL) ===== */
+.mediaPanel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  display: none;                         /* oculto en móvil */
+}
+@media (min-width: 900px) { .mediaPanel { display: block; } }
+
+.slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity .6s ease, transform .6s ease;
+  object-position: bottom; /* elimina espacio en blanco*/
+}
+.slideActive { opacity: 1; transform: scale(1); }
+
+.mediaOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 120% at 80% 20%, rgba(0,0,0,.25), rgba(0,0,0,.55));
+}
+
+.mediaCaption {
+  position: absolute;
+  left: 32px;
+  bottom: 40px;
+  color: #fff;
+  text-shadow: 0 8px 30px rgba(0,0,0,.45);
+}
+.mediaCaption h3 { font-size: 1.25rem; font-weight: 700; }
+.mediaCaption p  { opacity: .9; }
+
+.dots {
+  position: absolute;
+  left: 28px;
+  bottom: 18px;
+  display: flex;
+  gap: 8px;
+}
+.dot {
+  width: 8px; height: 8px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.6);
+  background: transparent; opacity: .7;
+}
+.dotActive { background: rgba(255,255,255,.95); opacity: 1; }
+
+/* ===== PANEL DERECHO (FORM) ===== */
+.formPanel {
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;                  /* que llene su mitad */
+  justify-content: center;
+  padding: 0;
+}
+
+/* Tarjeta que ocupa toda la columna derecha */
+.card {
+  width: 100%;
+  height: 100%;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  border-radius: 0; /* <-- esto ya lo deja sin redondeado */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3.5rem 4rem;
+}
+
+
+/* ===== CONTENIDO DEL FORM MÁS DELGADO =====
+   Limita el ancho de header, form y footer para que los
+   inputs no se vean tan anchos, pero sin achicar la tarjeta. */
+.card > .header,
+.card > .form,
+.card > .footer {
+  width: 100%;
+  max-width: 560px;          /* 👈 ajusta aquí (520–600px) */
+  margin-inline: auto;       /* centra dentro de la tarjeta */
+}
+
+/* Logo */
+.logoImg {
+  width: 72px; height: 72px; margin: -8px auto 6px; display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.25));
+}
+
+/* Encabezado */
+.header { text-align: center; }
+.header h1 {
+  font-size: 1.9rem; font-weight: 800; margin: 0.4rem 0 0.25rem;
+  background: var(--gradient-brand);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header p { color: var(--text-secondary); margin-top: 4px; }
+
+/* Formulario */
+.form { display: grid; gap: 14px; margin-top: 18px; }
+.field { position: relative; }
+
+.input {
+  width: 100%; height: 48px; border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
+  padding: 0 44px 0 14px; font-size: .95rem; transition: .2s ease;
+}
+.input:focus {
+  outline: none; border-color: var(--brand);
+  box-shadow: 0 0 0 3px hsla(192, 80%, 45%, .15);
+}
+
+/* Ojo contraseña */
+.eye {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  width: 36px; height: 36px; border: none; background: transparent;
+  color: var(--text-secondary); display: grid; place-items: center; cursor: pointer;
+}
+
+/* Checkbox */
+.checkbox {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .9rem; color: var(--text);
+}
+
+/* CTA */
+.cta {
+  margin-top: 6px; height: 52px; width: 100%; border: none; border-radius: 999px;
+  color: #fff; font-weight: 700; letter-spacing: .02em;
+  display: grid; grid-auto-flow: column; place-content: center; gap: .6rem;
+  background: var(--gradient-brand); box-shadow: var(--shadow-brand);
+  transition: .2s ease; cursor: pointer;
+}
+.cta:hover { transform: translateY(-1px); }
+.cta:active { transform: translateY(0); }
+.ctaIcon { opacity: .9; }
+
+/* Error */
+.error {
+  color: var(--danger);
+  background: hsla(0, 75%, 55%, .1);
+  border: 1px solid hsla(0, 75%, 55%, .25);
+  border-radius: 9px;
+  padding: .6rem .75rem; font-size: .9rem;
+}
+
+/* Footer */
+.footer {
+  margin-top: 1rem; text-align: center; color: var(--text-secondary); font-size: .95rem;
+}
+.footer a { color: var(--brand); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+.forgot { display: inline-block; margin-top: .25rem; }
+
+
+/* === MOBILE: Imagen arriba con curva HACIA ABAJO (tipo hotcakes) === */
+@media (max-width: 899px) {
+  
+  /* 1) Imagen arriba, formulario abajo */
+  .pageSplit {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 2) El hero (imagen) se recorta con la curva */
+  .mediaPanel {
+    order: -1;
+    display: block;
+    position: relative;
+    height: 260px;
+    z-index: 1; /* Se pone encima del fondo del form */
+    
+    /* ESTA ES LA MAGIA: */
+    overflow: hidden; /* Recorta la imagen a la forma del panel */
+    border-bottom-left-radius: 50% 40px;  /* Curva elíptica */
+    border-bottom-right-radius: 50% 40px; /* Curva elíptica */
+  }
+
+  /* 3) ELIMINA LA REGLA .mediaPanel::after POR COMPLETO */
+  /* (Ya no la necesitamos) */
+
+
+  /* 4) Formulario se sube para encajar */
+  .formPanel {
+    background: var(--surface-elevated);
+    align-items: flex-start;
+    z-index: 0; /* Se pone detrás del panel de imagen */
+    
+    /* Sube el panel blanco para que quede "detrás" de la curva */
+    margin-top: -40px; 
+    
+    /* Empuja el contenido (la tarjeta) hacia abajo para que no se corte */
+    padding-top: 50px; 
+
+    /* Tus otros paddings */
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-bottom: 3rem;
+  }
+
+  /* 5) La tarjeta ya no necesita margen */
+  .card {
+    margin-top: 0; 
+    border-radius: 20px;
+    padding: 1.5rem;
+    width: min(92vw, 520px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .input { height: 46px; }
+  .cta   { height: 50px; }
+}
+
+
+
+
+
+
+/* Si tienes una clase específica para el 'Register' */
+.registerPage .mediaPanel {
+  display: none;
+}
+
+/* O, si el .pageSplit de registro es diferente */
+.registerLayout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background-color: var(--surface); /* O el fondo que quieras */
+}

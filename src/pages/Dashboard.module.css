@@ -1,0 +1,60 @@
+/* === Existente === */
+.page { min-height: 100vh; background: var(--bg); }
+.header { background: var(--surface-elevated); border-bottom: 1px solid var(--border); padding: 1rem 0; position: sticky; top: 0; z-index: 100; }
+.headerContent { display: flex; align-items: center; justify-content: space-between; }
+.logo { margin: 0; font-size: 1.25rem; background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.nav { display: flex; gap: 0.5rem; align-items: center; }
+.navLink { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius); color: var(--text-secondary); transition: var(--transition); }
+.navLink:hover { background: var(--surface); color: var(--brand); }
+.hero { text-align: center; margin: 2rem 0; }
+.hero h2 { margin: 0 0 0.5rem; font-size: 2rem; }
+.hero p { color: var(--text-secondary); margin: 0; }
+.section { margin: 3rem 0; }
+.section h3 { margin: 0 0 1.5rem; }
+.sectionHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.foodGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+.intakeList { display: flex; flex-direction: column; gap: 0.75rem; }
+.empty { text-align: center; color: var(--text-tertiary); padding: 2rem; font-style: italic; }
+.manualForm { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+
+
+/* === Responsive 2 columnas SOLO en pantallas anchas === */
+.responsiveGrid { 
+  display: block; /* por defecto: 1 columna */
+}
+
+.leftSticky { 
+  position: static; 
+  top: auto; 
+}
+
+.rightFlow { 
+  min-width: 0; 
+}
+
+@media (min-width: 1200px) {
+  .responsiveGrid {
+    display: grid;
+    grid-template-columns: minmax(320px, 380px) 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  .leftSticky {
+    position: sticky;
+    top: 96px;
+  }
+}
+
+/* === Ancho mayor del container (reduce márgenes laterales) === */
+.wide {
+  max-width: 1400px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (min-width: 1600px) {
+  .wide {
+    max-width: 1520px;
+  }
+}
