@@ -16,6 +16,8 @@ import { MacrosSummary } from "../components/MacrosSummary"; // ✅ nuevo import
 import { FoodItem } from "../types";
 import { getTodayISO } from "../utils/date";
 import { exportToPDF } from "../utils/pdf";
+import { resolveMealSlot } from "../utils/meals";
+import type { MealSlot } from "../utils/meals";
 import foodsData from "../data/foods.seed.json";
 
 import styles from "./Dashboard.module.css";
@@ -96,15 +98,11 @@ const Dashboard: React.FC = () => {
 
   // ===== Totales por comida (dinámicos) =====
   const mealTotals = useMemo(() => {
-    const totals = { breakfast: 0, lunch: 0, dinner: 0 };
+    const totals: Record<MealSlot, number> = { breakfast: 0, lunch: 0, dinner: 0 };
     for (const e of todayEntries) {
       const kcal = e.kcalPerUnit * e.units;
-      const key = (e as any).meal ?? 'dinner';
-      if (key === 'breakfast' || key === 'lunch' || key === 'dinner') {
-        totals[key] += kcal;
-      } else {
-        totals.dinner += kcal; // fallback por datos antiguos
-      }
+      const key = resolveMealSlot(e);
+      totals[key] += kcal;
     }
     return totals;
   }, [todayEntries]);

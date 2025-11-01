@@ -3,29 +3,45 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Home, History, Settings as SettingsIcon, Edit, X } from 'lucide-react'; // Iconos añadidos
 import { useSession } from '../context/SessionContext';
+import { ActivityLevel, Sex } from '../types';
 
-type Sex = 'male' | 'female';
-type ActivityKey = 'sedentary' | 'light' | 'moderate' | 'intense' | 'athlete';
-
-const ACTIVITY_LEVELS: Record<ActivityKey, { label: string; factor: number; help: string }> = {
-  sedentary: { label: 'Sedentario', factor: 1.20, help: 'Poco o nada de ejercicio' },
-  light:     { label: 'Ligera',     factor: 1.375, help: 'Ejercicio 1–3 veces/sem' },
-  moderate:  { label: 'Moderada',   factor: 1.55,  help: 'Ejercicio 3–5 veces/sem' },
-  intense:   { label: 'Intensa',    factor: 1.725, help: 'Entrenos duros 6–7/sem' },
-  athlete:   { label: 'Atleta',     factor: 1.90,  help: 'Doble sesión o trabajo físico' },
+const ACTIVITY_LEVELS: Record<ActivityLevel, { label: string; factor: number; help: string }> = {
+  sedentario:  { label: 'Sedentario', factor: 1.2,   help: 'Poco o nada de ejercicio' },
+  ligero:      { label: 'Ligero',     factor: 1.375, help: 'Ejercicio 1–3 veces por semana' },
+  moderado:    { label: 'Moderado',   factor: 1.55,  help: 'Ejercicio 3–5 veces por semana' },
+  intenso:     { label: 'Intenso',    factor: 1.725, help: 'Entrenamientos fuertes 6–7 veces' },
+  muy_intenso: { label: 'Muy intenso',factor: 1.9,   help: 'Trabajo físico o doble sesión diaria' },
 };
 
-// Fallback suave por si el contexto aún no tiene updateUser/logout.
-type MaybeFn<T extends any[]> = ((...args: T) => void) | undefined;
+const LEGACY_ACTIVITY_MAP: Record<string, ActivityLevel> = {
+  sedentary: 'sedentario',
+  light: 'ligero',
+  moderate: 'moderado',
+  intense: 'intenso',
+  athlete: 'muy_intenso',
+};
+
+const DEFAULT_ACTIVITY: ActivityLevel = 'moderado';
+
+const normalizeActivity = (value?: string): ActivityLevel => {
+  if (value && Object.prototype.hasOwnProperty.call(ACTIVITY_LEVELS, value)) {
+    return value as ActivityLevel;
+  }
+  if (value && LEGACY_ACTIVITY_MAP[value]) {
+    return LEGACY_ACTIVITY_MAP[value];
+  }
+  return DEFAULT_ACTIVITY;
+};
+
+const resolveMacros = (macros?: { carbPct: number; protPct: number; fatPct: number }) => ({
+  carbPct: Number(macros?.carbPct ?? 50),
+  protPct: Number(macros?.protPct ?? 25),
+  fatPct: Number(macros?.fatPct ?? 25),
+});
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, updateUser, logout } = useSession() as {
-    user: any,
-    isAuthenticated: boolean,
-    updateUser: MaybeFn<[any]>,
-    logout: MaybeFn<[]>
-  };
+  const { user, isAuthenticated, updateProfile, logout } = useSession();
 
   // --- NUEVO: Estado de Edición ---
   const [isEditing, setIsEditing] = useState(false);
@@ -36,28 +52,43 @@ export default function Settings() {
   // ---- Estado editable ----
   const [name] = useState<string>(user.name || '');
   const [email] = useState<string>(user.email || user.username || '');
+
   // Datos físicos
-  const [sex, setSex] = useState<Sex>(user.sex || 'male');
+  const [sex, setSex] = useState<Sex>(user.sex ?? 'male');
   const [age, setAge] = useState<number>(Number(user.age ?? 21));
-  const [height, setHeight] = useState<number>(Number(user.height ?? 170)); // cm
-  const [weight, setWeight] = useState<number>(Number(user.weight ?? 70));  // kg
-  const [activity, setActivity] = useState<ActivityKey>(user.activity || 'sedentary');
+  const [heightCm, setHeightCm] = useState<number>(Number(user.heightCm ?? 170));
+  const [weightKg, setWeightKg] = useState<number>(Number(user.weightKg ?? 70));
+  const [activity, setActivity] = useState<ActivityLevel>(normalizeActivity(user.activity));
 
   // Meta diaria (kcal) editable.
   const [targetKcal, setTargetKcal] = useState<number>(Number(user.tdee ?? 2000));
 
   // Macros %
-  const [carbPct, setCarbPct] = useState<number>(Number(user.macros?.carbPct ?? 50));
-  const [protPct, setProtPct] = useState<number>(Number(user.macros?.protPct ?? 25));
-  const [fatPct,  setFatPct]  = useState<number>(Number(user.macros?.fatPct  ?? 25));
+  const initialMacros = resolveMacros(user.macros);
+  const [carbPct, setCarbPct] = useState<number>(initialMacros.carbPct);
+  const [protPct, setProtPct] = useState<number>(initialMacros.protPct);
+  const [fatPct,  setFatPct]  = useState<number>(initialMacros.fatPct);
 
   const pctTotal = carbPct + protPct + fatPct;
 
+  useEffect(() => {
+    setSex(user.sex ?? 'male');
+    setAge(Number(user.age ?? 21));
+    setHeightCm(Number(user.heightCm ?? 170));
+    setWeightKg(Number(user.weightKg ?? 70));
+    setActivity(normalizeActivity(user.activity));
+    setTargetKcal(Number(user.tdee ?? 2000));
+    const macros = resolveMacros(user.macros);
+    setCarbPct(macros.carbPct);
+    setProtPct(macros.protPct);
+    setFatPct(macros.fatPct);
+  }, [user]);
+
   // ---- Cálculos (sin cambios) ----
   const bmr = useMemo(() => {
-    const base = 10 * weight + 6.25 * height - 5 * age;
-    return Math.round((sex === 'male' ? base + 5 : base - 161));
-  }, [sex, weight, height, age]);
+    const base = 10 * weightKg + 6.25 * heightCm - 5 * age;
+    return Math.round(sex === 'male' ? base + 5 : base - 161);
+  }, [sex, weightKg, heightCm, age]);
 
   const tdeeSuggested = useMemo(() => {
     const factor = ACTIVITY_LEVELS[activity].factor;
@@ -79,41 +110,33 @@ export default function Settings() {
       return;
     }
     const next = {
-      ...user,
-      name,
-      email,
       sex,
       age,
-      height,
-      weight,
+      heightCm,
+      weightKg,
       activity,
       tdee: targetKcal,
       macros: { carbPct, protPct, fatPct }
     };
 
-    if (typeof updateUser === 'function') {
-      updateUser(next);
-    } else {
-      try {
-        localStorage.setItem('kaloris_user', JSON.stringify(next));
-      } catch {}
-    }
+    updateProfile(next);
     alert('Cambios guardados.');
     setIsEditing(false); // <-- Ocultar campos de edición
   };
 
   const handleCancelEdit = () => {
     // Revertir todos los estados al valor original del 'user'
-    setSex(user.sex || 'male');
+    setSex(user.sex ?? 'male');
     setAge(Number(user.age ?? 21));
-    setHeight(Number(user.height ?? 170));
-    setWeight(Number(user.weight ?? 70));
-    setActivity(user.activity || 'sedentary');
+    setHeightCm(Number(user.heightCm ?? 170));
+    setWeightKg(Number(user.weightKg ?? 70));
+    setActivity(normalizeActivity(user.activity));
     setTargetKcal(Number(user.tdee ?? 2000));
-    setCarbPct(Number(user.macros?.carbPct ?? 50));
-    setProtPct(Number(user.macros?.protPct ?? 25));
-    setFatPct(Number(user.macros?.fatPct ?? 25));
-    
+    const macros = resolveMacros(user.macros);
+    setCarbPct(macros.carbPct);
+    setProtPct(macros.protPct);
+    setFatPct(macros.fatPct);
+
     setIsEditing(false); // Ocultar campos de edición
   };
 
@@ -197,11 +220,11 @@ export default function Settings() {
                 </div>
                 <div>
                   <span className="label">Altura (cm)</span>
-                  <input className="input" type="number" value={height || ''} onChange={e => setHeight(Number(e.target.value) || 0)} />
+                  <input className="input" type="number" value={heightCm || ''} onChange={e => setHeightCm(Number(e.target.value) || 0)} />
                 </div>
                 <div>
                   <span className="label">Peso (kg)</span>
-                  <input className="input" type="number" value={weight || ''} onChange={e => setWeight(Number(e.target.value) || 0)} />
+                  <input className="input" type="number" value={weightKg || ''} onChange={e => setWeightKg(Number(e.target.value) || 0)} />
                 </div>
               </div>
             ) : (
@@ -217,11 +240,11 @@ export default function Settings() {
                 </div>
                 <div>
                   <span className="label">Altura (cm)</span>
-                  <div className="input" style={readOnlyInput}>{height} cm</div>
+                  <div className="input" style={readOnlyInput}>{heightCm} cm</div>
                 </div>
                 <div>
                   <span className="label">Peso (kg)</span>
-                  <div className="input" style={readOnlyInput}>{weight} kg</div>
+                  <div className="input" style={readOnlyInput}>{weightKg} kg</div>
                 </div>
               </div>
             )}
@@ -240,7 +263,7 @@ export default function Settings() {
                   <select
                     className="input"
                     value={activity}
-                    onChange={(e) => setActivity(e.target.value as ActivityKey)}
+                    onChange={(e) => setActivity(normalizeActivity(e.target.value))}
                   >
                     {Object.entries(ACTIVITY_LEVELS).map(([k, v]) => (
                       <option key={k} value={k}>{v.label} · x{v.factor}</option>

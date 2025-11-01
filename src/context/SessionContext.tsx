@@ -3,6 +3,12 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from "
 import { authApi, firebaseConfigIssues } from "@/lib/firebase";
 
 // Extra de perfil que NO guarda Firebase (lo persistimos por usuario)
+type MacroSplit = {
+  carbPct: number;
+  protPct: number;
+  fatPct: number;
+};
+
 type ExtraProfile = {
   sex?: "male" | "female";
   age?: number;
@@ -10,9 +16,29 @@ type ExtraProfile = {
   heightCm?: number;
   activity?: string;
   tdee?: number;
+  macros?: MacroSplit;
   username?: string; // por compatibilidad con tu UI
   name?: string;
 };
+
+const REQUIRED_PROFILE_FIELDS: (keyof ExtraProfile)[] = [
+  "sex",
+  "age",
+  "weightKg",
+  "heightCm",
+  "activity",
+  "tdee",
+];
+
+function isProfileComplete(profile: ExtraProfile): boolean {
+  return REQUIRED_PROFILE_FIELDS.every((key) => {
+    const value = profile[key];
+    if (typeof value === "number") {
+      return Number.isFinite(value) && value > 0;
+    }
+    return Boolean(value);
+  });
+}
 
 // Usuario que expone el contexto (compatible con tu app)
 export type AppUser = {
@@ -26,6 +52,8 @@ export type AppUser = {
 type SessionState = {
   user: AppUser | null;
   isAuthenticated: boolean;
+  profileComplete: boolean;
+  needsProfile: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
   register: (data: { name?: string; username?: string; email: string; password: string }) => Promise<boolean>;
   logout: () => void;
@@ -36,10 +64,40 @@ const SessionContext = createContext<SessionState | undefined>(undefined);
 
 const profileKey = (uid: string) => `cc_profile_${uid}`;
 
+type StoredProfile = ExtraProfile & {
+  // compatibilidad con datos antiguos
+  weight?: number;
+  height?: number;
+};
+
+function normalizeProfile(raw: StoredProfile | null | undefined): ExtraProfile {
+  if (!raw) return {};
+
+  const profile: ExtraProfile = { ...raw };
+
+  if (profile.weightKg === undefined && typeof raw.weight === "number") {
+    profile.weightKg = raw.weight;
+  }
+
+  if (profile.heightCm === undefined && typeof raw.height === "number") {
+    profile.heightCm = raw.height;
+  }
+
+  if (profile.macros) {
+    profile.macros = {
+      carbPct: Number(profile.macros.carbPct ?? 0),
+      protPct: Number(profile.macros.protPct ?? 0),
+      fatPct: Number(profile.macros.fatPct ?? 0),
+    };
+  }
+
+  return profile;
+}
+
 function loadProfile(uid: string): ExtraProfile {
   try {
     const raw = localStorage.getItem(profileKey(uid));
-    return raw ? JSON.parse(raw) : {};
+    return raw ? normalizeProfile(JSON.parse(raw)) : {};
   } catch {
     return {};
   }
@@ -74,15 +132,18 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const [user, setUser] = useState<AppUser | null>(null);
   const [ready, setReady] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(false);
 
   useEffect(() => {
     const unsub = authApi.onChange((fbUser) => {
       if (!fbUser) {
         setUser(null);
         setReady(true);
+        setProfileComplete(false);
         return;
       }
       const extra = loadProfile(fbUser.uid);
+      setProfileComplete(isProfileComplete(extra));
       const name = fbUser.displayName || extra.name || extra.username || "";
       const username = extra.username || (fbUser.email ? fbUser.email.split("@")[0] : "");
       setUser({
@@ -108,19 +169,38 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     register: async ({ name, username, email, password }) => {
       if (!email) throw new Error("El correo es obligatorio.");
       const cred = await authApi.signUpEmail(email, password, name || username);
-      // guarda extras iniciales (nombre/username)
+
+      const previous = loadProfile(cred.user.uid);
       const base: ExtraProfile = { name, username };
-      saveProfile(cred.user.uid, { ...loadProfile(cred.user.uid), ...base });
+      const merged = normalizeProfile({ ...previous, ...base });
+      saveProfile(cred.user.uid, merged);
+
+      const resolvedName = cred.user.displayName || merged.name || merged.username || "";
+      const resolvedUsername =
+        merged.username || (cred.user.email ? cred.user.email.split("@")[0] : "");
+
+      setProfileComplete(isProfileComplete(merged));
+      setUser({
+        id: cred.user.uid,
+        name: resolvedName,
+        username: resolvedUsername,
+        email: cred.user.email,
+        ...merged,
+      });
+
       return true;
     },
     logout: () => { authApi.signOut(); },
     updateProfile: (data) => {
       if (!user) return;
-      const merged = { ...loadProfile(user.id), ...data };
+      const merged = normalizeProfile({ ...loadProfile(user.id), ...data });
       saveProfile(user.id, merged);
       setUser({ ...user, ...merged });
+      setProfileComplete(isProfileComplete(merged));
     },
-  }), [user]);
+    profileComplete,
+    needsProfile: !!user && !profileComplete,
+  }), [user, profileComplete]);
 
   // mientras carga el estado de Firebase, muestra children (Login ya espera redirección)
   return <SessionContext.Provider value={value}>{ready && children}</SessionContext.Provider>;

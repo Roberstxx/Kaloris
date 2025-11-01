@@ -11,6 +11,7 @@ import React, {
 import { DailyLog, IntakeEntry } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { getTodayISO } from '../utils/date';
+import { classifyMealByTime, normalizeConsumedAt } from '../utils/meals';
 import { useSession } from './SessionContext';
 
 interface IntakeContextType {
@@ -47,8 +48,19 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (!user) return;
     const todayLog = logs.find((l) => l.userId === user.id && l.dateISO === dateISO);
     if (todayLog) {
-      setTodayEntries(todayLog.entries);
-      setTodayTotal(todayLog.totalKcal);
+      const entries = todayLog.entries ?? [];
+      const recalculatedTotal = entries.reduce((sum, e) => sum + e.kcalPerUnit * e.units, 0);
+      setTodayEntries(entries);
+      setTodayTotal(recalculatedTotal);
+
+      if (recalculatedTotal !== todayLog.totalKcal) {
+        const updatedLogs = logs.map((log) =>
+          log.userId === user.id && log.dateISO === dateISO
+            ? { ...log, totalKcal: recalculatedTotal }
+            : log
+        );
+        setLogs(updatedLogs);
+      }
     } else {
       setTodayEntries([]);
       setTodayTotal(0);
@@ -119,11 +131,15 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const addEntry = (entry: Omit<IntakeEntry, 'id' | 'userId' | 'dateISO'>) => {
     if (!user) return;
+    const consumedAtISO = normalizeConsumedAt(entry.consumedAt);
+    const meal = entry.meal ?? classifyMealByTime(new Date(consumedAtISO));
     const newEntry: IntakeEntry = {
       ...entry,
       id: `entry_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
       userId: user.id,
       dateISO: currentDateISO,
+      consumedAt: consumedAtISO,
+      meal,
     };
     const updated = [...todayEntries, newEntry];
     setTodayEntries(updated);
@@ -160,7 +176,9 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (!user) return [];
     return dates.map((dateISO) => {
       const log = logs.find((l) => l.userId === user.id && l.dateISO === dateISO);
-      return log || { userId: user.id, dateISO, entries: [], totalKcal: 0 };
+      const entries = log?.entries ?? [];
+      const totalKcal = entries.reduce((sum, e) => sum + e.kcalPerUnit * e.units, 0);
+      return { userId: user.id, dateISO, entries, totalKcal };
     });
   };
 
