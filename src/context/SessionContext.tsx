@@ -132,10 +132,25 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     register: async ({ name, username, email, password }) => {
       if (!email) throw new Error("El correo es obligatorio.");
       const cred = await authApi.signUpEmail(email, password, name || username);
-      // guarda extras iniciales (nombre/username)
+
+      const previous = loadProfile(cred.user.uid);
       const base: ExtraProfile = { name, username };
-      saveProfile(cred.user.uid, { ...loadProfile(cred.user.uid), ...base });
-      setProfileComplete(false);
+      const merged = { ...previous, ...base };
+      saveProfile(cred.user.uid, merged);
+
+      const resolvedName = cred.user.displayName || merged.name || merged.username || "";
+      const resolvedUsername =
+        merged.username || (cred.user.email ? cred.user.email.split("@")[0] : "");
+
+      setProfileComplete(isProfileComplete(merged));
+      setUser({
+        id: cred.user.uid,
+        name: resolvedName,
+        username: resolvedUsername,
+        email: cred.user.email,
+        ...merged,
+      });
+
       return true;
     },
     logout: () => { authApi.signOut(); },
