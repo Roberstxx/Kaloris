@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, NavigateFunction, useNavigate } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import styles from "./Login.module.css";
+import { getAuthErrorMessage } from "@/utils/firebaseErrors";
 
 const carouselImages = [
   // 🔁 Sustituye por tus rutas reales
@@ -36,9 +37,22 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const ok = await login(email, password, remember);
-    if (ok) navigate("/dashboard");
-    else setError("Correo o contraseña incorrectos");
+
+    try {
+      const ok = await login(email, password, remember);
+      if (ok) {
+        navigate("/dashboard");
+      } else {
+        setError("Correo o contraseña incorrectos");
+      }
+    } catch (err) {
+      setError(
+        getAuthErrorMessage(
+          err,
+          "Ocurrió un error inesperado al iniciar sesión. Vuelve a intentarlo."
+        )
+      );
+    }
   };
 
   return (
