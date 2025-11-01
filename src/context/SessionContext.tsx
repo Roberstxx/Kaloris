@@ -1,6 +1,6 @@
 // src/context/SessionContext.tsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { authApi } from "@/lib/firebase";
+import { authApi, firebaseConfigIssues } from "@/lib/firebase";
 
 // Extra de perfil que NO guarda Firebase (lo persistimos por usuario)
 type ExtraProfile = {
@@ -49,6 +49,29 @@ function saveProfile(uid: string, p: ExtraProfile) {
 }
 
 export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  if (firebaseConfigIssues.missing.length > 0) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-900 px-6 text-center text-slate-100">
+        <div className="max-w-lg space-y-3">
+          <h1 className="text-3xl font-semibold text-white">Configura tus credenciales de Firebase</h1>
+          <p className="text-base leading-relaxed text-slate-200">
+            Para que el login funcione en producción necesitas definir las variables de entorno de
+            Firebase en Vercel (o un archivo <code>.env</code>). Agrega las siguientes claves con los
+            valores de tu proyecto y vuelve a desplegar:
+          </p>
+          <ul className="rounded-lg bg-slate-800 p-4 text-left text-sm font-mono text-slate-100">
+            {firebaseConfigIssues.missing.map((key) => (
+              <li key={key}>{key}</li>
+            ))}
+          </ul>
+          <p className="text-sm text-slate-300">
+            Proyecto → Settings → Environment Variables → añade cada clave con su valor (<strong>Scope:</strong> Production) y haz un redeploy.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const [user, setUser] = useState<AppUser | null>(null);
   const [ready, setReady] = useState(false);
 

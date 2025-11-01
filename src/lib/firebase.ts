@@ -40,29 +40,44 @@ const firebaseConfig = {
   storageBucket: readEnv("VITE_FIREBASE_STORAGE_BUCKET"),
 };
 
-const missing = requiredEnvKeys.filter((key) => !import.meta.env[key]);
+export const firebaseConfigIssues = {
+  missing: requiredEnvKeys.filter((key) => !import.meta.env[key]),
+};
 
-if (missing.length > 0) {
-  throw new Error(
-    `Firebase configuration is incomplete. Missing: ${missing.join(", ")}. ` +
-      `Define them in your environment (e.g. Vercel Project Settings or a .env file).`
-  );
-}
-
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+const app = firebaseConfigIssues.missing.length === 0 ? initializeApp(firebaseConfig) : undefined;
+export const auth = app ? getAuth(app) : undefined;
 export const googleProvider = new GoogleAuthProvider();
 
 export const authApi = {
-  onChange: (cb: (u: FirebaseUser | null) => void) => onAuthStateChanged(auth, cb),
+  onChange: (cb: (u: FirebaseUser | null) => void) => {
+    if (!auth) {
+      cb(null);
+      return () => undefined;
+    }
+    return onAuthStateChanged(auth, cb);
+  },
   signInEmail: (email: string, password: string) =>
-    signInWithEmailAndPassword(auth, email, password),
+    signInWithEmailAndPassword(requireAuth(), email, password),
   signUpEmail: async (email: string, password: string, displayName?: string) => {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const cred = await createUserWithEmailAndPassword(
+      requireAuth(),
+      email,
+      password
+    );
     if (displayName) await updateProfile(cred.user, { displayName });
     return cred;
   },
-  signInGoogle: () => signInWithPopup(auth, googleProvider),
-  signOut: () => signOut(auth),
+  signInGoogle: () => signInWithPopup(requireAuth(), googleProvider),
+  signOut: () => signOut(requireAuth()),
 };
-console.log("🔥 Firebase API KEY:", import.meta.env.VITE_FIREBASE_API_KEY);
+
+function requireAuth() {
+  if (!auth) {
+    throw new Error(
+      firebaseConfigIssues.missing.length
+        ? `Faltan variables de entorno Firebase: ${firebaseConfigIssues.missing.join(", ")}`
+        : "Firebase no pudo inicializarse."
+    );
+  }
+  return auth;
+}
