@@ -56,14 +56,17 @@ export default function Login() {
           case "auth/wrong-password":
             message = "La contraseña no coincide con el correo ingresado.";
             break;
+          case "auth/invalid-credential":
+            message = "El correo o la contraseña no son correctos.";
+            break;
           case "auth/invalid-email":
             message = "El correo que ingresaste no es válido.";
             break;
           default:
-            message = err.message;
+            message = "Ocurrió un error inesperado al iniciar sesión. Vuelve a intentarlo.";
         }
       } else if (err instanceof Error) {
-        message = err.message;
+        message = "Ocurrió un error inesperado al iniciar sesión. Vuelve a intentarlo.";
       }
 
       setError(message);
