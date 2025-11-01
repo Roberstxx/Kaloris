@@ -55,7 +55,7 @@ export default function Register() {
         const ok = await register({ name, username, email, password });
         if (!ok) throw new Error("No se pudo crear la cuenta.");
       }
-      navigate("/login");
+      navigate("/registro", { replace: true });
     } catch (err: unknown) {
       setError(
         getAuthErrorMessage(

@@ -13,7 +13,7 @@ const carouselImages = [
 
 export default function Login() {
   const navigate: NavigateFunction = useNavigate();
-  const { login, isAuthenticated } = useSession();
+  const { login, isAuthenticated, needsProfile } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -22,8 +22,9 @@ export default function Login() {
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
-    if (isAuthenticated) navigate("/dashboard");
-  }, [isAuthenticated, navigate]);
+    if (!isAuthenticated) return;
+    navigate(needsProfile ? "/registro" : "/dashboard");
+  }, [isAuthenticated, needsProfile, navigate]);
 
   // ⏱️ Carrusel simple (no cambia tu UI del form)
   useEffect(() => {
@@ -40,9 +41,7 @@ export default function Login() {
 
     try {
       const ok = await login(email, password, remember);
-      if (ok) {
-        navigate("/dashboard");
-      } else {
+      if (!ok) {
         setError("Correo o contraseña incorrectos");
       }
     } catch (err) {

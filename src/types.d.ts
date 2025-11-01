@@ -47,11 +47,13 @@ export interface DailyLog {
 
 export interface SessionState {
   user: User | null;
-  login: (username: string, password: string, rememberMe: boolean) => Promise<boolean>;
+  isAuthenticated: boolean;
+  profileComplete: boolean;
+  needsProfile: boolean;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
   logout: () => void;
   register: (userData: Partial<User> & { password: string }) => Promise<boolean>;
   updateProfile: (userData: Partial<User>) => void;
-  isAuthenticated: boolean;
 }
 
 export interface ThemeState {
