@@ -4,6 +4,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { SessionProvider } from "./context/SessionContext";
 import { IntakeProvider } from "./context/IntakeContext";
 import RequireAuth from "./lib/RequireAuth"; // <-- nuevo
+import RequireProfile from "./lib/RequireProfile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Registro from "./pages/Registro";
@@ -21,9 +22,9 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/registro" element={<RequireAuth><Registro /></RequireAuth>} />
-            <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
-            <Route path="/historial" element={<RequireAuth><Historial /></RequireAuth>} />
-            <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
+            <Route path="/dashboard" element={<RequireProfile><Dashboard /></RequireProfile>} />
+            <Route path="/historial" element={<RequireProfile><Historial /></RequireProfile>} />
+            <Route path="/settings" element={<RequireProfile><Settings /></RequireProfile>} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </BrowserRouter>

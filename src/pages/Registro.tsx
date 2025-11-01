@@ -9,7 +9,7 @@ import styles from './Login.module.css';
 
 const Registro = () => {
   const navigate = useNavigate();
-  const { user, updateProfile, isAuthenticated } = useSession();
+  const { user, updateProfile, isAuthenticated, needsProfile } = useSession();
   const { calculateTDEE } = useCaloriesCalculator();
   const [formData, setFormData] = useState({
     sex: 'male' as Sex,
@@ -21,8 +21,25 @@ const Registro = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!isAuthenticated) navigate('/login');
-  }, [isAuthenticated, navigate]);
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    if (!needsProfile) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, needsProfile, navigate]);
+
+  useEffect(() => {
+    if (!user) return;
+    setFormData((prev) => ({
+      sex: (user.sex as Sex) ?? prev.sex,
+      age: user.age ?? prev.age,
+      weightKg: user.weightKg ?? prev.weightKg,
+      heightCm: user.heightCm ?? prev.heightCm,
+      activity: (user.activity as ActivityLevel) ?? prev.activity,
+    }));
+  }, [user]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
