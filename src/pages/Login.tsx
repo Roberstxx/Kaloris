@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FirebaseError } from "firebase/app";
 import { Link, NavigateFunction, useNavigate } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import styles from "./Login.module.css";
@@ -36,9 +37,37 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const ok = await login(email, password, remember);
-    if (ok) navigate("/dashboard");
-    else setError("Correo o contraseña incorrectos");
+
+    try {
+      const ok = await login(email, password, remember);
+      if (ok) {
+        navigate("/dashboard");
+      } else {
+        setError("Correo o contraseña incorrectos");
+      }
+    } catch (err) {
+      let message = "No se pudo iniciar sesión. Inténtalo de nuevo.";
+
+      if (err instanceof FirebaseError) {
+        switch (err.code) {
+          case "auth/user-not-found":
+            message = "No encontramos una cuenta con ese correo. Regístrate para continuar.";
+            break;
+          case "auth/wrong-password":
+            message = "La contraseña no coincide con el correo ingresado.";
+            break;
+          case "auth/invalid-email":
+            message = "El correo que ingresaste no es válido.";
+            break;
+          default:
+            message = err.message;
+        }
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+
+      setError(message);
+    }
   };
 
   return (
