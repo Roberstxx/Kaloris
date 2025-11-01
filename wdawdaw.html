@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contador de Calorías - Dashboard Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Paleta de Colores y Tipografía */
+        :root {
+            --bg-primary: #1e293b; /* Azul Oscuro (Fondo) */
+            --bg-secondary: #334155; /* Fondo de Tarjetas/Widgets */
+            --text-color: #f8fafc; /* Blanco Suave */
+            --accent-color: #10b981; /* Verde Esmeralda (Principal) */
+            --secondary-accent: #3b82f6; /* Azul (Botones/Links) */
+            --border-color: #475569;
+            --danger-color: #ef4444;
+            --font-family: 'Inter', sans-serif;
+        }
+
+        /* Base */
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        /* Layout Principal con CSS Grid */
+        .dashboard-container {
+            display: grid;
+            /* 3 columnas: 25% (Stats) | 50% (Buscador) | 25% (Diario) */
+            grid-template-columns: 1fr 2fr 1fr; 
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Estilo General de Contenedores */
+        .widget, .card {
+            background-color: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px; /* Separación entre widgets */
+        }
+
+        h1, h2, h3 {
+            color: var(--text-color);
+            margin-top: 0;
+            font-weight: 600;
+        }
+
+        /* COLUMNA IZQUIERDA: RESUMEN Y METAS */
+        .left-col h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        /* Gráfico de Calorías (Representación) */
+        .progress-data {
+            text-align: center;
+            margin: 25px 0 20px 0;
+        }
+        .consumed-kcal {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            display: block;
+        }
+        .target-kcal {
+            font-size: 1.1rem;
+            color: #94a3b8;
+        }
+        
+        /* Box de Estado de Meta */
+        .goal-status-box {
+            padding: 15px;
+            border-radius: 8px;
+            background-color: rgba(16, 185, 129, 0.15); /* Fondo verde tenue */
+            border-left: 5px solid var(--accent-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .goal-status-box span {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        /* Widget de Macronutrientes (NUEVA IDEA) */
+        .macro-widget {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .macro-item {
+            text-align: center;
+            padding: 10px;
+            background-color: #2f3b4e;
+            border-radius: 8px;
+        }
+        .macro-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary-accent); /* Usar otro color de acento */
+        }
+        .macro-label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+
+        /* COLUMNA CENTRAL: BUSCADOR Y SUGERENCIAS */
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background-color: #2f3b4e;
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+        .search-input::placeholder {
+            color: #94a3b8;
+        }
+
+        /* Filtros de Píldora (Pill Filters) */
+        .filter-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .pill {
+            padding: 8px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            background-color: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .pill.active {
+            background-color: var(--secondary-accent);
+            color: var(--text-color);
+            border-color: var(--secondary-accent);
+        }
+
+        /* Grid de Sugerencias */
+        .food-suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .food-card {
+            background-color: #2f3b4e;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        .food-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+        .food-info h4 {
+            margin-bottom: 5px;
+        }
+        .serving-size {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        .food-calories {
+            text-align: right;
+        }
+        .food-calories p {
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+        .add-btn {
+            background-color: var(--accent-color);
+            color: var(--bg-secondary);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        /* COLUMNA DERECHA: DIARIO DE HOY (Historial) */
+        .diary-list {
+            list-style: none;
+            padding: 0;
+        }
+        .diary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .item-details h4 {
+            margin-bottom: 3px;
+        }
+        .item-serving {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        .item-actions {
+            display: flex;
+            align-items: center;
+        }
+        .item-calories {
+            font-weight: 600;
+            margin-right: 15px;
+            color: var(--accent-color);
+        }
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        /* Botones Globales (Acciones) */
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px 0;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+        }
+        .btn.secondary {
+            background-color: #475569;
+            color: var(--text-color);
+        }
+        .btn.primary {
+            background-color: var(--secondary-accent);
+            color: var(--bg-primary);
+        }
+        .btn.secondary:hover { background-color: #5d6d84; }
+        .btn.primary:hover { background-color: #60a5fa; }
+        
+        /* NUEVA IDEA: RESUMEN POR COMIDA (en la columna derecha) */
+        .meal-summary-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+        .meal-summary-item {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background-color: #2f3b4e;
+            display: flex;
+            justify-content: space-between;
+        }
+        .meal-summary-item span {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <aside class="left-col">
+            <h1 class="greeting">¡Hola, Roberto!</h1>
+            <p class="target-kcal" style="margin-bottom: 25px;">Meta diaria: 2,546 kcal</p>
+
+            <div class="widget">
+                <h3 style="margin-bottom: 0;">Consumo de Energía</h3>
+                <div class="progress-data">
+                    <div style="width: 120px; height: 120px; margin: 0 auto; border: 10px solid var(--border-color); border-radius: 50%; border-top-color: var(--accent-color);"></div>
+                    
+                    <span class="consumed-kcal">980</span>
+                    <span class="target-kcal">Restantes: 1,566 kcal</span>
+                </div>
+
+                <div class="goal-status-box">
+                    <span class="icon">✅</span>
+                    <p>¡Dentro de tu meta! Te quedan 38% de calorías.</p>
+                </div>
+            </div>
+
+            <div class="widget">
+                <h2>📊 Macronutrientes</h2>
+                <div class="macro-widget">
+                    <div class="macro-item">
+                        <p class="macro-value">55g</p>
+                        <p class="macro-label">Proteínas</p>
+                    </div>
+                    <div class="macro-item">
+                        <p class="macro-value">120g</p>
+                        <p class="macro-label">Carbohidratos</p>
+                    </div>
+                    <div class="macro-item">
+                        <p class="macro-value">25g</p>
+                        <p class="macro-label">Grasas</p>
+                    </div>
+                </div>
+            </div>
+            
+        </aside>
+
+        <main class="center-col">
+            <div class="widget">
+                <input type="text" placeholder="🔍 Buscar alimentos, porción o marca..." class="search-input">
+                
+                <div class="filter-pills">
+                    <button class="pill active">Todas</button>
+                    <button class="pill">Cereales</button>
+                    <button class="pill">Frutas</button>
+                    <button class="pill">Verduras</button>
+                    <button class="pill">Lácteos</button>
+                    <button class="pill">Carnes</button>
+                </div>
+            </div>
+            
+            <div class="widget">
+                <h2>Sugerencias de Hoy</h2>
+                <div class="food-suggestions-grid">
+                    <div class="food-card">
+                        <div class="food-info">
+                            <h4>Arroz blanco cocido</h4>
+                            <p class="serving-size">1/2 taza</p>
+                        </div>
+                        <div class="food-calories">
+                            <p>70 kcal</p>
+                            <button class="add-btn">+</button>
+                        </div>
+                    </div>
+                    <div class="food-card">
+                        <div class="food-info">
+                            <h4>Tortilla de maíz</h4>
+                            <p class="serving-size">1 pieza</p>
+                        </div>
+                        <div class="food-calories">
+                            <p>70 kcal</p>
+                            <button class="add-btn">+</button>
+                        </div>
+                    </div>
+                    <div class="food-card">
+                        <div class="food-info">
+                            <h4>Pan Integral</h4>
+                            <p class="serving-size">1 rebanada</p>
+                        </div>
+                        <div class="food-calories">
+                            <p>70 kcal</p>
+                            <button class="add-btn">+</button>
+                        </div>
+                    </div>
+                     <div class="food-card">
+                        <div class="food-info">
+                            <h4>Avena en hojuelas</h4>
+                            <p class="serving-size">1/2 taza</p>
+                        </div>
+                        <div class="food-calories">
+                            <p>70 kcal</p>
+                            <button class="add-btn">+</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn secondary">➕ Alimento Manual</button>
+                    <button class="btn secondary">Descargar PDF</button>
+                </div>
+            </div>
+        </main>
+
+        <aside class="right-col">
+            <h2>📜 Mi Diario de Hoy</h2>
+            
+            <ul class="diary-list">
+                <li class="diary-item">
+                    <div class="item-details">
+                        <h4>Arroz blanco cocido</h4>
+                        <p class="item-serving">1/2 taza, Desayuno</p>
+                    </div>
+                    <div class="item-actions">
+                        <span class="item-calories">70 kcal</span>
+                        <button class="remove-btn">🗑️</button>
+                    </div>
+                </li>
+                <li class="diary-item">
+                    <div class="item-details">
+                        <h4>Tortilla de maíz</h4>
+                        <p class="item-serving">2 piezas, Comida</p>
+                    </div>
+                    <div class="item-actions">
+                        <span class="item-calories">140 kcal</span>
+                        <button class="remove-btn">🗑️</button>
+                    </div>
+                </li>
+                <li class="diary-item">
+                    <div class="item-details">
+                        <h4>Galletas María</h4>
+                        <p class="item-serving">5 piezas, Snack</p>
+                    </div>
+                    <div class="item-actions">
+                        <span class="item-calories">70 kcal</span>
+                        <button class="remove-btn">🗑️</button>
+                    </div>
+                </li>
+                 <li class="diary-item">
+                    <div class="item-details">
+                        <h4>Arroz blanco cocido</h4>
+                        <p class="item-serving">1/2 taza, Cena</p>
+                    </div>
+                    <div class="item-actions">
+                        <span class="item-calories">70 kcal</span>
+                        <button class="remove-btn">🗑️</button>
+                    </div>
+                </li>
+                </ul>
+            
+            <hr style="border-color: var(--border-color); margin: 20px 0;">
+
+            <h2>📈 Total por Comida</h2>
+            <ul class="meal-summary-list">
+                <li class="meal-summary-item">
+                    <p>Desayuno</p>
+                    <span>250 kcal</span>
+                </li>
+                <li class="meal-summary-item">
+                    <p>Comida</p>
+                    <span>450 kcal</span>
+                </li>
+                <li class="meal-summary-item">
+                    <p>Cena</p>
+                    <span>210 kcal</span>
+                </li>
+                <li class="meal-summary-item" style="border-top: 2px solid var(--accent-color);">
+                    <p style="font-weight: 700;">TOTAL</p>
+                    <span style="font-size: 1.2rem;">980 kcal</span>
+                </li>
+            </ul>
+            
+        </aside>
+
+    </div>
+</body>
+</html>

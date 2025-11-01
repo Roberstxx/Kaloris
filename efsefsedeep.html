@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriTrack - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-light: #E8F5E9;
+            --secondary: #2196F3;
+            --accent: #FF9800;
+            --text: #333333;
+            --text-light: #757575;
+            --background: #F9F9F9;
+            --card-bg: #FFFFFF;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 28px;
+            color: var(--primary);
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .calorie-icon {
+            background: var(--primary);
+        }
+
+        .food-icon {
+            background: var(--accent);
+        }
+
+        .progress-icon {
+            background: var(--secondary);
+        }
+
+        .goal-icon {
+            background: #9C27B0;
+        }
+
+        .calorie-progress {
+            margin: 25px 0;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background-color: #E0E0E0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 6px;
+            background: linear-gradient(90deg, var(--primary), #8BC34A);
+            width: 65%;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .calorie-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+
+        .food-list {
+            list-style: none;
+        }
+
+        .food-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #EEEEEE;
+        }
+
+        .food-item:last-child {
+            border-bottom: none;
+        }
+
+        .food-name {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .food-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .food-calories {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .macronutrients {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .macro {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border-radius: var(--radius);
+            background: var(--primary-light);
+        }
+
+        .macro-value {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .macro-protein {
+            color: #F44336;
+        }
+
+        .macro-carbs {
+            color: #FF9800;
+        }
+
+        .macro-fat {
+            color: #FFC107;
+        }
+
+        .water-tracker {
+            margin-top: 20px;
+        }
+
+        .water-cups {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .water-cup {
+            width: 30px;
+            height: 40px;
+            border: 2px solid var(--secondary);
+            border-radius: 0 0 8px 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .water-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: var(--secondary);
+            opacity: 0.3;
+            transition: height 0.3s ease;
+        }
+
+        .water-cup.active .water-fill {
+            opacity: 0.7;
+        }
+
+        .btn-add {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn-add:hover {
+            background: #43A047;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-apple-alt"></i>
+                <h1>NutriTrack</h1>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">MJ</div>
+                <div>
+                    <div class="user-name">María José</div>
+                    <div class="user-goal">Meta: 1850 kcal</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Tarjeta de Progreso de Calorías -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Progreso Diario</h2>
+                    <div class="card-icon calorie-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                </div>
+                <div class="calorie-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span>0 kcal</span>
+                        <span>1200/1850 kcal</span>
+                        <span>1850 kcal</span>
+                    </div>
+                </div>
+                <div class="calorie-stats">
+                    <div class="stat">
+                        <div class="stat-value">650</div>
+                        <div class="stat-label">Restantes</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">65%</div>
+                        <div class="stat-label">Progreso</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">4</div>
+                        <div class="stat-label">Comidas</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Alimentos Consumidos -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Alimentos de Hoy</h2>
+                    <div class="card-icon food-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                </div>
+                <ul class="food-list">
+                    <li class="food-item">
+                        <div class="food-name">
+                            <div class="food-color" style="background-color: #4CAF50;"></div>
+                            <span>Desayuno</span>
+                        </div>
+                        <div class="food-calories">420 kcal</div>
+                    </li>
+                    <li class="food-item">
+                        <div class="food-name">
+                            <div class="food-color" style="background-color: #2196F3;"></div>
+                            <span>Almuerzo</span>
+                        </div>
+                        <div class="food-calories">650 kcal</div>
+                    </li>
+                    <li class="food-item">
+                        <div class="food-name">
+                            <div class="food-color" style="background-color: #FF9800;"></div>
+                            <span>Merienda</span>
+                        </div>
+                        <div class="food-calories">130 kcal</div>
+                    </li>
+                </ul>
+                <button class="btn-add">
+                    <i class="fas fa-plus"></i> Agregar Alimento
+                </button>
+            </div>
+
+            <!-- Tarjeta de Macronutrientes -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Macronutrientes</h2>
+                    <div class="card-icon progress-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                </div>
+                <div class="macronutrients">
+                    <div class="macro">
+                        <div class="macro-value macro-protein">45g</div>
+                        <div class="macro-label">Proteínas</div>
+                    </div>
+                    <div class="macro">
+                        <div class="macro-value macro-carbs">120g</div>
+                        <div class="macro-label">Carbohidratos</div>
+                    </div>
+                    <div class="macro">
+                        <div class="macro-value macro-fat">35g</div>
+                        <div class="macro-label">Grasas</div>
+                    </div>
+                </div>
+                <div class="water-tracker">
+                    <h3>Hidratación</h3>
+                    <div class="water-cups">
+                        <div class="water-cup active">
+                            <div class="water-fill" style="height: 80%;"></div>
+                        </div>
+                        <div class="water-cup active">
+                            <div class="water-fill" style="height: 80%;"></div>
+                        </div>
+                        <div class="water-cup active">
+                            <div class="water-fill" style="height: 80%;"></div>
+                        </div>
+                        <div class="water-cup">
+                            <div class="water-fill" style="height: 30%;"></div>
+                        </div>
+                        <div class="water-cup">
+                            <div class="water-fill" style="height: 30%;"></div>
+                        </div>
+                        <div class="water-cup">
+                            <div class="water-fill" style="height: 30%;"></div>
+                        </div>
+                        <div class="water-cup">
+                            <div class="water-fill" style="height: 30%;"></div>
+                        </div>
+                        <div class="water-cup">
+                            <div class="water-fill" style="height: 30%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Objetivos -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Mi Objetivo</h2>
+                    <div class="card-icon goal-icon">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                </div>
+                <div class="goal-info">
+                    <p>Estás en camino para alcanzar tu meta de pérdida de peso.</p>
+                    <div class="progress-bar" style="margin: 20px 0;">
+                        <div class="progress-fill" style="width: 40%; background: linear-gradient(90deg, #9C27B0, #E91E63);"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span>Inicio</span>
+                        <span>4/10 semanas</span>
+                        <span>Meta</span>
+                    </div>
+                </div>
+                <button class="btn-add" style="background: #9C27B0;">
+                    <i class="fas fa-chart-line"></i> Ver Progreso Completo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulación de interacción con las tazas de agua
+        document.querySelectorAll('.water-cup').forEach(cup => {
+            cup.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const fill = this.querySelector('.water-fill');
+                if (this.classList.contains('active')) {
+                    fill.style.height = '80%';
+                } else {
+                    fill.style.height = '30%';
+                }
+            });
+        });
+
+        // Simulación de actualización de progreso de calorías
+        function updateCalorieProgress(consumed, goal) {
+            const progressFill = document.querySelector('.progress-fill');
+            const progressText = document.querySelector('.progress-info span:nth-child(2)');
+            const remaining = document.querySelector('.stat-value:first-child');
+            const percentage = document.querySelector('.stat-value:nth-child(2)');
+            
+            const percent = (consumed / goal) * 100;
+            progressFill.style.width = `${percent}%`;
+            progressText.textContent = `${consumed}/${goal} kcal`;
+            remaining.textContent = goal - consumed;
+            percentage.textContent = `${Math.round(percent)}%`;
+        }
+
+        // Ejemplo de actualización después de 3 segundos
+        setTimeout(() => {
+            updateCalorieProgress(1350, 1850);
+        }, 3000);
+    </script>
+</body>
+</html>
