@@ -3,12 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import styles from "./Login.module.css";
 
-const carouselImages = [
-  // 🔁 Sustituye por tus rutas reales
-  "/src/assets/login-1.png",
-  "/src/assets/login-2.jpg",
-  "/src/assets/login-3.jpg",
-];
+import login1 from "@/assets/login-1.png";
+import login2 from "@/assets/login-2.jpg";
+import login3 from "@/assets/login-3.jpg";
+
+const carouselImages = [login1, login2, login3];
 
 export default function Register() {
   const navigate = useNavigate();
