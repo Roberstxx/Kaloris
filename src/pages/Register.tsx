@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import styles from "./Login.module.css";
+import { getAuthErrorMessage } from "@/utils/firebaseErrors";
 
 const carouselImages = [
   // 🔁 Sustituye por tus rutas reales
@@ -12,7 +13,7 @@ const carouselImages = [
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register } = useSession() as { register?: Function };
+  const { register: registerUser, isAuthenticated, needsProfile } = useSession();
 
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -33,6 +34,11 @@ export default function Register() {
     return () => clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    navigate(needsProfile ? "/registro" : "/dashboard", { replace: true });
+  }, [isAuthenticated, needsProfile, navigate]);
+
   const validate = () => {
     if (!name.trim()) return "El nombre es obligatorio.";
     if (!email.trim()) return "El email es obligatorio.";
@@ -50,13 +56,16 @@ export default function Register() {
     setError("");
     setLoading(true);
     try {
-      if (register) {
-        const ok = await register({ name, username, email, password });
-        if (!ok) throw new Error("No se pudo crear la cuenta.");
-      }
-      navigate("/login");
-    } catch (err: any) {
-      setError(err?.message || "Ocurrió un error al crear la cuenta.");
+      const ok = await registerUser({ name, username, email, password });
+      if (!ok) throw new Error("No se pudo crear la cuenta.");
+      navigate("/registro", { replace: true });
+    } catch (err: unknown) {
+      setError(
+        getAuthErrorMessage(
+          err,
+          "Ocurrió un error al crear la cuenta. Inténtalo de nuevo."
+        )
+      );
     } finally {
       setLoading(false);
     }

@@ -25,9 +25,10 @@
 
 .fill {
   height: 8px;
-  width: var(--w, 0%);
+  width: 0;
   background: var(--brand);
   border-radius: 9999px;
+  transition: width 0.25s ease;
 }
 
 .meta {
