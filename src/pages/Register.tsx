@@ -3,6 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import styles from "./Login.module.css";
 import { getAuthErrorMessage } from "@/utils/firebaseErrors";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useSession } from "../context/SessionContext";
+import styles from "./Login.module.css";
+import { getAuthErrorMessage } from "@/utils/firebaseErrors";
 
 const carouselImages = [
   // 🔁 Sustituye por tus rutas reales
@@ -58,6 +63,22 @@ export default function Register() {
     try {
       const ok = await registerUser({ name, username, email, password });
       if (!ok) throw new Error("No se pudo crear la cuenta.");
+      navigate("/registro", { replace: true });
+    } catch (err: unknown) {
+      setError(
+        getAuthErrorMessage(
+          err,
+          "Ocurrió un error al crear la cuenta. Inténtalo de nuevo."
+        )
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+      if (register) {
+        const ok = await register({ name, username, email, password });
+        if (!ok) throw new Error("No se pudo crear la cuenta.");
+      }
       navigate("/registro", { replace: true });
     } catch (err: unknown) {
       setError(

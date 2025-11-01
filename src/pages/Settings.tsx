@@ -4,6 +4,11 @@ import { useNavigate, Link } from "react-router-dom";
 import { Home, History, Settings as SettingsIcon, Edit, X } from "lucide-react"; // Iconos añadidos
 import { useSession } from "../context/SessionContext";
 import { ActivityLevel, Sex } from "../types";
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Home, History, Settings as SettingsIcon, Edit, X } from 'lucide-react'; // Iconos añadidos
+import { useSession } from '../context/SessionContext';
+import { ActivityLevel, Sex } from '../types';
 
 const ACTIVITY_LEVELS: Record<ActivityLevel, { label: string; factor: number; help: string }> = {
   sedentario:  { label: 'Sedentario', factor: 1.2,   help: 'Poco o nada de ejercicio' },
@@ -89,6 +94,53 @@ export default function Settings() {
   const pctTotal = carbPct + protPct + fatPct;
 
   // ---- Cálculos (sin cambios) ----
+
+export default function Settings() {
+  const navigate = useNavigate();
+  const { user, isAuthenticated, updateProfile, logout } = useSession();
+
+  // --- NUEVO: Estado de Edición ---
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => { if (!isAuthenticated) navigate('/login'); }, [isAuthenticated, navigate]);
+  if (!user) return null;
+
+  // ---- Estado editable ----
+  const [name] = useState<string>(user.name || '');
+  const [email] = useState<string>(user.email || user.username || '');
+
+  // Datos físicos
+  const [sex, setSex] = useState<Sex>(user.sex ?? 'male');
+  const [age, setAge] = useState<number>(Number(user.age ?? 21));
+  const [heightCm, setHeightCm] = useState<number>(Number(user.heightCm ?? 170));
+  const [weightKg, setWeightKg] = useState<number>(Number(user.weightKg ?? 70));
+  const [activity, setActivity] = useState<ActivityLevel>(normalizeActivity(user.activity));
+
+  // Meta diaria (kcal) editable.
+  const [targetKcal, setTargetKcal] = useState<number>(Number(user.tdee ?? 2000));
+
+  // Macros %
+  const initialMacros = resolveMacros(user.macros);
+  const [carbPct, setCarbPct] = useState<number>(initialMacros.carbPct);
+  const [protPct, setProtPct] = useState<number>(initialMacros.protPct);
+  const [fatPct,  setFatPct]  = useState<number>(initialMacros.fatPct);
+
+  const pctTotal = carbPct + protPct + fatPct;
+
+  useEffect(() => {
+    setSex(user.sex ?? 'male');
+    setAge(Number(user.age ?? 21));
+    setHeightCm(Number(user.heightCm ?? 170));
+    setWeightKg(Number(user.weightKg ?? 70));
+    setActivity(normalizeActivity(user.activity));
+    setTargetKcal(Number(user.tdee ?? 2000));
+    const macros = resolveMacros(user.macros);
+    setCarbPct(macros.carbPct);
+    setProtPct(macros.protPct);
+    setFatPct(macros.fatPct);
+  }, [user]);
+
+  // ---- Cálculos (sin cambios) ----
   const bmr = useMemo(() => {
     const base = 10 * weightKg + 6.25 * heightCm - 5 * age;
     return Math.round(sex === 'male' ? base + 5 : base - 161);
@@ -108,6 +160,11 @@ export default function Settings() {
   const fatGr  = useMemo(() => Math.round((targetKcal * (fatPct  / 100)) / 9), [targetKcal, fatPct]);
 
   // ---- Acciones ----
+  const handleSave = () => {
+    if (pctTotal !== 100) {
+      alert('El reparto de macros debe sumar 100%.');
+      return;
+    }
   const handleSave = () => {
     if (pctTotal !== 100) {
       alert('El reparto de macros debe sumar 100%.');
@@ -149,6 +206,24 @@ export default function Settings() {
   };
 
   if (!user) return null;
+    setSex(user.sex ?? 'male');
+    setAge(Number(user.age ?? 21));
+    setHeightCm(Number(user.heightCm ?? 170));
+    setWeightKg(Number(user.weightKg ?? 70));
+    setActivity(normalizeActivity(user.activity));
+    setTargetKcal(Number(user.tdee ?? 2000));
+    const macros = resolveMacros(user.macros);
+    setCarbPct(macros.carbPct);
+    setProtPct(macros.protPct);
+    setFatPct(macros.fatPct);
+
+    setIsEditing(false); // Ocultar campos de edición
+  };
+
+  const handleLogout = () => {
+    if (typeof logout === 'function') logout();
+    navigate('/login');
+  };
 
   return (
     <div>
