@@ -1,0 +1,114 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.ring {
+  position: relative;
+  width: 240px;
+  height: 240px;
+}
+
+.center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.numbers {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.consumed {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.divider {
+  font-size: 1.5rem;
+  color: var(--text-tertiary);
+}
+
+.target {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.unit {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  margin-top: 0.25rem;
+}
+
+.status {
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  max-width: 400px;
+  border: 2px solid;
+  background: var(--surface-elevated);
+}
+
+.statusLabel {
+  display: block;
+  font-weight: 600;
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+}
+
+.message {
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  margin: 0;
+}
+
+.status.ok {
+  border-color: var(--success);
+}
+
+.status.ok .statusLabel {
+  color: var(--success);
+}
+
+.status.near {
+  border-color: var(--warning);
+}
+
+.status.near .statusLabel {
+  color: var(--warning);
+}
+
+.status.exceeded {
+  border-color: var(--danger);
+}
+
+.status.exceeded .statusLabel {
+  color: var(--danger);
+}
+
+@media (max-width: 768px) {
+  .ring {
+    width: 200px;
+    height: 200px;
+  }
+
+  .consumed {
+    font-size: 2rem;
+  }
+
+  .target {
+    font-size: 1.25rem;
+  }
+}

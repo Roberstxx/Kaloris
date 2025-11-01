@@ -1,0 +1,33 @@
+/* === DashboardLayout.module.css (seguro y minimal) === */
+
+.layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr); /* izquierda fija, derecha flexible */
+  gap: 1.5rem;
+  align-items: start;
+  width: 100%;
+  margin-top: 1.5rem;
+  /* sin overflow ni sticky para no interferir con tu layout */
+}
+
+.overview {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0; /* evita empujes horizontales */
+}
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  min-width: 0; /* clave para que hijos (buscador/cards) no desborden */
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .workspace { gap: 1.25rem; }
+}

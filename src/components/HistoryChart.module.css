@@ -1,0 +1,13 @@
+.container {
+  width: 100%;
+  background: var(--surface-elevated);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 1rem;
+  }
+}

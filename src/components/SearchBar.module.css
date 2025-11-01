@@ -1,0 +1,47 @@
+/* === SearchBar.module.css (igual que el tuyo, con ajustes seguros) === */
+
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;      /* no crece más que su columna */
+  box-sizing: border-box;
+}
+
+.icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  max-width: 100%;      /* evita desborde horizontal */
+  padding: 0.875rem 1rem 0.875rem 3rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1rem;
+  transition: var(--transition);
+  box-sizing: border-box; /* importante para que el padding no expanda el ancho */
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px hsla(192, 80%, 45%, 0.1);
+}
+
+.input::placeholder {
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 640px) {
+  .input {
+    padding-left: 2.75rem;
+    font-size: 0.9375rem;
+  }
+}
