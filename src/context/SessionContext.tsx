@@ -39,61 +39,6 @@ function isProfileComplete(profile: ExtraProfile): boolean {
     return Boolean(value);
   });
 }
-type MacroSplit = {
-  carbPct: number;
-  protPct: number;
-  fatPct: number;
-};
-
-type ExtraProfile = {
-  sex?: "male" | "female";
-  age?: number;
-  weightKg?: number;
-  heightCm?: number;
-  activity?: string;
-  tdee?: number;
-  macros?: MacroSplit;
-  username?: string; // por compatibilidad con tu UI
-  name?: string;
-};
-
-const REQUIRED_PROFILE_FIELDS: (keyof ExtraProfile)[] = [
-  "sex",
-  "age",
-  "weightKg",
-  "heightCm",
-  "activity",
-  "tdee",
-];
-
-function isProfileComplete(profile: ExtraProfile): boolean {
-  return REQUIRED_PROFILE_FIELDS.every((key) => {
-    const value = profile[key];
-    if (typeof value === "number") {
-      return Number.isFinite(value) && value > 0;
-    }
-    return Boolean(value);
-  });
-}
-
-const REQUIRED_PROFILE_FIELDS: (keyof ExtraProfile)[] = [
-  "sex",
-  "age",
-  "weightKg",
-  "heightCm",
-  "activity",
-  "tdee",
-];
-
-function isProfileComplete(profile: ExtraProfile): boolean {
-  return REQUIRED_PROFILE_FIELDS.every((key) => {
-    const value = profile[key];
-    if (typeof value === "number") {
-      return Number.isFinite(value) && value > 0;
-    }
-    return Boolean(value);
-  });
-}
 
 // Usuario que expone el contexto (compatible con tu app)
 export type AppUser = {
@@ -104,16 +49,6 @@ export type AppUser = {
   tdee?: number;
 } & ExtraProfile;
 
-type SessionState = {
-  user: AppUser | null;
-  isAuthenticated: boolean;
-  profileComplete: boolean;
-  needsProfile: boolean;
-  login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
-  register: (data: { name?: string; username?: string; email: string; password: string }) => Promise<boolean>;
-  logout: () => void;
-  updateProfile: (data: Partial<ExtraProfile>) => void;
-};
 type SessionState = {
   user: AppUser | null;
   isAuthenticated: boolean;
@@ -167,6 +102,7 @@ function loadProfile(uid: string): ExtraProfile {
     return {};
   }
 }
+
 function saveProfile(uid: string, p: ExtraProfile) {
   localStorage.setItem(profileKey(uid), JSON.stringify(p));
 }
@@ -213,52 +149,56 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => unsub();
   }, [showConfigNotice]);
 
-  const value = useMemo<SessionState>(() => ({
-    user,
-    isAuthenticated: !!user,
-    login: async (email, password) => {
-      if (!email.includes("@")) throw new Error("Usa tu correo electrónico para iniciar sesión.");
-      await authApi.signInEmail(email, password);
-      return true;
-    },
-    register: async ({ name, username, email, password }) => {
-      if (!email) throw new Error("El correo es obligatorio.");
-      const cred = await authApi.signUpEmail(email, password, name || username);
+  const value = useMemo<SessionState>(
+    () => ({
+      user,
+      isAuthenticated: !!user,
+      profileComplete,
+      needsProfile: !!user && !profileComplete,
+      login: async (email, password) => {
+        if (!email.includes("@")) {
+          throw new Error("Usa tu correo electrónico para iniciar sesión.");
+        }
+        await authApi.signInEmail(email, password);
+        return true;
+      },
+      register: async ({ name, username, email, password }) => {
+        if (!email) throw new Error("El correo es obligatorio.");
+        const cred = await authApi.signUpEmail(email, password, name || username);
 
-      const previous = loadProfile(cred.user.uid);
-      const base: ExtraProfile = { name, username };
-      const merged = normalizeProfile({ ...previous, ...base });
-      saveProfile(cred.user.uid, merged);
+        const previous = loadProfile(cred.user.uid);
+        const base: ExtraProfile = { name, username };
+        const merged = normalizeProfile({ ...previous, ...base });
+        saveProfile(cred.user.uid, merged);
 
-      const resolvedName = cred.user.displayName || merged.name || merged.username || "";
-      const resolvedUsername =
-        merged.username || (cred.user.email ? cred.user.email.split("@")[0] : "");
+        const resolvedName = cred.user.displayName || merged.name || merged.username || "";
+        const resolvedUsername = merged.username || (cred.user.email ? cred.user.email.split("@")[0] : "");
 
-      setProfileComplete(isProfileComplete(merged));
-      setUser({
-        id: cred.user.uid,
-        name: resolvedName,
-        username: resolvedUsername,
-        email: cred.user.email,
-        ...merged,
-      });
+        setProfileComplete(isProfileComplete(merged));
+        setUser({
+          id: cred.user.uid,
+          name: resolvedName,
+          username: resolvedUsername,
+          email: cred.user.email,
+          ...merged,
+        });
 
-      setReady(true);
-      return true;
-    },
-    logout: () => {
-      authApi.signOut();
-    },
-    updateProfile: (data) => {
-      if (!user) return;
-      const merged = normalizeProfile({ ...loadProfile(user.id), ...data });
-      saveProfile(user.id, merged);
-      setUser({ ...user, ...merged });
-      setProfileComplete(isProfileComplete(merged));
-    },
-    profileComplete,
-    needsProfile: !!user && !profileComplete,
-  }), [user, profileComplete]);
+        setReady(true);
+        return true;
+      },
+      logout: () => {
+        authApi.signOut();
+      },
+      updateProfile: (data) => {
+        if (!user) return;
+        const merged = normalizeProfile({ ...loadProfile(user.id), ...data });
+        saveProfile(user.id, merged);
+        setUser({ ...user, ...merged });
+        setProfileComplete(isProfileComplete(merged));
+      },
+    }),
+    [user, profileComplete]
+  );
 
   const configNotice = useMemo(() => {
     if (!showConfigNotice) return null;
@@ -267,7 +207,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         <div className="max-w-lg space-y-3">
           <h1 className="text-3xl font-semibold text-white">Configura tus credenciales de Firebase</h1>
           <p className="text-base leading-relaxed text-slate-200">
-            Para que el login funcione en producción necesitas definir las variables de entorno de Firebase en Vercel (o un archivo <code>.env</code>). Agrega las siguientes claves con los valores de tu proyecto y vuelve a desplegar:
+            Para que el login funcione en producción necesitas definir las variables de entorno de Firebase en Vercel (o un
+            archivo <code>.env</code>). Agrega las siguientes claves con los valores de tu proyecto y vuelve a desplegar:
           </p>
           <ul className="rounded-lg bg-slate-800 p-4 text-left text-sm font-mono text-slate-100">
             {missingKeys.map((key) => (
@@ -275,7 +216,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
             ))}
           </ul>
           <p className="text-sm text-slate-300">
-            Proyecto → Settings → Environment Variables → añade cada clave con su valor (<strong>Scope:</strong> Production) y haz un redeploy.
+            Proyecto → Settings → Environment Variables → añade cada clave con su valor (<strong>Scope:</strong> Production) y haz un
+            redeploy.
           </p>
         </div>
       </div>
@@ -287,147 +229,6 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       {showConfigNotice ? configNotice : ready ? children : null}
     </SessionContext.Provider>
   );
-};
-type StoredProfile = ExtraProfile & {
-  // compatibilidad con datos antiguos
-  weight?: number;
-  height?: number;
-};
-
-function normalizeProfile(raw: StoredProfile | null | undefined): ExtraProfile {
-  if (!raw) return {};
-
-  const profile: ExtraProfile = { ...raw };
-
-  if (profile.weightKg === undefined && typeof raw.weight === "number") {
-    profile.weightKg = raw.weight;
-  }
-
-  if (profile.heightCm === undefined && typeof raw.height === "number") {
-    profile.heightCm = raw.height;
-  }
-
-  if (profile.macros) {
-    profile.macros = {
-      carbPct: Number(profile.macros.carbPct ?? 0),
-      protPct: Number(profile.macros.protPct ?? 0),
-      fatPct: Number(profile.macros.fatPct ?? 0),
-    };
-  }
-
-  return profile;
-}
-
-function loadProfile(uid: string): ExtraProfile {
-  try {
-    const raw = localStorage.getItem(profileKey(uid));
-    return raw ? normalizeProfile(JSON.parse(raw)) : {};
-  } catch {
-    return {};
-  }
-}
-function saveProfile(uid: string, p: ExtraProfile) {
-  localStorage.setItem(profileKey(uid), JSON.stringify(p));
-}
-
-export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  if (firebaseConfigIssues.missing.length > 0) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-900 px-6 text-center text-slate-100">
-        <div className="max-w-lg space-y-3">
-          <h1 className="text-3xl font-semibold text-white">Configura tus credenciales de Firebase</h1>
-          <p className="text-base leading-relaxed text-slate-200">
-            Para que el login funcione en producción necesitas definir las variables de entorno de
-            Firebase en Vercel (o un archivo <code>.env</code>). Agrega las siguientes claves con los
-            valores de tu proyecto y vuelve a desplegar:
-          </p>
-          <ul className="rounded-lg bg-slate-800 p-4 text-left text-sm font-mono text-slate-100">
-            {firebaseConfigIssues.missing.map((key) => (
-              <li key={key}>{key}</li>
-            ))}
-          </ul>
-          <p className="text-sm text-slate-300">
-            Proyecto → Settings → Environment Variables → añade cada clave con su valor (<strong>Scope:</strong> Production) y haz un redeploy.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const [user, setUser] = useState<AppUser | null>(null);
-  const [ready, setReady] = useState(false);
-  const [profileComplete, setProfileComplete] = useState(false);
-
-  useEffect(() => {
-    const unsub = authApi.onChange((fbUser) => {
-      if (!fbUser) {
-        setUser(null);
-        setReady(true);
-        setProfileComplete(false);
-        return;
-      }
-      const extra = loadProfile(fbUser.uid);
-      setProfileComplete(isProfileComplete(extra));
-      const name = fbUser.displayName || extra.name || extra.username || "";
-      const username = extra.username || (fbUser.email ? fbUser.email.split("@")[0] : "");
-      setUser({
-        id: fbUser.uid,
-        name,
-        username,
-        email: fbUser.email,
-        ...extra,
-      });
-      setReady(true);
-    });
-    return () => unsub();
-  }, []);
-
-  const value = useMemo<SessionState>(() => ({
-    user,
-    isAuthenticated: !!user,
-    login: async (email, password) => {
-      if (!email.includes("@")) throw new Error("Usa tu correo electrónico para iniciar sesión.");
-      await authApi.signInEmail(email, password);
-      return true;
-    },
-    register: async ({ name, username, email, password }) => {
-      if (!email) throw new Error("El correo es obligatorio.");
-      const cred = await authApi.signUpEmail(email, password, name || username);
-
-      const previous = loadProfile(cred.user.uid);
-      const base: ExtraProfile = { name, username };
-      const merged = normalizeProfile({ ...previous, ...base });
-      saveProfile(cred.user.uid, merged);
-
-      const resolvedName = cred.user.displayName || merged.name || merged.username || "";
-      const resolvedUsername =
-        merged.username || (cred.user.email ? cred.user.email.split("@")[0] : "");
-
-      setProfileComplete(isProfileComplete(merged));
-      setUser({
-        id: cred.user.uid,
-        name: resolvedName,
-        username: resolvedUsername,
-        email: cred.user.email,
-        ...merged,
-      });
-
-      return true;
-    },
-    logout: () => { authApi.signOut(); },
-    updateProfile: (data) => {
-      if (!user) return;
-      const merged = normalizeProfile({ ...loadProfile(user.id), ...data });
-      saveProfile(user.id, merged);
-      setUser({ ...user, ...merged });
-      setProfileComplete(isProfileComplete(merged));
-    },
-    profileComplete,
-    needsProfile: !!user && !profileComplete,
-  }), [user, profileComplete]);
-
-  // mientras carga el estado de Firebase, muestra children (Login ya espera redirección)
-  return <SessionContext.Provider value={value}>{ready && children}</SessionContext.Provider>;
 };
 
 export const useSession = () => {

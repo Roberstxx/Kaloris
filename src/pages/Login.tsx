@@ -3,11 +3,6 @@ import { Link, NavigateFunction, useNavigate } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import styles from "./Login.module.css";
 import { getAuthErrorMessage } from "@/utils/firebaseErrors";
-import React, { useEffect, useState } from "react";
-import { Link, NavigateFunction, useNavigate } from "react-router-dom";
-import { useSession } from "../context/SessionContext";
-import styles from "./Login.module.css";
-import { getAuthErrorMessage } from "@/utils/firebaseErrors";
 
 const carouselImages = [
   // 🔁 Sustituye por tus rutas reales
@@ -18,7 +13,6 @@ const carouselImages = [
 
 export default function Login() {
   const navigate: NavigateFunction = useNavigate();
-  const { login, isAuthenticated, needsProfile } = useSession();
   const { login, isAuthenticated, needsProfile } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,37 +25,13 @@ export default function Login() {
     if (!isAuthenticated) return;
     navigate(needsProfile ? "/registro" : "/dashboard");
   }, [isAuthenticated, needsProfile, navigate]);
-    if (!isAuthenticated) return;
-    navigate(needsProfile ? "/registro" : "/dashboard");
-  }, [isAuthenticated, needsProfile, navigate]);
 
   // ⏱️ Carrusel simple (no cambia tu UI del form)
   useEffect(() => {
-    const id = setInterval(
-      () => setSlide((s) => (s + 1) % carouselImages.length),
-      4500
-    );
+    const id = setInterval(() => setSlide((s) => (s + 1) % carouselImages.length), 4500);
     return () => clearInterval(id);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    try {
-      const ok = await login(email, password, remember);
-      if (!ok) {
-        setError("Correo o contraseña incorrectos");
-      }
-    } catch (err) {
-      setError(
-        getAuthErrorMessage(
-          err,
-          "Ocurrió un error inesperado al iniciar sesión. Vuelve a intentarlo."
-        )
-      );
-    }
-  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");

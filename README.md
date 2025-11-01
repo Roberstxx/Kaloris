@@ -1,81 +1,92 @@
-# Welcome to your Lovable project
+# Contadorrrr
 
-## Project info
+Aplicación web para el seguimiento nutricional diario, construida con React y Vite. Permite registrar la ingesta de alimentos, visualizar el progreso mediante métricas y gráficas, y ajustar objetivos personalizados de macronutrientes y calorías.
 
-**URL**: https://lovable.dev/projects/0e48d68b-4c68-4a51-ac2a-5b4ffa222973
+## Autor
 
-## How can I edit this code?
+- Contadorrrr
 
-There are several ways of editing your application.
+## Características principales
 
-**Use Lovable**
+- **Autenticación con Firebase** para acceder de manera segura a la información personal.
+- **Panel principal** con indicadores de progreso diario y resúmenes semanales.
+- **Registro histórico** de peso, calorías y macronutrientes con visualizaciones interactivas.
+- **Configuración personalizable** de objetivos nutricionales, nivel de actividad y datos biométricos.
+- **Exportación** de información en PDF para compartir o respaldar los avances.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/0e48d68b-4c68-4a51-ac2a-5b4ffa222973) and start prompting.
+## Stack tecnológico
 
-Changes made via Lovable will be committed automatically to this repo.
+- [React](https://react.dev/) 18 + [Vite](https://vitejs.dev/) para la interfaz y el entorno de desarrollo.
+- [TypeScript](https://www.typescriptlang.org/) para tipado estático.
+- [Tailwind CSS](https://tailwindcss.com/) y [shadcn/ui](https://ui.shadcn.com/) para el diseño de componentes.
+- [React Router](https://reactrouter.com/) para la navegación entre pantallas.
+- [React Query](https://tanstack.com/query/latest) para el manejo de datos asíncronos.
+- [Firebase](https://firebase.google.com/) como backend de autenticación y persistencia.
 
-**Use your preferred IDE**
+## Requisitos previos
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- [Node.js](https://nodejs.org/) 18 o superior.
+- [npm](https://www.npmjs.com/) (instalado con Node.js) o [Bun](https://bun.sh/) si se desea usar la alternativa al CLI de npm.
+- Credenciales de Firebase configuradas en variables de entorno (ver sección de configuración).
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Configuración del entorno
 
-Follow these steps:
+1. Clonar el repositorio y entrar a la carpeta del proyecto:
+   ```bash
+   git clone <URL_DEL_REPOSITORIO>
+   cd Contadorrrr
+   ```
+2. Instalar dependencias:
+   ```bash
+   npm install
+   ```
+3. Crear un archivo `.env` basado en `.env.example` y completar las variables de Firebase (todas deben iniciar con `VITE_`).
+4. Ejecutar el servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
+5. Abrir el proyecto en `http://localhost:5173`.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Scripts disponibles
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+| Comando            | Descripción                                                  |
+| ------------------ | ------------------------------------------------------------ |
+| `npm run dev`      | Inicia el servidor de desarrollo con recarga en caliente.    |
+| `npm run build`    | Genera una compilación lista para producción en `dist/`.     |
+| `npm run preview`  | Sirve la compilación de producción para revisión local.      |
+| `npm run lint`     | Ejecuta ESLint sobre el código fuente.                       |
+| `npm run build:dev`| Construcción de desarrollo para validar variables y assets.  |
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Estructura del proyecto
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+src/
+├── components/         # Componentes reutilizables de UI y lógica
+├── context/            # Providers y hooks de contexto (sesión, tema, etc.)
+├── hooks/              # Hooks personalizados
+├── lib/                # Utilidades compartidas y servicios
+├── pages/              # Páginas principales de la aplicación
+├── routes/             # Definiciones de rutas y protección de vistas
+└── types/              # Tipos y contratos compartidos en TypeScript
 ```
 
-**Edit a file directly in GitHub**
+## Flujo de trabajo recomendado
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. Crear una rama para cada cambio: `git checkout -b feature/nueva-funcionalidad`.
+2. Realizar commits descriptivos y pequeños.
+3. Ejecutar `npm run lint` y `npm run build` antes de abrir un pull request.
+4. Abrir un PR hacia `main` y solicitar revisión.
 
-**Use GitHub Codespaces**
+## Despliegue
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+El proyecto se ha desplegado exitosamente en Vercel. Para realizar un nuevo despliegue:
 
-## What technologies are used for this project?
+1. Crear un proyecto en [Vercel](https://vercel.com/) e importar este repositorio.
+2. Configurar las variables de entorno en la sección **Project Settings → Environment Variables**.
+3. Usar los valores por defecto: comando `npm run build` y directorio de salida `dist`.
+4. Cada push a `main` generará un nuevo despliegue automático.
 
-This project is built with:
+## Licencia
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Este proyecto es de uso privado. Consultar al autor para cualquier reutilización del código.
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/0e48d68b-4c68-4a51-ac2a-5b4ffa222973) and click on Share -> Publish.
-
-## Deploying to Vercel
-
-1. Create a new Vercel project and import this repository.
-2. In **Project Settings → Environment Variables** add the Firebase credentials. You can copy `.env.example` as a reference – every key must keep the `VITE_` prefix so Vite exposes it in the browser build.
-3. Deploy using the default **Build Command** `npm run build` and **Output Directory** `dist`. The included `vercel.json` already configures these values and adds a catch-all rewrite so the React Router routes (e.g. `/login`, `/dashboard`) load correctly on refresh.
-
-After the first deployment, any push to the main branch will trigger a new build automatically.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
