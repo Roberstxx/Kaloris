@@ -34,6 +34,8 @@ export interface IntakeEntry {
   customName?: string;
   kcalPerUnit: number;
   units: number;
+  consumedAt?: string;
+  meal?: "breakfast" | "lunch" | "dinner";
 }
 
 export interface DailyLog {
