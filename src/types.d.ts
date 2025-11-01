@@ -15,6 +15,11 @@ export interface User {
   heightCm?: number;
   activity?: ActivityLevel;
   tdee?: number;
+  macros?: {
+    carbPct: number;
+    protPct: number;
+    fatPct: number;
+  };
 }
 
 export interface FoodItem {

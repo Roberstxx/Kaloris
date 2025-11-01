@@ -3,6 +3,12 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from "
 import { authApi, firebaseConfigIssues } from "@/lib/firebase";
 
 // Extra de perfil que NO guarda Firebase (lo persistimos por usuario)
+type MacroSplit = {
+  carbPct: number;
+  protPct: number;
+  fatPct: number;
+};
+
 type ExtraProfile = {
   sex?: "male" | "female";
   age?: number;
@@ -10,9 +16,29 @@ type ExtraProfile = {
   heightCm?: number;
   activity?: string;
   tdee?: number;
+  macros?: MacroSplit;
   username?: string; // por compatibilidad con tu UI
   name?: string;
 };
+
+const REQUIRED_PROFILE_FIELDS: (keyof ExtraProfile)[] = [
+  "sex",
+  "age",
+  "weightKg",
+  "heightCm",
+  "activity",
+  "tdee",
+];
+
+function isProfileComplete(profile: ExtraProfile): boolean {
+  return REQUIRED_PROFILE_FIELDS.every((key) => {
+    const value = profile[key];
+    if (typeof value === "number") {
+      return Number.isFinite(value) && value > 0;
+    }
+    return Boolean(value);
+  });
+}
 
 const REQUIRED_PROFILE_FIELDS: (keyof ExtraProfile)[] = [
   "sex",
@@ -57,10 +83,40 @@ const SessionContext = createContext<SessionState | undefined>(undefined);
 
 const profileKey = (uid: string) => `cc_profile_${uid}`;
 
+type StoredProfile = ExtraProfile & {
+  // compatibilidad con datos antiguos
+  weight?: number;
+  height?: number;
+};
+
+function normalizeProfile(raw: StoredProfile | null | undefined): ExtraProfile {
+  if (!raw) return {};
+
+  const profile: ExtraProfile = { ...raw };
+
+  if (profile.weightKg === undefined && typeof raw.weight === "number") {
+    profile.weightKg = raw.weight;
+  }
+
+  if (profile.heightCm === undefined && typeof raw.height === "number") {
+    profile.heightCm = raw.height;
+  }
+
+  if (profile.macros) {
+    profile.macros = {
+      carbPct: Number(profile.macros.carbPct ?? 0),
+      protPct: Number(profile.macros.protPct ?? 0),
+      fatPct: Number(profile.macros.fatPct ?? 0),
+    };
+  }
+
+  return profile;
+}
+
 function loadProfile(uid: string): ExtraProfile {
   try {
     const raw = localStorage.getItem(profileKey(uid));
-    return raw ? JSON.parse(raw) : {};
+    return raw ? normalizeProfile(JSON.parse(raw)) : {};
   } catch {
     return {};
   }
@@ -135,7 +191,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       const previous = loadProfile(cred.user.uid);
       const base: ExtraProfile = { name, username };
-      const merged = { ...previous, ...base };
+      const merged = normalizeProfile({ ...previous, ...base });
       saveProfile(cred.user.uid, merged);
 
       const resolvedName = cred.user.displayName || merged.name || merged.username || "";
@@ -156,7 +212,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     logout: () => { authApi.signOut(); },
     updateProfile: (data) => {
       if (!user) return;
-      const merged = { ...loadProfile(user.id), ...data };
+      const merged = normalizeProfile({ ...loadProfile(user.id), ...data });
       saveProfile(user.id, merged);
       setUser({ ...user, ...merged });
       setProfileComplete(isProfileComplete(merged));
