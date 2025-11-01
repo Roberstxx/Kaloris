@@ -1,4 +1,9 @@
 // src/pages/Settings.tsx
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Home, History, Settings as SettingsIcon, Edit, X } from "lucide-react"; // Iconos añadidos
+import { useSession } from "../context/SessionContext";
+import { ActivityLevel, Sex } from "../types";
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Home, History, Settings as SettingsIcon, Edit, X } from 'lucide-react'; // Iconos añadidos
@@ -38,6 +43,57 @@ const resolveMacros = (macros?: { carbPct: number; protPct: number; fatPct: numb
   protPct: Number(macros?.protPct ?? 25),
   fatPct: Number(macros?.fatPct ?? 25),
 });
+
+export default function Settings() {
+  const navigate = useNavigate();
+  const { user, isAuthenticated, updateProfile, logout } = useSession();
+
+  // --- NUEVO: Estado de Edición ---
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) navigate("/login");
+  }, [isAuthenticated, navigate]);
+
+  const profileSnapshot = useMemo(() => {
+    return {
+      name: user?.name ?? "",
+      email: user?.email ?? user?.username ?? "",
+      sex: (user?.sex as Sex) ?? "male",
+      age: Number(user?.age ?? 21),
+      heightCm: Number(user?.heightCm ?? 170),
+      weightKg: Number(user?.weightKg ?? 70),
+      activity: normalizeActivity(user?.activity),
+      tdee: Number(user?.tdee ?? 2000),
+      macros: resolveMacros(user?.macros),
+    };
+  }, [user]);
+
+  const [sex, setSex] = useState<Sex>(profileSnapshot.sex);
+  const [age, setAge] = useState<number>(profileSnapshot.age);
+  const [heightCm, setHeightCm] = useState<number>(profileSnapshot.heightCm);
+  const [weightKg, setWeightKg] = useState<number>(profileSnapshot.weightKg);
+  const [activity, setActivity] = useState<ActivityLevel>(profileSnapshot.activity);
+  const [targetKcal, setTargetKcal] = useState<number>(profileSnapshot.tdee);
+  const [carbPct, setCarbPct] = useState<number>(profileSnapshot.macros.carbPct);
+  const [protPct, setProtPct] = useState<number>(profileSnapshot.macros.protPct);
+  const [fatPct, setFatPct] = useState<number>(profileSnapshot.macros.fatPct);
+
+  useEffect(() => {
+    setSex(profileSnapshot.sex);
+    setAge(profileSnapshot.age);
+    setHeightCm(profileSnapshot.heightCm);
+    setWeightKg(profileSnapshot.weightKg);
+    setActivity(profileSnapshot.activity);
+    setTargetKcal(profileSnapshot.tdee);
+    setCarbPct(profileSnapshot.macros.carbPct);
+    setProtPct(profileSnapshot.macros.protPct);
+    setFatPct(profileSnapshot.macros.fatPct);
+  }, [profileSnapshot]);
+
+  const pctTotal = carbPct + protPct + fatPct;
+
+  // ---- Cálculos (sin cambios) ----
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -109,6 +165,11 @@ export default function Settings() {
       alert('El reparto de macros debe sumar 100%.');
       return;
     }
+  const handleSave = () => {
+    if (pctTotal !== 100) {
+      alert('El reparto de macros debe sumar 100%.');
+      return;
+    }
     const next = {
       sex,
       age,
@@ -126,6 +187,25 @@ export default function Settings() {
 
   const handleCancelEdit = () => {
     // Revertir todos los estados al valor original del 'user'
+    setSex(profileSnapshot.sex);
+    setAge(profileSnapshot.age);
+    setHeightCm(profileSnapshot.heightCm);
+    setWeightKg(profileSnapshot.weightKg);
+    setActivity(profileSnapshot.activity);
+    setTargetKcal(profileSnapshot.tdee);
+    setCarbPct(profileSnapshot.macros.carbPct);
+    setProtPct(profileSnapshot.macros.protPct);
+    setFatPct(profileSnapshot.macros.fatPct);
+
+    setIsEditing(false); // Ocultar campos de edición
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  if (!user) return null;
     setSex(user.sex ?? 'male');
     setAge(Number(user.age ?? 21));
     setHeightCm(Number(user.heightCm ?? 170));
@@ -191,11 +271,11 @@ export default function Settings() {
             <div style={rowsGrid}>
               <div>
                 <span className="label">Nombre</span>
-                <div className="input" style={readOnlyInput}>{name}</div>
+                <div className="input" style={readOnlyInput}>{profileSnapshot.name}</div>
               </div>
               <div>
                 <span className="label">Usuario</span>
-                <div className="input" style={readOnlyInput}>{email}</div>
+                <div className="input" style={readOnlyInput}>{profileSnapshot.email}</div>
               </div>
             </div>
 
@@ -381,7 +461,7 @@ export default function Settings() {
 
             {/* --- BOTONES (Condicional) --- */}
             {isEditing && (
-              <div style={{ display: 'flex', gap: '.75rem', marginTop: '1.ms 5rem', flexWrap: 'wrap', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+              <div style={{ display: 'flex', gap: '.75rem', marginTop: '1.5rem', flexWrap: 'wrap', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
                 <button className="btn btn-primary" onClick={handleSave}>Guardar cambios</button>
                 <button className="btn btn-secondary" onClick={handleCancelEdit}>
                   <X size={16} style={{marginRight: '0.25rem'}} />

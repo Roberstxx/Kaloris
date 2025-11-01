@@ -76,7 +76,7 @@ const Dashboard: React.FC = () => {
 
   // ===== Acciones =====
   const handleAddFood = (food: FoodItem) => {
-    addEntry({ foodId: food.id, kcalPerUnit: (food as any).kcalPerServing, units: 1 });
+    addEntry({ foodId: food.id, kcalPerUnit: food.kcalPerServing, units: 1 });
   };
 
   const handleAddManual = () => {
