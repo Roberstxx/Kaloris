@@ -84,7 +84,7 @@ export default function Login() {
       <main className={styles.formPanel}>
         <div className={styles.card}>
           {/* Logo real */}
-          <img src="/src/assets/LogoK.png" alt="Logo" className={styles.logoImg} />
+          <img src="/image/LogoK.png" alt="Logo" className={styles.logoImg} />
 
           <header className={styles.header}>
             <h1>Bienvenido</h1>
