@@ -27,38 +27,42 @@
   font-size: 0.85rem;
 }
 
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 0.25rem;
-  color: var(--text-tertiary);
-  font-size: 0.75rem;
+.tooltip {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  color: var(--text);
+  min-width: 160px;
+  box-shadow: var(--shadow-sm);
 }
 
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.tooltip h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
 }
 
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  display: inline-block;
+.tooltipValue {
+  font-weight: 600;
+  margin: 0;
 }
 
-.dotSuccess {
-  background: hsl(158, 60%, 45%);
+.tooltipDelta {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
-.dotWarning {
-  background: hsl(28, 90%, 55%);
+.deltaPositive {
+  color: hsl(0, 75%, 55%);
 }
 
-.dotDanger {
-  background: hsl(0, 75%, 55%);
+.deltaNegative {
+  color: hsl(158, 60%, 45%);
+}
+
+.deltaNeutral {
+  color: var(--text-secondary);
 }
 
 @media (max-width: 640px) {
