@@ -181,18 +181,16 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setUser(null);
       setProfileComplete(false);
       setAuthUser(null);
-      return undefined;
+      return;
     }
 
     const unsub = authApi.onChange((fbUser) => {
       setAuthUser(fbUser);
     });
 
-    return () => unsub();
-  }, [showConfigNotice]);
-
-
-    return () => unsub();
+    return () => {
+      unsub();
+    };
   }, [showConfigNotice]);
 
   useEffect(() => {
@@ -307,7 +305,6 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const previous = loadLocalProfile(cred.user.uid);
         const base: ExtraProfile = { name, username };
         const merged = mergeProfile(previous, base);
-        const merged = normalizeProfile({ ...previous, ...base });
 
         if (db) {
           await setDoc(doc(db, "profiles", cred.user.uid), merged, { merge: true });
@@ -336,7 +333,6 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       updateProfile: (data) => {
         if (!user) return;
         const merged = mergeProfile(loadLocalProfile(user.id), data);
-        const merged = normalizeProfile({ ...loadLocalProfile(user.id), ...data });
 
         if (db) {
           void setDoc(doc(db, "profiles", user.id), merged, { merge: true });
@@ -344,7 +340,6 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         saveLocalProfile(user.id, merged);
         setUser((prev) => (prev ? { ...prev, ...merged } : prev));
-        setUser({ ...user, ...merged });
         setProfileComplete(isProfileComplete(merged));
       },
       updatePreferences: (prefs) => {
