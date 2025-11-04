@@ -9,10 +9,19 @@ import React, {
 } from 'react';
 
 import { DailyLog, IntakeEntry } from '../types';
-import { useLocalStorage } from '../hooks/useLocalStorage';
 import { getTodayISO } from '../utils/date';
 import { classifyMealByTime, normalizeConsumedAt } from '../utils/meals';
 import { useSession } from './SessionContext';
+import { db } from '@/lib/firebase';
+import {
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  query,
+  setDoc,
+  where,
+} from 'firebase/firestore';
 
 interface IntakeContextType {
   todayEntries: IntakeEntry[];
@@ -30,14 +39,36 @@ const IntakeContext = createContext<IntakeContextType | undefined>(undefined);
 const LOGS_KEY = 'cc_logs_v1';
 const CHECK_INTERVAL_MS = 30 * 1000; // valida cambio de día en vivo
 
+const logDocId = (userId: string, dateISO: string) => `${userId}_${dateISO}`;
+
+function readLocalLogs(): DailyLog[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(LOGS_KEY);
+    return raw ? (JSON.parse(raw) as DailyLog[]) : [];
+  } catch (error) {
+    console.error('No se pudieron leer los registros locales', error);
+    return [];
+  }
+}
+
+function writeLocalLogs(logs: DailyLog[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(LOGS_KEY, JSON.stringify(logs));
+  } catch (error) {
+    console.error('No se pudieron guardar los registros locales', error);
+  }
+}
+
 export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useSession();
 
   // Día activo controlado para evitar inconsistencias de fecha
   const [currentDateISO, setCurrentDateISO] = useState<string>(() => getTodayISO());
 
-  // Persistencia de todos los logs (array) en localStorage
-  const [logs, setLogs] = useLocalStorage<DailyLog[]>(LOGS_KEY, []);
+  // Persistencia en memoria, sincronizada con Firestore o localStorage
+  const [logs, setLogs] = useState<DailyLog[]>(() => readLocalLogs());
 
   // Estado derivado del día activo
   const [todayEntries, setTodayEntries] = useState<IntakeEntry[]>([]);
@@ -54,12 +85,13 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setTodayTotal(recalculatedTotal);
 
       if (recalculatedTotal !== todayLog.totalKcal) {
-        const updatedLogs = logs.map((log) =>
-          log.userId === user.id && log.dateISO === dateISO
-            ? { ...log, totalKcal: recalculatedTotal }
-            : log
+        setLogs((prev) =>
+          prev.map((log) =>
+            log.userId === user.id && log.dateISO === dateISO
+              ? { ...log, totalKcal: recalculatedTotal }
+              : log
+          )
         );
-        setLogs(updatedLogs);
       }
     } else {
       setTodayEntries([]);
@@ -80,11 +112,20 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       totalKcal: total,
     };
 
-    // reemplaza el log del (user, currentDateISO)
-    const updated = logs.filter(
-      (l) => !(l.userId === user.id && l.dateISO === currentDateISO)
-    );
-    setLogs([...updated, newLog]);
+    setLogs((prev) => {
+      const updated = prev.filter(
+        (l) => !(l.userId === user.id && l.dateISO === currentDateISO)
+      );
+      return [...updated, newLog];
+    });
+
+    if (db) {
+      void setDoc(doc(db, 'dailyLogs', logDocId(user.id, currentDateISO)), newLog, { merge: true }).catch(
+        (error) => {
+          console.error('No se pudo guardar el log en Firestore', error);
+        }
+      );
+    }
 
     setTodayTotal(total);
   };
@@ -95,7 +136,7 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (today !== currentDateISO) {
       setCurrentDateISO(today);
       // cargar datos del nuevo día
-      // (espera al siguiente efecto que depende de currentDateISO para cargar del LS)
+      // (espera al siguiente efecto que depende de currentDateISO para cargar del estado)
     }
   };
 
@@ -126,6 +167,76 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return () => document.removeEventListener('visibilitychange', onVis);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Sincroniza logs con localStorage para fallback/offline
+  useEffect(() => {
+    writeLocalLogs(logs);
+  }, [logs]);
+
+  // Escucha cambios en Firestore para el usuario autenticado
+  useEffect(() => {
+    if (!user) {
+      setLogs(readLocalLogs());
+      return;
+    }
+
+    if (!db) {
+      setLogs(readLocalLogs().filter((log) => log.userId === user.id));
+      return;
+    }
+
+    const logsRef = collection(db, 'dailyLogs');
+    const logsQuery = query(logsRef, where('userId', '==', user.id));
+    let unsub: (() => void) | undefined;
+
+    (async () => {
+      try {
+        const snapshot = await getDocs(logsQuery);
+        if (snapshot.empty) {
+          const localLogs = readLocalLogs().filter((log) => log.userId === user.id);
+          if (localLogs.length > 0) {
+            await Promise.all(
+              localLogs.map((log) =>
+                setDoc(doc(db, 'dailyLogs', logDocId(user.id, log.dateISO)), log, {
+                  merge: true,
+                })
+              )
+            );
+          }
+        }
+      } catch (error) {
+        console.error('No se pudieron preparar los logs remotos', error);
+      }
+
+      unsub = onSnapshot(
+        logsQuery,
+        (snapshot) => {
+          const remoteLogs: DailyLog[] = snapshot.docs.map((docSnap) => {
+            const data = docSnap.data() as DailyLog;
+            const entries = Array.isArray(data.entries) ? data.entries : [];
+            const totalKcal =
+              typeof data.totalKcal === 'number'
+                ? data.totalKcal
+                : entries.reduce((sum, e) => sum + e.kcalPerUnit * e.units, 0);
+            return {
+              userId: data.userId ?? user.id,
+              dateISO: data.dateISO,
+              entries,
+              totalKcal,
+            };
+          });
+          setLogs(remoteLogs);
+        },
+        (error) => {
+          console.error('Error al escuchar los logs diarios', error);
+        }
+      );
+    })();
+
+    return () => {
+      unsub?.();
+    };
+  }, [user?.id]);
 
   // === API ===
 
@@ -205,7 +316,9 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 };
 
 export const useIntake = () => {
-  const ctx = useContext(IntakeContext);
-  if (!ctx) throw new Error('useIntake must be used within IntakeProvider');
-  return ctx;
+  const context = useContext(IntakeContext);
+  if (!context) {
+    throw new Error('useIntake debe usarse dentro de un IntakeProvider');
+  }
+  return context;
 };

@@ -11,6 +11,7 @@ import {
   signInWithPopup,
   User as FirebaseUser,
 } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 const fallbackFirebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyDezSR_1PKfTGGF4zEFl192oqbQDqJrERA",
@@ -78,6 +79,7 @@ export const firebaseConfigIssues = {
 
 const app = firebaseConfigIssues.missing.length === 0 ? initializeApp(firebaseConfig) : undefined;
 export const auth = app ? getAuth(app) : undefined;
+export const db = app ? getFirestore(app) : undefined;
 export const googleProvider = new GoogleAuthProvider();
 
 export const authApi = {
