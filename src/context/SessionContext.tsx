@@ -52,6 +52,7 @@ export type AppUser = {
 type SessionState = {
   user: AppUser | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   profileComplete: boolean;
   needsProfile: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
@@ -112,7 +113,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const showConfigNotice = missingKeys.length > 0;
 
   const [user, setUser] = useState<AppUser | null>(null);
-  const [ready, setReady] = useState<boolean>(!showConfigNotice);
+  const [ready, setReady] = useState<boolean>(false);
   const [profileComplete, setProfileComplete] = useState(false);
 
   useEffect(() => {
@@ -153,6 +154,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     () => ({
       user,
       isAuthenticated: !!user,
+      isLoading: !ready,
       profileComplete,
       needsProfile: !!user && !profileComplete,
       login: async (email, password) => {
@@ -197,7 +199,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setProfileComplete(isProfileComplete(merged));
       },
     }),
-    [user, profileComplete]
+    [user, profileComplete, ready]
   );
 
   const configNotice = useMemo(() => {
@@ -226,7 +228,18 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   return (
     <SessionContext.Provider value={value}>
-      {showConfigNotice ? configNotice : ready ? children : null}
+      {showConfigNotice
+        ? configNotice
+        : ready
+          ? children
+          : (
+            <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-200">
+              <div className="flex flex-col items-center gap-3">
+                <span className="inline-flex h-8 w-8 animate-spin rounded-full border-2 border-slate-600 border-t-white" aria-hidden="true" />
+                <p className="text-sm font-medium">Cargando tu sesión…</p>
+              </div>
+            </div>
+            )}
     </SessionContext.Provider>
   );
 };
