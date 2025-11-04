@@ -6,9 +6,9 @@ import { getAuthErrorMessage } from "@/utils/firebaseErrors";
 
 const carouselImages = [
   // 🔁 Sustituye por tus rutas reales
-  "/src/assets/login-1.png",
-  "/src/assets/login-2.jpg",
-  "/src/assets/login-3.jpg",
+  "/image/login-1.png",
+  "/image/login-2.jpg",
+  "/image/login-3.jpg",
 ];
 
 export default function Login() {
@@ -84,7 +84,7 @@ export default function Login() {
       <main className={styles.formPanel}>
         <div className={styles.card}>
           {/* Logo real */}
-          <img src="/src/assets/LogoK.png" alt="Logo" className={styles.logoImg} />
+          <img src="/image/LogoK.png" alt="Logo" className={styles.logoImg} />
 
           <header className={styles.header}>
             <h1>Bienvenido</h1>

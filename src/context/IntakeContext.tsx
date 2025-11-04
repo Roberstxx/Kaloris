@@ -10,6 +10,8 @@ import React, {
 
 import { DailyLog, IntakeEntry, WeeklyStatsSummary } from '../types';
 import { getLastNDays, getTodayISO } from '../utils/date';
+import { DailyLog, IntakeEntry } from '../types';
+import { getTodayISO } from '../utils/date';
 import { classifyMealByTime, normalizeConsumedAt } from '../utils/meals';
 import { useSession } from './SessionContext';
 import { db } from '@/lib/firebase';

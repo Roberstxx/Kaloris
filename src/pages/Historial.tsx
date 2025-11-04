@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSession } from '../context/SessionContext';
 import { useIntake } from '../context/IntakeContext';
@@ -15,6 +16,7 @@ const Historial = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSession();
   const { getLogsForDateRange, weeklyStats } = useIntake();
+  const { getLogsForDateRange } = useIntake();
 
   useEffect(() => {
     if (!isAuthenticated) navigate('/login');
@@ -28,6 +30,38 @@ const Historial = () => {
   const targetKcal = user.tdee || 2000;
 
   const summary = weeklyStats;
+  const summary = useMemo(() => {
+    if (!logs.length) {
+      return {
+        totalKcal: 0,
+        averageKcal: 0,
+        daysWithinTarget: 0,
+        compliance: 0,
+        bestDay: undefined,
+        trend: 0,
+      } as const;
+    }
+
+    const totalKcal = logs.reduce((sum, log) => sum + log.totalKcal, 0);
+    const averageKcal = totalKcal / logs.length;
+    const withinRangeThreshold = targetKcal * 0.05;
+    const daysWithinTarget = logs.filter(log => Math.abs(log.totalKcal - targetKcal) <= withinRangeThreshold).length;
+    const bestDay = logs.reduce((best, log) => {
+      const bestDiff = Math.abs(best.totalKcal - targetKcal);
+      const currentDiff = Math.abs(log.totalKcal - targetKcal);
+      return currentDiff < bestDiff ? log : best;
+    }, logs[0]!);
+    const trend = logs.length >= 2 ? logs[logs.length - 1].totalKcal - logs[logs.length - 2].totalKcal : 0;
+
+    return {
+      totalKcal,
+      averageKcal,
+      daysWithinTarget,
+      compliance: (daysWithinTarget / logs.length) * 100,
+      bestDay,
+      trend,
+    } as const;
+  }, [logs, targetKcal]);
 
   const getDifferenceLabel = (difference: number) => {
     if (difference > 0) return `+${Math.abs(Math.round(difference))} kcal sobre meta`;
