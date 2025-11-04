@@ -21,6 +21,9 @@ service cloud.firestore {
       allow update: if isOwner(resource.data.userId) &&
         (!('userId' in request.resource.data) || request.resource.data.userId == resource.data.userId);
       allow delete: if isOwner(resource.data.userId);
+    // Registros diarios agrupados por usuario
+    match /dailyLogs/{userId}/{logId} {
+      allow read, write: if isOwner(userId);
     }
 
     // Ejemplo de diario bajo el usuario: users/{uid}/logs/{logId}
