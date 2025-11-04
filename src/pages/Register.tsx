@@ -116,6 +116,7 @@ export default function Register() {
                 placeholder="Tu nombre"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
                 required
               />
             </div>
@@ -129,6 +130,7 @@ export default function Register() {
                 placeholder="usuario123"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
               />
             </div>
 
@@ -141,6 +143,7 @@ export default function Register() {
                 placeholder="tucorreo@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
                 required
               />
             </div>
@@ -153,6 +156,7 @@ export default function Register() {
                 className={styles.input}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
                 required
               />
               <button
@@ -177,6 +181,7 @@ export default function Register() {
                 className={styles.input}
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
+                autoComplete="new-password"
                 required
               />
               <button

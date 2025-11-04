@@ -13,8 +13,8 @@ import Historial from "./pages/Historial";
 import Settings from "./pages/Settings";
 
 const App = () => (
-  <ThemeProvider>
-    <SessionProvider>
+  <SessionProvider>
+    <ThemeProvider>
       <IntakeProvider>
         <BrowserRouter>
           <Routes>
@@ -29,8 +29,8 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </IntakeProvider>
-    </SessionProvider>
-  </ThemeProvider>
+    </ThemeProvider>
+  </SessionProvider>
 );
 
 export default App;

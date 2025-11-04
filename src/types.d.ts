@@ -20,6 +20,7 @@ export interface User {
     protPct: number;
     fatPct: number;
   };
+  preferences?: UserPreferences;
 }
 
 export interface FoodItem {
@@ -50,6 +51,12 @@ export interface DailyLog {
   totalKcal: number;
 }
 
+export type UserPreferences = {
+  theme?: 'light' | 'dark';
+  locale?: string;
+  notifications?: boolean;
+};
+
 export interface SessionState {
   user: User | null;
   isAuthenticated: boolean;
@@ -59,6 +66,7 @@ export interface SessionState {
   logout: () => void;
   register: (userData: Partial<User> & { password: string }) => Promise<boolean>;
   updateProfile: (userData: Partial<User>) => void;
+  updatePreferences: (preferences: Partial<UserPreferences>) => void;
 }
 
 export interface ThemeState {
@@ -67,3 +75,18 @@ export interface ThemeState {
 }
 
 export type ProgressStatus = "ok" | "near" | "exceeded";
+
+export interface WeeklyStatsSummary {
+  periodStart: string;
+  periodEnd: string;
+  totalKcal: number;
+  averageKcal: number;
+  daysWithinTarget: number;
+  compliance: number;
+  trend: number;
+  bestDay?: {
+    dateISO: string;
+    totalKcal: number;
+  };
+  updatedAt: string;
+}

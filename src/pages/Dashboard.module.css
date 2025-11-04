@@ -74,11 +74,12 @@
   position: sticky;
   top: 88px;
   align-self: start;
-  height: calc(100vh - 128px);
   display: flex;
   flex-direction: column;
   gap: 16px;
-  overflow: hidden;
+  max-height: calc(100vh - 128px);
+  overflow-y: auto;
+  padding-right: 0.25rem;
 }
 
 /* Columna Central: Sin sticky, crece naturalmente */
@@ -91,11 +92,12 @@
   position: sticky;
   top: 88px;
   align-self: start;
-  height: calc(100vh - 128px);
   display: flex;
   flex-direction: column;
   gap: 16px;
-  overflow: hidden;
+  max-height: calc(100vh - 128px);
+  overflow-y: auto;
+  padding-right: 0.25rem;
 }
 
 /* --- Widgets Internos --- */
@@ -300,6 +302,11 @@
   .centerCol { grid-area: center; }
   .rightCol  { grid-area: right; position: static; height: auto; overflow: visible; }
 
+  .leftCol,
+  .rightCol {
+    padding-right: 0;
+  }
+
   /* Si tenías límites de altura en widgets, libéralos en tablet */
   .centerCol .widget,
   .leftCol .widget,
@@ -321,6 +328,7 @@
     position: static;
     height: auto;
     overflow: visible;
+    padding-right: 0;
   }
 
   /* Header flexible en móvil */
