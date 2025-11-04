@@ -1,22 +1,24 @@
-import React, { useEffect } from 'react';
 import React, { useEffect, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useSession } from '../context/SessionContext';
-import { useIntake } from '../context/IntakeContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { Home, History, Settings, Flame, Target, TrendingUp, CalendarDays } from 'lucide-react';
+
 import { HistoryChart } from '../components/HistoryChart';
 import { HistoryScatterChart } from '../components/HistoryScatterChart';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { Home, History, Settings, Flame, Target, TrendingUp, CalendarDays } from 'lucide-react';
+import { useIntake } from '../context/IntakeContext';
+import { useSession } from '../context/SessionContext';
+import type { WeeklyStatsSummary } from '../types';
 import { getLastNDays, getDateLabel } from '../utils/date';
 import { formatKcal } from '../utils/format';
 import styles from './Dashboard.module.css';
 import historyStyles from './Historial.module.css';
 
+type SummaryMetrics = Pick<WeeklyStatsSummary, 'totalKcal' | 'averageKcal' | 'daysWithinTarget' | 'compliance' | 'bestDay' | 'trend'>;
+
 const Historial = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSession();
   const { getLogsForDateRange, weeklyStats } = useIntake();
-  const { getLogsForDateRange } = useIntake();
 
   useEffect(() => {
     if (!isAuthenticated) navigate('/login');
@@ -29,8 +31,19 @@ const Historial = () => {
 
   const targetKcal = user.tdee || 2000;
 
-  const summary = weeklyStats;
-  const summary = useMemo(() => {
+  const summary = useMemo<SummaryMetrics>(() => {
+    const hasRemoteSummary = Boolean(weeklyStats?.updatedAt);
+    if (hasRemoteSummary) {
+      return {
+        totalKcal: weeklyStats.totalKcal,
+        averageKcal: weeklyStats.averageKcal,
+        daysWithinTarget: weeklyStats.daysWithinTarget,
+        compliance: weeklyStats.compliance,
+        bestDay: weeklyStats.bestDay,
+        trend: weeklyStats.trend,
+      };
+    }
+
     if (!logs.length) {
       return {
         totalKcal: 0,
@@ -39,13 +52,13 @@ const Historial = () => {
         compliance: 0,
         bestDay: undefined,
         trend: 0,
-      } as const;
+      };
     }
 
     const totalKcal = logs.reduce((sum, log) => sum + log.totalKcal, 0);
     const averageKcal = totalKcal / logs.length;
     const withinRangeThreshold = targetKcal * 0.05;
-    const daysWithinTarget = logs.filter(log => Math.abs(log.totalKcal - targetKcal) <= withinRangeThreshold).length;
+    const daysWithinTarget = logs.filter((log) => Math.abs(log.totalKcal - targetKcal) <= withinRangeThreshold).length;
     const bestDay = logs.reduce((best, log) => {
       const bestDiff = Math.abs(best.totalKcal - targetKcal);
       const currentDiff = Math.abs(log.totalKcal - targetKcal);
@@ -58,10 +71,10 @@ const Historial = () => {
       averageKcal,
       daysWithinTarget,
       compliance: (daysWithinTarget / logs.length) * 100,
-      bestDay,
+      bestDay: { dateISO: bestDay.dateISO, totalKcal: bestDay.totalKcal },
       trend,
-    } as const;
-  }, [logs, targetKcal]);
+    };
+  }, [logs, targetKcal, weeklyStats]);
 
   const getDifferenceLabel = (difference: number) => {
     if (difference > 0) return `+${Math.abs(Math.round(difference))} kcal sobre meta`;
@@ -164,7 +177,7 @@ const Historial = () => {
 
           {logs.length ? (
             <div className={historyStyles.timeline}>
-              {logs.map(log => {
+              {logs.map((log) => {
                 const difference = log.totalKcal - targetKcal;
                 return (
                   <div key={log.dateISO} className={historyStyles.timelineItem}>
