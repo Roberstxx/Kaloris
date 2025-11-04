@@ -1,6 +1,8 @@
 // src/context/SessionContext.tsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { authApi, firebaseConfigIssues } from "@/lib/firebase";
+import { authApi, firebaseConfigIssues, db } from "@/lib/firebase";
+import type { User as FirebaseUser } from "firebase/auth";
+import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
 
 // Extra de perfil que NO guarda Firebase (lo persistimos por usuario)
 type MacroSplit = {
@@ -52,6 +54,7 @@ export type AppUser = {
 type SessionState = {
   user: AppUser | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   profileComplete: boolean;
   needsProfile: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
@@ -94,7 +97,7 @@ function normalizeProfile(raw: StoredProfile | null | undefined): ExtraProfile {
   return profile;
 }
 
-function loadProfile(uid: string): ExtraProfile {
+function loadLocalProfile(uid: string): ExtraProfile {
   try {
     const raw = localStorage.getItem(profileKey(uid));
     return raw ? normalizeProfile(JSON.parse(raw)) : {};
@@ -103,8 +106,12 @@ function loadProfile(uid: string): ExtraProfile {
   }
 }
 
-function saveProfile(uid: string, p: ExtraProfile) {
+function saveLocalProfile(uid: string, p: ExtraProfile) {
   localStorage.setItem(profileKey(uid), JSON.stringify(p));
+}
+
+function hasProfileData(profile: ExtraProfile) {
+  return Object.keys(profile).length > 0;
 }
 
 export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -112,47 +119,121 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const showConfigNotice = missingKeys.length > 0;
 
   const [user, setUser] = useState<AppUser | null>(null);
-  const [ready, setReady] = useState<boolean>(!showConfigNotice);
+  const [authUser, setAuthUser] = useState<FirebaseUser | null>(null);
+  const [ready, setReady] = useState<boolean>(false);
   const [profileComplete, setProfileComplete] = useState(false);
 
   useEffect(() => {
     if (showConfigNotice) {
       setUser(null);
       setProfileComplete(false);
+      setAuthUser(null);
       return undefined;
     }
 
     const unsub = authApi.onChange((fbUser) => {
-      if (!fbUser) {
-        setUser(null);
-        setProfileComplete(false);
-        setReady(true);
-        return;
-      }
-
-      const extra = loadProfile(fbUser.uid);
-      setProfileComplete(isProfileComplete(extra));
-
-      const name = fbUser.displayName || extra.name || extra.username || "";
-      const username = extra.username || (fbUser.email ? fbUser.email.split("@")[0] : "");
-
-      setUser({
-        id: fbUser.uid,
-        name,
-        username,
-        email: fbUser.email,
-        ...extra,
-      });
-      setReady(true);
+      setAuthUser(fbUser);
     });
 
     return () => unsub();
   }, [showConfigNotice]);
 
+  useEffect(() => {
+    if (!authUser) {
+      setUser(null);
+      setProfileComplete(false);
+      setReady(true);
+      return undefined;
+    }
+
+    if (!db) {
+      const extra = loadLocalProfile(authUser.uid);
+      setProfileComplete(isProfileComplete(extra));
+
+      const name = authUser.displayName || extra.name || extra.username || "";
+      const username = extra.username || (authUser.email ? authUser.email.split("@")[0] : "");
+
+      setUser({
+        id: authUser.uid,
+        name,
+        username,
+        email: authUser.email,
+        ...extra,
+      });
+      setReady(true);
+      return undefined;
+    }
+
+    setReady(false);
+    const profileRef = doc(db, "profiles", authUser.uid);
+    let unsubProfile: (() => void) | undefined;
+
+    (async () => {
+      try {
+        const snapshot = await getDoc(profileRef);
+        if (!snapshot.exists()) {
+          const local = loadLocalProfile(authUser.uid);
+          if (hasProfileData(local)) {
+            await setDoc(profileRef, local, { merge: true });
+          }
+        }
+      } catch (error) {
+        console.error("Error preparando el perfil de Firestore", error);
+      }
+
+      unsubProfile = onSnapshot(
+        profileRef,
+        (snap) => {
+          const extra = snap.exists()
+            ? normalizeProfile(snap.data() as StoredProfile)
+            : {};
+
+          saveLocalProfile(authUser.uid, extra);
+          setProfileComplete(isProfileComplete(extra));
+
+          const name = authUser.displayName || extra.name || extra.username || "";
+          const username = extra.username || (authUser.email ? authUser.email.split("@")[0] : "");
+
+          setUser({
+            id: authUser.uid,
+            name,
+            username,
+            email: authUser.email,
+            ...extra,
+          });
+          setReady(true);
+        },
+        (error) => {
+          console.error("Error al escuchar el perfil de Firestore", error);
+          const fallback = loadLocalProfile(authUser.uid);
+          setProfileComplete(isProfileComplete(fallback));
+
+          const name = authUser.displayName || fallback.name || fallback.username || "";
+          const username =
+            fallback.username || (authUser.email ? authUser.email.split("@")[0] : "");
+
+          setUser({
+            id: authUser.uid,
+            name,
+            username,
+            email: authUser.email,
+            ...fallback,
+          });
+          setReady(true);
+        }
+      );
+    })();
+
+    return () => {
+      unsubProfile?.();
+    };
+  }, [authUser]);
+
   const value = useMemo<SessionState>(
     () => ({
       user,
       isAuthenticated: !!user,
+      isLoading: !ready,
       profileComplete,
       needsProfile: !!user && !profileComplete,
       login: async (email, password) => {
@@ -166,10 +247,15 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (!email) throw new Error("El correo es obligatorio.");
         const cred = await authApi.signUpEmail(email, password, name || username);
 
-        const previous = loadProfile(cred.user.uid);
+        const previous = loadLocalProfile(cred.user.uid);
         const base: ExtraProfile = { name, username };
         const merged = normalizeProfile({ ...previous, ...base });
-        saveProfile(cred.user.uid, merged);
+
+        if (db) {
+          await setDoc(doc(db, "profiles", cred.user.uid), merged, { merge: true });
+        }
+
+        saveLocalProfile(cred.user.uid, merged);
 
         const resolvedName = cred.user.displayName || merged.name || merged.username || "";
         const resolvedUsername = merged.username || (cred.user.email ? cred.user.email.split("@")[0] : "");
@@ -191,13 +277,18 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       },
       updateProfile: (data) => {
         if (!user) return;
-        const merged = normalizeProfile({ ...loadProfile(user.id), ...data });
-        saveProfile(user.id, merged);
+        const merged = normalizeProfile({ ...loadLocalProfile(user.id), ...data });
+
+        if (db) {
+          void setDoc(doc(db, "profiles", user.id), merged, { merge: true });
+        }
+
+        saveLocalProfile(user.id, merged);
         setUser({ ...user, ...merged });
         setProfileComplete(isProfileComplete(merged));
       },
     }),
-    [user, profileComplete]
+    [user, profileComplete, ready]
   );
 
   const configNotice = useMemo(() => {
@@ -226,7 +317,18 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   return (
     <SessionContext.Provider value={value}>
-      {showConfigNotice ? configNotice : ready ? children : null}
+      {showConfigNotice
+        ? configNotice
+        : ready
+          ? children
+          : (
+            <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-200">
+              <div className="flex flex-col items-center gap-3">
+                <span className="inline-flex h-8 w-8 animate-spin rounded-full border-2 border-slate-600 border-t-white" aria-hidden="true" />
+                <p className="text-sm font-medium">Cargando tu sesión…</p>
+              </div>
+            </div>
+            )}
     </SessionContext.Provider>
   );
 };
