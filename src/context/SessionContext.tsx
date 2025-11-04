@@ -11,6 +11,12 @@ type MacroSplit = {
   fatPct: number;
 };
 
+type UserPreferences = {
+  theme?: "light" | "dark";
+  locale?: string;
+  notifications?: boolean;
+};
+
 type ExtraProfile = {
   sex?: "male" | "female";
   age?: number;
@@ -21,6 +27,7 @@ type ExtraProfile = {
   macros?: MacroSplit;
   username?: string; // por compatibilidad con tu UI
   name?: string;
+  preferences?: UserPreferences;
 };
 
 const REQUIRED_PROFILE_FIELDS: (keyof ExtraProfile)[] = [
@@ -61,6 +68,7 @@ type SessionState = {
   register: (data: { name?: string; username?: string; email: string; password: string }) => Promise<boolean>;
   logout: () => void;
   updateProfile: (data: Partial<ExtraProfile>) => void;
+  updatePreferences: (prefs: Partial<UserPreferences>) => void;
 };
 
 const SessionContext = createContext<SessionState | undefined>(undefined);
@@ -72,6 +80,21 @@ type StoredProfile = ExtraProfile & {
   weight?: number;
   height?: number;
 };
+
+function normalizePreferences(raw: UserPreferences | null | undefined): UserPreferences | undefined {
+  if (!raw) return undefined;
+  const prefs: UserPreferences = {};
+  if (raw.theme === "light" || raw.theme === "dark") {
+    prefs.theme = raw.theme;
+  }
+  if (typeof raw.locale === "string" && raw.locale.trim().length > 0) {
+    prefs.locale = raw.locale;
+  }
+  if (typeof raw.notifications === "boolean") {
+    prefs.notifications = raw.notifications;
+  }
+  return Object.keys(prefs).length > 0 ? prefs : undefined;
+}
 
 function normalizeProfile(raw: StoredProfile | null | undefined): ExtraProfile {
   if (!raw) return {};
@@ -94,7 +117,37 @@ function normalizeProfile(raw: StoredProfile | null | undefined): ExtraProfile {
     };
   }
 
+  const prefs = normalizePreferences(raw.preferences);
+  if (prefs) {
+    profile.preferences = prefs;
+  } else {
+    delete profile.preferences;
+  }
+
   return profile;
+}
+
+function mergeProfile(base: ExtraProfile, patch: Partial<ExtraProfile>): ExtraProfile {
+  const merged: StoredProfile = {
+    ...base,
+    ...patch,
+  };
+
+  if (patch.macros) {
+    merged.macros = {
+      ...(base.macros ?? {}),
+      ...patch.macros,
+    } as MacroSplit;
+  }
+
+  if (patch.preferences) {
+    merged.preferences = {
+      ...(base.preferences ?? {}),
+      ...patch.preferences,
+    } as UserPreferences;
+  }
+
+  return normalizeProfile(merged);
 }
 
 function loadLocalProfile(uid: string): ExtraProfile {
@@ -134,6 +187,10 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const unsub = authApi.onChange((fbUser) => {
       setAuthUser(fbUser);
     });
+
+    return () => unsub();
+  }, [showConfigNotice]);
+
 
     return () => unsub();
   }, [showConfigNotice]);
@@ -249,6 +306,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         const previous = loadLocalProfile(cred.user.uid);
         const base: ExtraProfile = { name, username };
+        const merged = mergeProfile(previous, base);
         const merged = normalizeProfile({ ...previous, ...base });
 
         if (db) {
@@ -277,6 +335,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       },
       updateProfile: (data) => {
         if (!user) return;
+        const merged = mergeProfile(loadLocalProfile(user.id), data);
         const merged = normalizeProfile({ ...loadLocalProfile(user.id), ...data });
 
         if (db) {
@@ -284,8 +343,30 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
 
         saveLocalProfile(user.id, merged);
+        setUser((prev) => (prev ? { ...prev, ...merged } : prev));
         setUser({ ...user, ...merged });
         setProfileComplete(isProfileComplete(merged));
+      },
+      updatePreferences: (prefs) => {
+        if (!user) {
+          if (typeof window !== "undefined" && prefs.theme) {
+            window.localStorage.setItem("theme", prefs.theme);
+          }
+          return;
+        }
+
+        const merged = mergeProfile(loadLocalProfile(user.id), { preferences: prefs });
+
+        if (db) {
+          void setDoc(
+            doc(db, "profiles", user.id),
+            { preferences: merged.preferences },
+            { merge: true }
+          );
+        }
+
+        saveLocalProfile(user.id, merged);
+        setUser((prev) => (prev ? { ...prev, preferences: merged.preferences } : prev));
       },
     }),
     [user, profileComplete, ready]

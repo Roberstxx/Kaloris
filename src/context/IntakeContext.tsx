@@ -8,6 +8,8 @@ import React, {
   useState,
 } from 'react';
 
+import { DailyLog, IntakeEntry, WeeklyStatsSummary } from '../types';
+import { getLastNDays, getTodayISO } from '../utils/date';
 import { DailyLog, IntakeEntry } from '../types';
 import { getTodayISO } from '../utils/date';
 import { classifyMealByTime, normalizeConsumedAt } from '../utils/meals';
@@ -22,6 +24,7 @@ import {
   setDoc,
   where,
 } from 'firebase/firestore';
+import { calculateWeeklySummary } from '../utils/stats';
 
 interface IntakeContextType {
   todayEntries: IntakeEntry[];
@@ -32,6 +35,7 @@ interface IntakeContextType {
   resetToday: () => void;
   undoLast: () => void;
   getLogsForDateRange: (dates: string[]) => DailyLog[];
+  weeklyStats: WeeklyStatsSummary;
 }
 
 const IntakeContext = createContext<IntakeContextType | undefined>(undefined);
@@ -40,6 +44,17 @@ const LOGS_KEY = 'cc_logs_v1';
 const CHECK_INTERVAL_MS = 30 * 1000; // valida cambio de día en vivo
 
 const logDocId = (userId: string, dateISO: string) => `${userId}_${dateISO}`;
+
+const defaultWeeklyStats = (dates: string[]): WeeklyStatsSummary => ({
+  periodStart: dates[0] ?? '',
+  periodEnd: dates[dates.length - 1] ?? '',
+  totalKcal: 0,
+  averageKcal: 0,
+  daysWithinTarget: 0,
+  compliance: 0,
+  trend: 0,
+  updatedAt: '',
+});
 
 function readLocalLogs(): DailyLog[] {
   if (typeof window === 'undefined') return [];
@@ -73,6 +88,12 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Estado derivado del día activo
   const [todayEntries, setTodayEntries] = useState<IntakeEntry[]>([]);
   const [todayTotal, setTodayTotal] = useState(0);
+
+  const [weeklyStats, setWeeklyStats] = useState<WeeklyStatsSummary>(() =>
+    defaultWeeklyStats(getLastNDays(7))
+  );
+
+  const lastPersistedWeeklyStats = useRef<string | null>(null);
 
   // Carga las entradas para un dateISO dado (default: currentDateISO)
   const loadForDate = (dateISO: string = currentDateISO) => {
@@ -145,6 +166,7 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (!user) {
       setTodayEntries([]);
       setTodayTotal(0);
+      setWeeklyStats(defaultWeeklyStats(getLastNDays(7)));
       return;
     }
     loadForDate(currentDateISO);
@@ -177,11 +199,19 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (!user) {
       setLogs(readLocalLogs());
+      setWeeklyStats(defaultWeeklyStats(getLastNDays(7)));
       return;
     }
 
     if (!db) {
       setLogs(readLocalLogs().filter((log) => log.userId === user.id));
+      const dates = getLastNDays(7);
+      const summary = calculateWeeklySummary(
+        readLocalLogs().filter((log) => log.userId === user.id),
+        user.tdee ?? 2000,
+        dates
+      );
+      setWeeklyStats({ ...summary, updatedAt: new Date().toISOString() });
       return;
     }
 
@@ -237,6 +267,79 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       unsub?.();
     };
   }, [user?.id]);
+
+  // Recalcula resumen semanal cuando cambian logs, usuario o fecha actual
+  useEffect(() => {
+    const dates = getLastNDays(7);
+    if (!user) {
+      setWeeklyStats(defaultWeeklyStats(dates));
+      return;
+    }
+
+    const userLogs = logs.filter((log) => log.userId === user.id);
+    const summary = calculateWeeklySummary(userLogs, user.tdee ?? 2000, dates);
+    setWeeklyStats((prev) => {
+      const metricsChanged =
+        prev.periodStart !== summary.periodStart ||
+        prev.periodEnd !== summary.periodEnd ||
+        prev.totalKcal !== summary.totalKcal ||
+        prev.averageKcal !== summary.averageKcal ||
+        prev.daysWithinTarget !== summary.daysWithinTarget ||
+        prev.compliance !== summary.compliance ||
+        prev.trend !== summary.trend ||
+        prev.bestDay?.dateISO !== summary.bestDay?.dateISO ||
+        prev.bestDay?.totalKcal !== summary.bestDay?.totalKcal;
+
+      if (!metricsChanged) {
+        return { ...prev, ...summary, updatedAt: prev.updatedAt };
+      }
+
+      return { ...summary, updatedAt: new Date().toISOString() };
+    });
+  }, [logs, user?.id, user?.tdee, currentDateISO]);
+
+  useEffect(() => {
+    if (!db || !user) return;
+    if (!weeklyStats.periodStart || !weeklyStats.periodEnd) return;
+
+    const serialized = JSON.stringify(weeklyStats);
+    if (lastPersistedWeeklyStats.current === serialized) return;
+    lastPersistedWeeklyStats.current = serialized;
+
+    void setDoc(doc(db, 'profiles', user.id, 'stats', 'weekly'), weeklyStats, { merge: true }).catch(
+      (error) => {
+        console.error('No se pudieron guardar las estadísticas semanales', error);
+      }
+    );
+  }, [db, user, weeklyStats]);
+
+  useEffect(() => {
+    lastPersistedWeeklyStats.current = null;
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!db || !user) return;
+    const statsRef = doc(db, 'profiles', user.id, 'stats', 'weekly');
+    const unsubscribe = onSnapshot(
+      statsRef,
+      (snapshot) => {
+        if (!snapshot.exists()) return;
+        const data = snapshot.data() as WeeklyStatsSummary;
+        setWeeklyStats((prev) => {
+          if (data.updatedAt && prev.updatedAt && prev.updatedAt >= data.updatedAt) {
+            return prev;
+          }
+          lastPersistedWeeklyStats.current = JSON.stringify(data);
+          return { ...prev, ...data };
+        });
+      },
+      (error) => {
+        console.error('Error al escuchar las estadísticas semanales', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [db, user?.id]);
 
   // === API ===
 
@@ -308,6 +411,7 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         resetToday,
         undoLast,
         getLogsForDateRange,
+        weeklyStats,
       }}
     >
       {children}

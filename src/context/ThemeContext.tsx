@@ -1,23 +1,53 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { ThemeState } from '../types';
+import { useSession } from './SessionContext';
+
+const STORAGE_KEY = 'theme';
+
+const getSystemTheme = (): 'light' | 'dark' => {
+  if (typeof window === 'undefined') return 'light';
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+const getStoredTheme = (): 'light' | 'dark' | null => {
+  if (typeof window === 'undefined') return null;
+  const saved = window.localStorage.getItem(STORAGE_KEY);
+  return saved === 'light' || saved === 'dark' ? saved : null;
+};
 
 const ThemeContext = createContext<ThemeState | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved === 'light' || saved === 'dark') return saved;
-    
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  });
+  const { user, updatePreferences } = useSession();
+
+  const initialTheme = useMemo<'light' | 'dark'>(() => {
+    const stored = getStoredTheme();
+    if (stored) return stored;
+    return getSystemTheme();
+  }, []);
+
+  const [theme, setTheme] = useState<'light' | 'dark'>(initialTheme);
+
+  useEffect(() => {
+    const preferred = user?.preferences?.theme;
+    if (preferred && preferred !== theme) {
+      setTheme(preferred);
+    }
+  }, [user?.preferences?.theme, theme]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(STORAGE_KEY, theme);
+    }
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    setTheme(prev => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      updatePreferences({ theme: next });
+      return next;
+    });
   };
 
   return (

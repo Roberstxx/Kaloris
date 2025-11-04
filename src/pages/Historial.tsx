@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import React, { useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSession } from '../context/SessionContext';
@@ -14,6 +15,7 @@ import historyStyles from './Historial.module.css';
 const Historial = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSession();
+  const { getLogsForDateRange, weeklyStats } = useIntake();
   const { getLogsForDateRange } = useIntake();
 
   useEffect(() => {
@@ -27,6 +29,7 @@ const Historial = () => {
 
   const targetKcal = user.tdee || 2000;
 
+  const summary = weeklyStats;
   const summary = useMemo(() => {
     if (!logs.length) {
       return {
