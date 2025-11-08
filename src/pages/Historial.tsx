@@ -26,10 +26,7 @@ const Historial = () => {
 
   const dates = getLastNDays(7);
   const logs = getLogsForDateRange(dates);
-
-  if (!user) return null;
-
-  const targetKcal = user.tdee || 2000;
+  const targetKcal = user?.tdee || 2000;
 
   const summary = useMemo<SummaryMetrics>(() => {
     const hasRemoteSummary = Boolean(weeklyStats?.updatedAt);
@@ -75,6 +72,8 @@ const Historial = () => {
       trend,
     };
   }, [logs, targetKcal, weeklyStats]);
+
+  if (!user) return null;
 
   const getDifferenceLabel = (difference: number) => {
     if (difference > 0) return `+${Math.abs(Math.round(difference))} kcal sobre meta`;
