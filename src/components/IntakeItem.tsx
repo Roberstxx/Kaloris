@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Trash2, Plus, Minus } from 'lucide-react';
 import { IntakeEntry } from '../types';
 import { formatKcal } from '../utils/format';
@@ -11,14 +11,18 @@ interface IntakeItemProps {
   onDelete: () => void;
 }
 
-export const IntakeItem: React.FC<IntakeItemProps> = ({ 
-  entry, 
+export const IntakeItem: React.FC<IntakeItemProps> = ({
+  entry,
   foodName,
-  onUpdateUnits, 
-  onDelete 
+  onUpdateUnits,
+  onDelete,
 }) => {
   const [units, setUnits] = useState(entry.units);
   const totalKcal = entry.kcalPerUnit * units;
+
+  useEffect(() => {
+    setUnits(entry.units);
+  }, [entry.units]);
 
   const handleIncrement = () => {
     const newUnits = units + 1;
