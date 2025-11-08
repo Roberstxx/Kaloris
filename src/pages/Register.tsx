@@ -84,8 +84,8 @@ export default function Register() {
         ))}
         <div className={styles.mediaOverlay} />
         <div className={styles.mediaCaption}>
-          <h3>Join us</h3>
-          <p>Start tracking your calories</p>
+          <h3>Kaloris</h3>
+          <p>Convierte cada bocado en tu progreso</p>
         </div>
         <div className={styles.dots}>
           {carouselImages.map((_, i) => (
