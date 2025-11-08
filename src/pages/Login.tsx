@@ -65,8 +65,8 @@ export default function Login() {
         ))}
         <div className={styles.mediaOverlay} />
         <div className={styles.mediaCaption}>
-          <h3>AI Generative</h3>
-          <p>Anything you can Imagine</p>
+          <h3>Kaloris</h3>
+          <p>Convierte cada bocado en tu progreso</p>
         </div>
         <div className={styles.dots}>
           {carouselImages.map((_, i) => (
