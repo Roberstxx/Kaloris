@@ -1,0 +1,277 @@
+.page {
+    max-width: 1000px;
+    margin: 2rem auto 4rem;
+    padding: 0 1rem;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.header h1 {
+    font-size: 2rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Estilos de la Tarjeta de Resumen de Racha */
+.overviewGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    background-color: var(--card-background);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-small);
+    text-align: center;
+}
+
+.card .icon {
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+}
+
+.card .value {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.card .label {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Estilos de la Sección de Historial */
+.historySection h2 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.historyList {
+    background-color: var(--card-background);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-small);
+    overflow: hidden;
+}
+
+.historyItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.historyItem:last-child {
+    border-bottom: none;
+}
+
+.historyItem .date {
+    font-weight: 600;
+    color: var(--text-primary);
+    flex-grow: 1;
+}
+
+.historyItem .kcal {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-right: 1rem;
+}
+
+.historyItem .status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.status.met {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.status.missed {
+    background-color: var(--error-light);
+    color: var(--error);
+}
+
+@media (max-width: 600px) {
+    .page {
+        padding: 0 0.5rem;
+    }
+}
+
+
+
+
+/* src/pages/Streak.module.css */
+
+/* ... (Estilos existentes) ... */
+
+
+/* === Sección de Calendario de Racha === */
+
+.calendarContainer {
+    padding: 1.5rem;
+    background-color: var(--card-background);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-small);
+}
+
+.calendarHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.calendarHeader h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+/* LEYENDA CLARA */
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    padding: 0.75rem 0;
+    border-top: 1px dashed var(--border-light);
+    margin-top: 1rem;
+    font-size: 0.85rem;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.legendDot {
+    width: 14px; /* Un poco más grande */
+    height: 14px;
+    border-radius: 4px; /* Cuadrado para coincidir con la celda */
+    display: inline-block;
+    border: 1px solid transparent;
+}
+/* Colores de leyenda */
+.dotSuccess { 
+    background-color: color-mix(in srgb, var(--success) 15%, transparent);
+    border-color: var(--success);
+}
+.dotNear { 
+    background-color: color-mix(in srgb, var(--warning) 15%, transparent);
+    border-color: var(--warning);
+}
+.dotFail { 
+    background-color: color-mix(in srgb, var(--danger) 15%, transparent);
+    border-color: var(--danger);
+}
+.dotEmpty { 
+    background-color: var(--surface);
+    border-color: var(--border);
+}
+
+
+.calendarGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); /* 7 días de la semana */
+    gap: 5px;
+    margin-top: 1rem;
+}
+
+.dayLabel {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    padding-bottom: 0.25rem;
+}
+
+.dayCell {
+    position: relative;
+    aspect-ratio: 1 / 1; 
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem; 
+    font-weight: 600;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    cursor: default; /* Mantenemos default, la info va en el title */
+    box-shadow: inset 0 0 0 1px var(--border-light);
+    color: var(--text-secondary);
+    user-select: none;
+}
+
+.dayCell:hover {
+    box-shadow: 0 0 0 3px var(--accent); /* Un borde más grueso al hacer hover */
+    z-index: 10;
+}
+
+/* Estados de Cumplimiento con fondos más contrastantes */
+.cellEmpty {
+    background-color: var(--surface);
+    color: var(--text-tertiary);
+    opacity: 0.6;
+    box-shadow: inset 0 0 0 1px var(--border);
+}
+/* NOTA: Las celdas sin fecha (padding inicial) no deben tener box-shadow */
+.cellEmpty:not(:has(span)) { 
+    box-shadow: none; 
+    background: transparent;
+}
+
+.cellFail {
+    background-color: color-mix(in srgb, var(--danger) 18%, transparent);
+    color: var(--danger);
+    font-weight: 700;
+    border: 1px solid color-mix(in srgb, var(--danger) 50%, transparent);
+}
+
+.cellNear {
+    background-color: color-mix(in srgb, var(--warning) 18%, transparent);
+    color: var(--warning);
+    font-weight: 700;
+    border: 1px solid color-mix(in srgb, var(--warning) 50%, transparent);
+}
+
+.cellSuccess {
+    background-color: color-mix(in srgb, var(--success) 18%, transparent);
+    color: var(--success);
+    font-weight: 700;
+    border: 1px solid color-mix(in srgb, var(--success) 50%, transparent);
+}
+
+.cellToday {
+    box-shadow: 0 0 0 3px var(--accent) !important;
+}
+
+.cellCurrentStreak {
+    /* Resalta los días que forman parte de la racha actual */
+    border: 2px solid var(--accent) !important;
+}
+
+/* Ocultar el historial de lista simple */
+.historyList {
+    display: none; 
+}
