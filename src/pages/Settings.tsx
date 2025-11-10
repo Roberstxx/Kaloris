@@ -267,9 +267,11 @@ const Settings: React.FC = () => {
             <h3 style={{ marginBottom: "1rem" }}>Perfil</h3>
 
             <div style={avatarRow}>
-              <Avatar className="h-16 w-16">
-                {avatarUrl && <AvatarImage src={avatarUrl} alt="Foto de perfil" />}
-                <AvatarFallback>{fallbackInitials}</AvatarFallback>
+              <Avatar className="h-12 w-12" style={avatarPreview}>
+                {avatarUrl && (
+                  <AvatarImage src={avatarUrl} alt="Foto de perfil" style={avatarImageStyle} />
+                )}
+                <AvatarFallback style={avatarFallbackStyle}>{fallbackInitials}</AvatarFallback>
               </Avatar>
               <div style={{ flex: 1 }}>
                 <span className="label" style={{ display: "block", marginBottom: ".25rem" }}>
@@ -637,9 +639,30 @@ const readOnlyInput: React.CSSProperties = {
 const avatarRow: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
-  gap: "1rem",
+  gap: ".75rem",
   marginBottom: "1.5rem",
   flexWrap: "wrap",
+};
+
+const avatarPreview: React.CSSProperties = {
+  flexShrink: 0,
+  border: "2px solid var(--border)",
+  backgroundColor: "var(--surface)",
+  boxShadow: "0 2px 6px rgb(15 23 42 / 0.08)",
+};
+
+const avatarImageStyle: React.CSSProperties = {
+  width: "100%",
+  height: "100%",
+  objectFit: "cover",
+};
+
+const avatarFallbackStyle: React.CSSProperties = {
+  fontSize: ".75rem",
+  fontWeight: 600,
+  letterSpacing: "0.02em",
+  textTransform: "uppercase",
+  color: "var(--text-secondary)",
 };
 
 const helperText: React.CSSProperties = {
