@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react';
 
-import { DailyLog, IntakeEntry, WeeklyStatsSummary } from '../types';
+import { DailyLog, IntakeEntry, WeeklyStatsSummary, IntakeContextType } from '../types'; // <-- IMPORTADO CORRECTAMENTE
 import { getLastNDays, getTodayISO } from '../utils/date';
 import { classifyMealByTime, normalizeConsumedAt } from '../utils/meals';
 import { useSession } from './SessionContext';
@@ -23,22 +23,12 @@ import {
 } from 'firebase/firestore';
 import { calculateWeeklySummary } from '../utils/stats';
 
-interface IntakeContextType {
-  todayEntries: IntakeEntry[];
-  todayTotal: number;
-  addEntry: (entry: Omit<IntakeEntry, 'id' | 'userId' | 'dateISO'>) => void;
-  updateEntry: (id: string, units: number) => void;
-  deleteEntry: (id: string) => void;
-  resetToday: () => void;
-  undoLast: () => void;
-  getLogsForDateRange: (dates: string[]) => DailyLog[];
-  weeklyStats: WeeklyStatsSummary;
-}
+// ELIMINADA LA INTERFAZ MAL UBICADA: Ahora se usa IntakeContextType importada
 
 const IntakeContext = createContext<IntakeContextType | undefined>(undefined);
 
 const LOGS_KEY = 'cc_logs_v1';
-const CHECK_INTERVAL_MS = 30 * 1000; // valida cambio de día en vivo
+const CHECK_INTERVAL_MS = 30 * 1000; 
 
 const logDocId = (userId: string, dateISO: string) => `${userId}_${dateISO}`;
 
@@ -50,6 +40,8 @@ const defaultWeeklyStats = (dates: string[]): WeeklyStatsSummary => ({
   daysWithinTarget: 0,
   compliance: 0,
   trend: 0,
+  currentStreak: 0, 
+  longestStreak: 0, 
   updatedAt: '',
 });
 
@@ -76,7 +68,7 @@ function writeLocalLogs(logs: DailyLog[]) {
 export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useSession();
   const userId = user?.id ?? null;
-  const userTdee = user?.tdee ?? 2000;
+  const userTdee = user?.tdee ?? 2000; 
 
   // Día activo controlado para evitar inconsistencias de fecha
   const [currentDateISO, setCurrentDateISO] = useState<string>(() => getTodayISO());
@@ -155,8 +147,6 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const today = getTodayISO();
     if (today !== currentDateISO) {
       setCurrentDateISO(today);
-      // cargar datos del nuevo día
-      // (espera al siguiente efecto que depende de currentDateISO para cargar del estado)
     }
   };
 
@@ -283,6 +273,8 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         prev.daysWithinTarget !== summary.daysWithinTarget ||
         prev.compliance !== summary.compliance ||
         prev.trend !== summary.trend ||
+        prev.currentStreak !== summary.currentStreak ||
+        prev.longestStreak !== summary.longestStreak ||
         prev.bestDay?.dateISO !== summary.bestDay?.dateISO ||
         prev.bestDay?.totalKcal !== summary.bestDay?.totalKcal;
 
@@ -439,6 +431,7 @@ export const IntakeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         undoLast,
         getLogsForDateRange,
         weeklyStats,
+        userTdee, // <-- EXPORTACIÓN CLAVE
       }}
     >
       {children}
