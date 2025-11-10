@@ -49,6 +49,31 @@
   color: var(--brand);
 }
 
+.navProfileLink {
+  padding: 4px;
+}
+
+.navAvatar {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08);
+}
+
+.navAvatarImage {
+  object-fit: cover;
+}
+
+.navAvatarFallback {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background: transparent;
+}
+
 /* --- 3. Contenedor Principal --- */
 .wide {
   padding: 0 24px;
