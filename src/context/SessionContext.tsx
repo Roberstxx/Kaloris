@@ -28,6 +28,7 @@ type ExtraProfile = {
   username?: string; // por compatibilidad con tu UI
   name?: string;
   preferences?: UserPreferences;
+  avatarUrl?: string;
 };
 
 const REQUIRED_PROFILE_FIELDS: (keyof ExtraProfile)[] = [
@@ -122,6 +123,15 @@ function normalizeProfile(raw: StoredProfile | null | undefined): ExtraProfile {
     profile.preferences = prefs;
   } else {
     delete profile.preferences;
+  }
+
+  if (typeof profile.avatarUrl === "string") {
+    const trimmed = profile.avatarUrl.trim();
+    if (trimmed.length === 0) {
+      delete profile.avatarUrl;
+    } else {
+      profile.avatarUrl = trimmed;
+    }
   }
 
   return profile;
