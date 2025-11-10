@@ -311,7 +311,10 @@ const Settings: React.FC = () => {
                     </div>
                     {!cloudinaryEnabled && (
                       <small style={helperText}>
-                        Define la variable <code>VITE_CLOUDINARY_URL</code> para habilitar las subidas.
+                        Añade <code>VITE_CLOUDINARY_URL</code> a tu archivo <code>.env</code> con el valor
+                        {" "}
+                        <code>cloudinary://&#123;api_key&#125;:&#123;api_secret&#125;@&#123;cloud_name&#125;</code> que ofrece el
+                        panel de Cloudinary.
                       </small>
                     )}
                     {avatarError && (

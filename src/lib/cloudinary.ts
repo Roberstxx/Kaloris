@@ -71,7 +71,9 @@ export async function uploadImageToCloudinary(
 ): Promise<CloudinaryUploadResult> {
   const config = getCloudinaryConfig();
   if (!config) {
-    throw new Error("Cloudinary no está configurado correctamente.");
+    throw new Error(
+      "Cloudinary no está configurado. Añade VITE_CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name> a tu archivo .env."
+    );
   }
 
   if (typeof window === "undefined" || !window.crypto?.subtle) {
