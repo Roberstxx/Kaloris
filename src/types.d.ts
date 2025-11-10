@@ -23,6 +23,7 @@ export interface User {
     fatPct: number;
   };
   preferences?: UserPreferences;
+  avatarUrl?: string;
 }
 
 export interface FoodItem {

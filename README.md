@@ -40,7 +40,8 @@ Aplicación web para el seguimiento nutricional diario, construida con React y V
    ```bash
    npm install
    ```
-3. Crear un archivo `.env` basado en `.env.example` y completar las variables de Firebase (todas deben iniciar con `VITE_`).
+3. Crear un archivo `.env` basado en `.env.example` y completar las variables de Firebase y Cloudinary (todas deben iniciar con `VITE_`).
+   - Para habilitar las subidas de avatar, agrega `VITE_CLOUDINARY_URL` con el formato `cloudinary://<api_key>:<api_secret>@<cloud_name>` que aparece en el panel de Cloudinary.
 4. Ejecutar el servidor de desarrollo:
    ```bash
    npm run dev
