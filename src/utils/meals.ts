@@ -1,6 +1,16 @@
+// src/utils/meals.ts
 import { IntakeEntry } from "../types";
+import { Coffee, Utensils, Salad } from 'lucide-react';
 
 export type MealSlot = "breakfast" | "lunch" | "dinner";
+
+// CORRECCIÓN: Se añade y exporta MEAL_OPTIONS
+export const MEAL_OPTIONS = [
+  { key: "breakfast" as const, name: "Desayuno", icon: Coffee },
+  { key: "lunch" as const, name: "Comida", icon: Utensils },
+  { key: "dinner" as const, name: "Cena", icon: Salad },
+];
+// FIN DE CORRECCIÓN
 
 const mexicoCityHourFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: "America/Mexico_City",
