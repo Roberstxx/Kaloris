@@ -47,14 +47,32 @@ export function getCloudinaryConfig(): CloudinaryConfig | null {
   return cachedConfig;
 }
 
-function buildSignaturePayload(params: Record<string, string | undefined>): string {
-  return Object.keys(params)
-    .filter((key) => {
-      const value = params[key];
-      return typeof value === "string" && value.length > 0;
-    })
+type SignatureParamValue = string | number | boolean | null | undefined;
+
+function normalizeSignatureParams(params: Record<string, SignatureParamValue>): Record<string, string> {
+  const normalized: Record<string, string> = {};
+
+  for (const key of Object.keys(params)) {
+    if (key === "file") continue;
+
+    const rawValue = params[key];
+    if (rawValue === undefined || rawValue === null) continue;
+
+    const value = typeof rawValue === "string" ? rawValue.trim() : String(rawValue);
+    if (value.length === 0) continue;
+
+    normalized[key] = value;
+  }
+
+  return normalized;
+}
+
+function buildSignaturePayload(params: Record<string, SignatureParamValue>): string {
+  const normalized = normalizeSignatureParams(params);
+
+  return Object.keys(normalized)
     .sort()
-    .map((key) => `${key}=${params[key]}`)
+    .map((key) => `${key}=${normalized[key]}`)
     .join("&");
 }
 
@@ -75,9 +93,15 @@ export type CloudinaryUploadResult = {
   [key: string]: unknown;
 };
 
+type UploadOptions = {
+  folder?: string;
+  publicId?: string;
+  invalidate?: boolean;
+};
+
 export async function uploadImageToCloudinary(
   file: File,
-  options?: { folder?: string }
+  options?: UploadOptions
 ): Promise<CloudinaryUploadResult> {
   const config = getCloudinaryConfig();
   if (!config) {
@@ -91,13 +115,16 @@ export async function uploadImageToCloudinary(
   }
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const params: Record<string, string> = {
-    timestamp: String(timestamp),
-  };
+  const folder = options?.folder?.trim();
+  const publicId = options?.publicId?.trim();
+  const invalidate = options?.invalidate;
 
-  if (options?.folder) {
-    params.folder = options.folder;
-  }
+  const params = {
+    folder,
+    invalidate,
+    public_id: publicId,
+    timestamp,
+  } satisfies Record<string, SignatureParamValue>;
 
   const signaturePayload = buildSignaturePayload(params);
   const toSign = signaturePayload ? `${signaturePayload}${config.apiSecret}` : config.apiSecret;
@@ -107,8 +134,14 @@ export async function uploadImageToCloudinary(
   formData.append("file", file);
   formData.append("api_key", config.apiKey);
   formData.append("timestamp", String(timestamp));
-  if (options?.folder) {
-    formData.append("folder", options.folder);
+  if (folder) {
+    formData.append("folder", folder);
+  }
+  if (publicId) {
+    formData.append("public_id", publicId);
+  }
+  if (typeof invalidate === "boolean") {
+    formData.append("invalidate", invalidate ? "true" : "false");
   }
   formData.append("signature", signature);
 
