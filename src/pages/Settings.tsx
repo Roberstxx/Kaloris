@@ -1,9 +1,11 @@
 // src/pages/Settings.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Home, History, Settings as SettingsIcon, Edit, X } from "lucide-react";
 import { useSession } from "../context/SessionContext";
 import { ActivityLevel, Sex } from "../types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { isCloudinaryConfigured, uploadImageToCloudinary } from "@/lib/cloudinary";
 
 const ACTIVITY_LEVELS: Record<ActivityLevel, { label: string; factor: number; help: string }> = {
   sedentario: { label: "Sedentario", factor: 1.2, help: "Poco o nada de ejercicio" },
@@ -61,6 +63,7 @@ const Settings: React.FC = () => {
       activity: normalizeActivity(user?.activity),
       tdee: Number(user?.tdee ?? 2000),
       macros: resolveMacros(user?.macros),
+      avatarUrl: user?.avatarUrl ?? "",
     };
   }, [user]);
 
@@ -73,6 +76,11 @@ const Settings: React.FC = () => {
   const [carbPct, setCarbPct] = useState<number>(profileSnapshot.macros.carbPct);
   const [protPct, setProtPct] = useState<number>(profileSnapshot.macros.protPct);
   const [fatPct, setFatPct] = useState<number>(profileSnapshot.macros.fatPct);
+  const [avatarUrl, setAvatarUrl] = useState<string>(profileSnapshot.avatarUrl);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cloudinaryEnabled = useMemo(() => isCloudinaryConfigured(), []);
 
   useEffect(() => {
     setSex(profileSnapshot.sex);
@@ -84,6 +92,8 @@ const Settings: React.FC = () => {
     setCarbPct(profileSnapshot.macros.carbPct);
     setProtPct(profileSnapshot.macros.protPct);
     setFatPct(profileSnapshot.macros.fatPct);
+    setAvatarUrl(profileSnapshot.avatarUrl);
+    setAvatarError(null);
   }, [profileSnapshot]);
 
   const pctTotal = carbPct + protPct + fatPct;
@@ -106,6 +116,44 @@ const Settings: React.FC = () => {
   const protGr = useMemo(() => Math.round((targetKcal * (protPct / 100)) / 4), [targetKcal, protPct]);
   const fatGr = useMemo(() => Math.round((targetKcal * (fatPct / 100)) / 9), [targetKcal, fatPct]);
 
+  const handleAvatarFile = async (file: File) => {
+    if (!file) return;
+    if (!cloudinaryEnabled) {
+      setAvatarError("Cloudinary no está configurado.");
+      return;
+    }
+    setAvatarError(null);
+    setIsUploadingAvatar(true);
+    try {
+      const response = await uploadImageToCloudinary(file, { folder: "kaloris/profile" });
+      const nextUrl = (response.secure_url ?? response.url ?? "").trim();
+      if (!nextUrl) {
+        throw new Error("La respuesta de Cloudinary no devolvió una URL válida.");
+      }
+      setAvatarUrl(nextUrl);
+    } catch (error) {
+      console.error(error);
+      const message =
+        error instanceof Error ? error.message : "No se pudo subir la imagen. Intenta nuevamente.";
+      setAvatarError(message);
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handleAvatarInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      void handleAvatarFile(file);
+    }
+    // Reset para permitir volver a subir el mismo archivo
+    event.target.value = "";
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatarUrl("");
+  };
+
   const handleSave = () => {
     if (pctTotal !== 100) {
       alert("El reparto de macros debe sumar 100%.");
@@ -119,6 +167,7 @@ const Settings: React.FC = () => {
       activity,
       tdee: targetKcal,
       macros: { carbPct, protPct, fatPct },
+      avatarUrl: avatarUrl.trim(),
     };
 
     updateProfile(next);
@@ -136,6 +185,8 @@ const Settings: React.FC = () => {
     setCarbPct(profileSnapshot.macros.carbPct);
     setProtPct(profileSnapshot.macros.protPct);
     setFatPct(profileSnapshot.macros.fatPct);
+    setAvatarUrl(profileSnapshot.avatarUrl);
+    setAvatarError(null);
     setIsEditing(false);
   };
 
@@ -143,6 +194,18 @@ const Settings: React.FC = () => {
     logout();
     navigate("/login");
   };
+
+  const fallbackInitials = useMemo(() => {
+    const source = `${profileSnapshot.name || profileSnapshot.username || ""}`.trim();
+    if (!source) return "👤";
+    const letters = source
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("");
+    return letters || "👤";
+  }, [profileSnapshot.name, profileSnapshot.username]);
 
   if (!user) return null;
 
@@ -202,6 +265,70 @@ const Settings: React.FC = () => {
         <div style={gridTwoCols}>
           <section className="card" style={{ background: "var(--surface-elevated)" }}>
             <h3 style={{ marginBottom: "1rem" }}>Perfil</h3>
+
+            <div style={avatarRow}>
+              <Avatar className="h-12 w-12" style={avatarPreview}>
+                {avatarUrl && (
+                  <AvatarImage src={avatarUrl} alt="Foto de perfil" style={avatarImageStyle} />
+                )}
+                <AvatarFallback style={avatarFallbackStyle}>{fallbackInitials}</AvatarFallback>
+              </Avatar>
+              <div style={{ flex: 1 }}>
+                <span className="label" style={{ display: "block", marginBottom: ".25rem" }}>
+                  Foto de perfil
+                </span>
+                {isEditing ? (
+                  <>
+                    <div style={{ display: "flex", gap: ".5rem", flexWrap: "wrap", alignItems: "center" }}>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={handleAvatarInputChange}
+                        disabled={!cloudinaryEnabled}
+                      />
+                      <button
+                        className="btn btn-secondary"
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploadingAvatar || !cloudinaryEnabled}
+                      >
+                        {cloudinaryEnabled
+                          ? isUploadingAvatar
+                            ? "Subiendo…"
+                            : "Cambiar foto"
+                          : "Configura Cloudinary"}
+                      </button>
+                      {avatarUrl && (
+                        <button
+                          className="btn btn-secondary"
+                          type="button"
+                          onClick={handleRemoveAvatar}
+                          disabled={isUploadingAvatar}
+                        >
+                          Quitar
+                        </button>
+                      )}
+                    </div>
+                    {!cloudinaryEnabled && (
+                      <small style={helperText}>
+                        Copia el valor completo <code>cloudinary://&#123;api_key&#125;:&#123;api_secret&#125;@&#123;cloud_name&#125;</code>
+                        que aparece en <strong>Settings → API Keys</strong> de Cloudinary y pégalo en tu archivo
+                        <code>.env</code> como <code>VITE_CLOUDINARY_URL</code> sin dejar llaves, corchetes ni textos de ejemplo.
+                      </small>
+                    )}
+                    {avatarError && (
+                      <small style={errorText}>{avatarError}</small>
+                    )}
+                  </>
+                ) : (
+                  <small style={{ color: "var(--text-tertiary)" }}>
+                    Esta imagen se mostrará en toda la aplicación.
+                  </small>
+                )}
+              </div>
+            </div>
 
             <div style={row}>
               <div style={labelCol}>
@@ -507,4 +634,45 @@ const readOnlyInput: React.CSSProperties = {
   color: "var(--text)",
   lineHeight: "1.5",
   fontSize: "0.875rem",
+};
+
+const avatarRow: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: ".75rem",
+  marginBottom: "1.5rem",
+  flexWrap: "wrap",
+};
+
+const avatarPreview: React.CSSProperties = {
+  flexShrink: 0,
+  border: "2px solid var(--border)",
+  backgroundColor: "var(--surface)",
+  boxShadow: "0 2px 6px rgb(15 23 42 / 0.08)",
+};
+
+const avatarImageStyle: React.CSSProperties = {
+  width: "100%",
+  height: "100%",
+  objectFit: "cover",
+};
+
+const avatarFallbackStyle: React.CSSProperties = {
+  fontSize: ".75rem",
+  fontWeight: 600,
+  letterSpacing: "0.02em",
+  textTransform: "uppercase",
+  color: "var(--text-secondary)",
+};
+
+const helperText: React.CSSProperties = {
+  color: "var(--text-tertiary)",
+  display: "block",
+  marginTop: "0.5rem",
+};
+
+const errorText: React.CSSProperties = {
+  color: "var(--status-error, #ef4444)",
+  display: "block",
+  marginTop: "0.5rem",
 };
