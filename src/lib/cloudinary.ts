@@ -4,18 +4,28 @@ export type CloudinaryConfig = {
   cloudName: string;
 };
 
-const CLOUDINARY_REGEX = /^cloudinary:\/\/([^:]+):([^@]+)@(.+)$/;
-
 let cachedConfig: CloudinaryConfig | null | undefined;
 
 function parseCloudinaryUrl(url: string): CloudinaryConfig | null {
-  const match = CLOUDINARY_REGEX.exec(url.trim());
-  if (!match) return null;
+  try {
+    const parsed = new URL(url.trim());
+    if (parsed.protocol !== "cloudinary:") {
+      return null;
+    }
 
-  const [, apiKey, apiSecret, cloudName] = match;
-  if (!apiKey || !apiSecret || !cloudName) return null;
+    const apiKey = decodeURIComponent(parsed.username).trim();
+    const apiSecret = decodeURIComponent(parsed.password).trim();
+    const cloudName = decodeURIComponent(parsed.hostname).trim();
 
-  return { apiKey, apiSecret, cloudName };
+    if (!apiKey || !apiSecret || !cloudName) {
+      return null;
+    }
+
+    return { apiKey, apiSecret, cloudName };
+  } catch (error) {
+    console.error("No se pudo interpretar la URL de Cloudinary", error);
+    return null;
+  }
 }
 
 export function getCloudinaryConfig(): CloudinaryConfig | null {
@@ -80,7 +90,7 @@ export async function uploadImageToCloudinary(
     throw new Error("La API de crypto necesaria para firmar la solicitud no está disponible.");
   }
 
-  const timestamp = Math.round(Date.now() / 1000);
+  const timestamp = Math.floor(Date.now() / 1000);
   const params: Record<string, string> = {
     timestamp: String(timestamp),
   };
@@ -90,7 +100,8 @@ export async function uploadImageToCloudinary(
   }
 
   const signaturePayload = buildSignaturePayload(params);
-  const signature = await sha1Hex(`${signaturePayload}${config.apiSecret}`);
+  const toSign = signaturePayload ? `${signaturePayload}${config.apiSecret}` : config.apiSecret;
+  const signature = await sha1Hex(toSign);
 
   const formData = new FormData();
   formData.append("file", file);
@@ -111,7 +122,14 @@ export async function uploadImageToCloudinary(
   };
 
   if (!response.ok) {
-    throw new Error(data.error?.message ?? "No se pudo subir la imagen a Cloudinary.");
+    const message = data.error?.message ?? "No se pudo subir la imagen a Cloudinary.";
+    if (response.status === 401) {
+      throw new Error(
+        `${message} Verifica que VITE_CLOUDINARY_URL contenga el api_key, api_secret y cloud_name correctos sin espacios adicionales.`
+      );
+    }
+
+    throw new Error(message);
   }
 
   return data;
