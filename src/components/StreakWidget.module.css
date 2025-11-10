@@ -1,0 +1,50 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0.5rem 0.25rem; /* Ajuste interno para no chocar con el widget padre */
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.header svg {
+  width: 20px;
+  height: 20px;
+  color: var(--accent); /* Naranja del logo */
+}
+
+.value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0;
+  line-height: 1;
+}
+
+.subtext {
+  font-size: 0.95rem;
+  color: var(--text-tertiary);
+  margin: 0.25rem 0 0.5rem;
+}
+
+.longestStreak {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border-light);
+  width: 100%;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.longestStreak span {
+    font-weight: 600;
+    color: var(--text);
+}
