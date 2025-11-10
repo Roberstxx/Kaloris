@@ -1,10 +1,10 @@
 // src/pages/Settings.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Home, History, Settings as SettingsIcon, Edit, X } from "lucide-react";
+import { Home, History, Edit, X } from "lucide-react";
 import { useSession } from "../context/SessionContext";
 import { ActivityLevel, Sex } from "../types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserAvatar from "@/components/UserAvatar";
 import { isCloudinaryConfigured, uploadImageToCloudinary } from "@/lib/cloudinary";
 
 const ACTIVITY_LEVELS: Record<ActivityLevel, { label: string; factor: number; help: string }> = {
@@ -195,18 +195,6 @@ const Settings: React.FC = () => {
     navigate("/login");
   };
 
-  const fallbackInitials = useMemo(() => {
-    const source = `${profileSnapshot.name || profileSnapshot.username || ""}`.trim();
-    if (!source) return "👤";
-    const letters = source
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase() ?? "")
-      .join("");
-    return letters || "👤";
-  }, [profileSnapshot.name, profileSnapshot.username]);
-
   if (!user) return null;
 
   return (
@@ -244,7 +232,15 @@ const Settings: React.FC = () => {
                 <History size={20} />
               </Link>
               <Link to="/settings" className="navLink" style={navLinkStyle}>
-                <SettingsIcon size={20} />
+                <UserAvatar
+                  src={user.avatarUrl}
+                  name={user.name}
+                  username={user.username}
+                  size={36}
+                  style={navAvatarStyle}
+                  imageStyle={avatarImageStyle}
+                  fallbackStyle={navAvatarFallbackStyle}
+                />
               </Link>
             </nav>
           </div>
@@ -267,12 +263,15 @@ const Settings: React.FC = () => {
             <h3 style={{ marginBottom: "1rem" }}>Perfil</h3>
 
             <div style={avatarRow}>
-              <Avatar className="h-12 w-12" style={avatarPreview}>
-                {avatarUrl && (
-                  <AvatarImage src={avatarUrl} alt="Foto de perfil" style={avatarImageStyle} />
-                )}
-                <AvatarFallback style={avatarFallbackStyle}>{fallbackInitials}</AvatarFallback>
-              </Avatar>
+              <UserAvatar
+                src={avatarUrl}
+                name={profileSnapshot.name}
+                username={profileSnapshot.username}
+                size={48}
+                style={avatarPreview}
+                imageStyle={avatarImageStyle}
+                fallbackStyle={avatarFallbackStyle}
+              />
               <div style={{ flex: 1 }}>
                 <span className="label" style={{ display: "block", marginBottom: ".25rem" }}>
                   Foto de perfil
@@ -659,6 +658,20 @@ const avatarImageStyle: React.CSSProperties = {
 
 const avatarFallbackStyle: React.CSSProperties = {
   fontSize: ".75rem",
+  fontWeight: 600,
+  letterSpacing: "0.02em",
+  textTransform: "uppercase",
+  color: "var(--text-secondary)",
+};
+
+const navAvatarStyle: React.CSSProperties = {
+  border: "2px solid var(--border)",
+  backgroundColor: "var(--surface)",
+  boxShadow: "0 2px 4px rgb(15 23 42 / 0.08)",
+};
+
+const navAvatarFallbackStyle: React.CSSProperties = {
+  fontSize: ".65rem",
   fontWeight: 600,
   letterSpacing: "0.02em",
   textTransform: "uppercase",

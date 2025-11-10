@@ -11,12 +11,20 @@ const Registro = () => {
   const navigate = useNavigate();
   const { user, updateProfile, isAuthenticated, needsProfile } = useSession();
   const { calculateTDEE } = useCaloriesCalculator();
-  const [formData, setFormData] = useState({
-    sex: "male" as Sex,
-    age: 25,
-    weightKg: 70,
-    heightCm: 170,
-    activity: "moderado" as ActivityLevel,
+  type PhysicalFormState = {
+    sex: Sex;
+    age: string;
+    weightKg: string;
+    heightCm: string;
+    activity: ActivityLevel;
+  };
+
+  const [formData, setFormData] = useState<PhysicalFormState>({
+    sex: "male",
+    age: "",
+    weightKg: "",
+    heightCm: "",
+    activity: "moderado",
   });
   const [error, setError] = useState("");
 
@@ -31,32 +39,70 @@ const Registro = () => {
     if (!user) return;
     setFormData((prev) => ({
       sex: (user.sex as Sex) ?? prev.sex,
-      age: user.age ?? prev.age,
-      weightKg: user.weightKg ?? prev.weightKg,
-      heightCm: user.heightCm ?? prev.heightCm,
+      age: user.age ? String(user.age) : prev.age,
+      weightKg: user.weightKg ? String(user.weightKg) : prev.weightKg,
+      heightCm: user.heightCm ? String(user.heightCm) : prev.heightCm,
       activity: (user.activity as ActivityLevel) ?? prev.activity,
     }));
   }, [user]);
+
+  const handleAgeChange = (value: string) => {
+    if (/^\d{0,3}$/.test(value)) {
+      setFormData((prev) => ({ ...prev, age: value }));
+    }
+  };
+
+  const handleWeightChange = (value: string) => {
+    if (/^\d{0,3}(\.\d{0,2})?$/.test(value)) {
+      setFormData((prev) => ({ ...prev, weightKg: value }));
+    }
+  };
+
+  const handleHeightChange = (value: string) => {
+    if (/^\d{0,3}$/.test(value)) {
+      setFormData((prev) => ({ ...prev, heightCm: value }));
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    const validation = validatePhysicalData(formData);
+    const age = Number.parseInt(formData.age, 10);
+    const weightKg = Number.parseFloat(formData.weightKg);
+    const heightCm = Number.parseFloat(formData.heightCm);
+
+    if (!formData.age || Number.isNaN(age)) {
+      setError("Ingresa una edad válida.");
+      return;
+    }
+
+    if (!formData.weightKg || Number.isNaN(weightKg)) {
+      setError("Ingresa un peso válido.");
+      return;
+    }
+
+    if (!formData.heightCm || Number.isNaN(heightCm)) {
+      setError("Ingresa una altura válida.");
+      return;
+    }
+
+    const validation = validatePhysicalData({ age, weightKg, heightCm });
     if (!validation.valid) {
       setError(validation.message);
       return;
     }
 
-    const tdee = calculateTDEE(
-      formData.weightKg,
-      formData.heightCm,
-      formData.age,
-      formData.sex,
-      formData.activity
-    );
+    const tdee = calculateTDEE(weightKg, heightCm, age, formData.sex, formData.activity);
 
-    updateProfile({ ...formData, tdee });
+    updateProfile({
+      sex: formData.sex,
+      age,
+      weightKg,
+      heightCm,
+      activity: formData.activity,
+      tdee,
+    });
     navigate("/dashboard");
   };
 
@@ -90,14 +136,14 @@ const Registro = () => {
             </label>
             <input
               id="age"
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="\d*"
               className={styles.input}
               value={formData.age}
-              onChange={(e) =>
-                setFormData({ ...formData, age: Number.parseInt(e.target.value, 10) || 0 })
-              }
+              onChange={(e) => handleAgeChange(e.target.value)}
+              placeholder="Ingresa tu edad"
               required
-              min={1}
             />
           </div>
 
@@ -107,15 +153,13 @@ const Registro = () => {
             </label>
             <input
               id="weight"
-              type="number"
+              type="text"
+              inputMode="decimal"
               className={styles.input}
               value={formData.weightKg}
-              onChange={(e) =>
-                setFormData({ ...formData, weightKg: Number.parseFloat(e.target.value) || 0 })
-              }
-              step="0.1"
+              onChange={(e) => handleWeightChange(e.target.value.replace(',', '.'))}
+              placeholder="Ingresa tu peso"
               required
-              min={1}
             />
           </div>
 
@@ -125,14 +169,14 @@ const Registro = () => {
             </label>
             <input
               id="height"
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="\d*"
               className={styles.input}
               value={formData.heightCm}
-              onChange={(e) =>
-                setFormData({ ...formData, heightCm: Number.parseFloat(e.target.value) || 0 })
-              }
+              onChange={(e) => handleHeightChange(e.target.value)}
+              placeholder="Ingresa tu altura"
               required
-              min={1}
             />
           </div>
 
