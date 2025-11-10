@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Home, History, Settings, Download, Undo, RotateCcw, Plus } from "lucide-react";
+import { Home, History, Settings, Download, Undo, RotateCcw, Plus, Flame } from "lucide-react"; 
 
 import { useSession } from "../context/SessionContext";
 import { useIntake } from "../context/IntakeContext";
@@ -11,7 +11,8 @@ import { CategoryFilter } from "../components/CategoryFilter";
 import { FoodCard } from "../components/FoodCard";
 import { IntakeItem } from "../components/IntakeItem";
 import { ThemeToggle } from "../components/ThemeToggle";
-import { MacrosSummary } from "../components/MacrosSummary"; // ✅ nuevo import
+import { MacrosSummary } from "../components/MacrosSummary";
+import { StreakWidget } from "../components/StreakWidget"; // <-- NUEVA IMPORTACIÓN
 
 import { FoodItem } from "../types";
 import { getTodayISO } from "../utils/date";
@@ -80,7 +81,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleAddManual = () => {
-    if (!manualFood.name || manualFood.kcal <= 0 || manualFood.units <= 0) return;
+    if (!manualFood.name.trim() || manualFood.kcal <= 0 || manualFood.units <= 0) return;
     addEntry({
       customName: manualFood.name,
       kcalPerUnit: manualFood.kcal,
@@ -124,6 +125,11 @@ const Dashboard: React.FC = () => {
               <Link to="/historial" className={styles.navLink} title="Historial">
                 <History size={18} />
               </Link>
+              {/* ENLACE A LA PÁGINA DE RACHA */}
+              <Link to="/streak" className={styles.navLink} title="Racha de Metas">
+                <Flame size={18} />
+              </Link>
+              {/* FIN ENLACE RACHA */}
               <Link to="/settings" className={styles.navLink} title="Configuración">
                 <Settings size={18} />
               </Link>
@@ -167,6 +173,14 @@ const Dashboard: React.FC = () => {
                 <h3>📊 Macronutrientes</h3>
                 <MacrosSummary />
               </div>
+              
+              {/* ELIMINAMOS EL ENLACE RÁPIDO AQUÍ */}
+              {/* <div className={styles.widget}>
+                <Link to="/streak" className="btn btn-secondary" style={{ width: '100%' }}>
+                  <Flame size={16} /> Ver mi Racha de Metas
+                </Link>
+              </div> */}
+
             </aside>
 
             {/* ---------- CENTRO: BUSCADOR + SUGERENCIAS ---------- */}
@@ -259,7 +273,7 @@ const Dashboard: React.FC = () => {
               </div>
             </section>
 
-            {/* ---------- DERECHA: DIARIO + TOTALES ---------- */}
+            {/* ---------- DERECHA: DIARIO + TOTALES + RACHA (NUEVA POSICIÓN) ---------- */}
             <aside className={styles.rightCol}>
               <div className={styles.widget}>
                 <h3>📜 Mi Diario de Hoy</h3>
@@ -283,6 +297,11 @@ const Dashboard: React.FC = () => {
                     <p className={styles.empty}>Busca “manzana” o “arroz” para empezar.</p>
                   )}
                 </div>
+              </div>
+
+              {/* WIDGET DE RACHA (NUEVA POSICIÓN) */}
+              <div className={styles.widget}>
+                 <StreakWidget /> 
               </div>
 
               <div className={styles.widget}>
