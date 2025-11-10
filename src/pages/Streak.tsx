@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useIntake } from '../context/IntakeContext';
 import { DailyLog } from '../types';
 import { formatNumber, formatKcal } from '../utils/format';
-import { getTodayISO, getLastNDays, getDateLabel } from '../utils/date';
+import { getTodayISO, getLastNDays, getDateLabel, getDayOfWeekMX } from '../utils/date';
 import styles from './Streak.module.css';
 
 // Componente auxiliar para la tarjeta de resumen
@@ -41,21 +41,16 @@ const StreakCalendar: React.FC<{
   const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   
   // Lógica para determinar el primer día de la grilla (alinear correctamente)
-  const firstDayOfRange = new Date(lastNDaysISO[0]);
-  const firstDayOfWeek = firstDayOfRange.getDay(); // 0=Domingo, 1=Lunes, etc.
-  const emptyCellsCount = firstDayOfWeek;
+  const emptyCellsCount = lastNDaysISO.length ? getDayOfWeekMX(lastNDaysISO[0]) : 0;
 
   // Lógica para determinar qué días son parte de la racha actual
   const streakDates = useMemo(() => {
-      const dates = [];
-      // La racha se calcula desde el día actual (o el último día cumplido) hacia atrás
-      for (let i = 0; i < currentStreak; i++) {
-          const d = new Date(todayISO);
-          d.setDate(d.getDate() - i);
-          dates.push(d.toISOString().split('T')[0]);
+      if (!currentStreak) {
+          return new Set<string>();
       }
-      return new Set(dates);
-  }, [currentStreak, todayISO]);
+      const recentDates = getLastNDays(currentStreak);
+      return new Set(recentDates);
+  }, [currentStreak]);
 
   // Renderizar las celdas del calendario
   const calendarCells = useMemo(() => {
@@ -72,8 +67,8 @@ const StreakCalendar: React.FC<{
     // Celdas de los últimos 30 días
     lastNDaysISO.forEach(dateISO => {
         const log = logsMap.get(dateISO);
-        const dateObj = new Date(dateISO);
-        const dayOfMonth = dateObj.getDate();
+        const [, , dayPart] = dateISO.split('-');
+        const dayOfMonth = Number.parseInt(dayPart ?? '0', 10);
         const isToday = dateISO === todayISO;
         const isPartofStreak = streakDates.has(dateISO);
         
@@ -97,8 +92,8 @@ const StreakCalendar: React.FC<{
         }
 
         cells.push(
-            <div 
-                key={dateISO} 
+            <div
+                key={dateISO}
                 className={`${styles.dayCell} ${statusClass} ${isToday ? styles.cellToday : ''} ${isPartofStreak ? styles.cellCurrentStreak : ''}`}
                 title={tooltipText}
             >
