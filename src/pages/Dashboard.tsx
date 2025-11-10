@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Home, History, Settings, Download, Undo, RotateCcw, Plus, Flame } from "lucide-react"; 
+import { Home, History, Download, Undo, RotateCcw, Plus, Flame } from "lucide-react";
 
 import { useSession } from "../context/SessionContext";
 import { useIntake } from "../context/IntakeContext";
@@ -13,6 +13,7 @@ import { IntakeItem } from "../components/IntakeItem";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { MacrosSummary } from "../components/MacrosSummary";
 import { StreakWidget } from "../components/StreakWidget"; // <-- NUEVA IMPORTACIÓN
+import UserAvatar from "@/components/UserAvatar";
 
 import { FoodItem } from "../types";
 import { getTodayISO } from "../utils/date";
@@ -130,8 +131,20 @@ const Dashboard: React.FC = () => {
                 <Flame size={18} />
               </Link>
               {/* FIN ENLACE RACHA */}
-              <Link to="/settings" className={styles.navLink} title="Configuración">
-                <Settings size={18} />
+              <Link
+                to="/settings"
+                className={`${styles.navLink} ${styles.navProfileLink}`}
+                title="Configuración"
+              >
+                <UserAvatar
+                  src={user.avatarUrl}
+                  name={user.name}
+                  username={user.username}
+                  size={36}
+                  className={styles.navAvatar}
+                  imageClassName={styles.navAvatarImage}
+                  fallbackClassName={styles.navAvatarFallback}
+                />
               </Link>
               <ThemeToggle />
             </nav>
