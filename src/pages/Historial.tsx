@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Home, History, Settings, Flame, Target, TrendingUp, CalendarDays } from 'lucide-react';
+import { Home, History, Flame, Target, TrendingUp, CalendarDays } from 'lucide-react';
 
 import { HistoryChart } from '../components/HistoryChart';
 import { HistoryScatterChart } from '../components/HistoryScatterChart';
@@ -12,6 +12,7 @@ import { getLastNDays, getDateLabel } from '../utils/date';
 import { formatKcal } from '../utils/format';
 import styles from './Dashboard.module.css';
 import historyStyles from './Historial.module.css';
+import UserAvatar from '@/components/UserAvatar';
 
 type SummaryMetrics = Pick<WeeklyStatsSummary, 'totalKcal' | 'averageKcal' | 'daysWithinTarget' | 'compliance' | 'bestDay' | 'trend'>;
 
@@ -100,8 +101,20 @@ const Historial = () => {
               <Link to="/historial" className={styles.navLink} title="Historial">
                 <History size={20} />
               </Link>
-              <Link to="/settings" className={styles.navLink} title="Configuración">
-                <Settings size={20} />
+              <Link
+                to="/settings"
+                className={`${styles.navLink} ${styles.navProfileLink}`}
+                title="Configuración"
+              >
+                <UserAvatar
+                  src={user.avatarUrl}
+                  name={user.name}
+                  username={user.username}
+                  size={36}
+                  className={styles.navAvatar}
+                  imageClassName={styles.navAvatarImage}
+                  fallbackClassName={styles.navAvatarFallback}
+                />
               </Link>
               <ThemeToggle />
             </nav>
