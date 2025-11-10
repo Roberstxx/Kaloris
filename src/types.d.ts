@@ -1,3 +1,5 @@
+// src/types.d.ts
+
 export type ActivityLevel = "sedentario" | "ligero" | "moderado" | "intenso" | "muy_intenso";
 export type Sex = "male" | "female";
 
@@ -57,6 +59,40 @@ export type UserPreferences = {
   notifications?: boolean;
 };
 
+export interface WeeklyStatsSummary {
+  periodStart: string;
+  periodEnd: string;
+  totalKcal: number;
+  averageKcal: number;
+  daysWithinTarget: number;
+  compliance: number;
+  trend: number;
+  bestDay?: {
+    dateISO: string;
+    totalKcal: number;
+  };
+  updatedAt: string;
+  // CAMPOS DE RACHA
+  currentStreak: number;
+  longestStreak: number;
+}
+
+export type ProgressStatus = "ok" | "near" | "exceeded";
+
+// CORRECCIÓN CLAVE: Interfaz para el contexto de ingesta
+export interface IntakeContextType { 
+  todayEntries: IntakeEntry[];
+  todayTotal: number;
+  addEntry: (entry: Omit<IntakeEntry, 'id' | 'userId' | 'dateISO'>) => void;
+  updateEntry: (id: string, units: number) => void;
+  deleteEntry: (id: string) => void;
+  resetToday: () => void;
+  undoLast: () => void;
+  getLogsForDateRange: (dates: string[]) => DailyLog[];
+  weeklyStats: WeeklyStatsSummary;
+  userTdee: number; // Exportación de la meta calórica
+}
+
 export interface SessionState {
   user: User | null;
   isAuthenticated: boolean;
@@ -72,21 +108,4 @@ export interface SessionState {
 export interface ThemeState {
   theme: "light" | "dark";
   toggleTheme: () => void;
-}
-
-export type ProgressStatus = "ok" | "near" | "exceeded";
-
-export interface WeeklyStatsSummary {
-  periodStart: string;
-  periodEnd: string;
-  totalKcal: number;
-  averageKcal: number;
-  daysWithinTarget: number;
-  compliance: number;
-  trend: number;
-  bestDay?: {
-    dateISO: string;
-    totalKcal: number;
-  };
-  updatedAt: string;
 }
