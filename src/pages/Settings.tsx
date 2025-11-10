@@ -313,7 +313,7 @@ const Settings: React.FC = () => {
                       <small style={helperText}>
                         Copia el valor completo <code>cloudinary://&#123;api_key&#125;:&#123;api_secret&#125;@&#123;cloud_name&#125;</code>
                         que aparece en <strong>Settings → API Keys</strong> de Cloudinary y pégalo en tu archivo
-                        <code>.env</code> como <code>VITE_CLOUDINARY_URL</code>.
+                        <code>.env</code> como <code>VITE_CLOUDINARY_URL</code> sin dejar llaves, corchetes ni textos de ejemplo.
                       </small>
                     )}
                     {avatarError && (

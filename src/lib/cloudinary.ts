@@ -17,6 +17,27 @@ function parseCloudinaryUrl(url: string): CloudinaryConfig | null {
     const apiSecret = decodeURIComponent(parsed.password).trim();
     const cloudName = decodeURIComponent(parsed.hostname).trim();
 
+    const looksLikePlaceholder = (value: string): boolean => {
+      const lower = value.toLowerCase();
+      return (
+        value.includes("{") ||
+        value.includes("}") ||
+        value.includes("<") ||
+        value.includes(">") ||
+        lower.includes("your-") ||
+        lower.includes("your_")
+      );
+    };
+
+    if ([apiKey, apiSecret, cloudName].some(looksLikePlaceholder)) {
+      if (import.meta.env.DEV) {
+        console.warn(
+          "Cloudinary URL contiene placeholders. Copia el valor completo desde Settings → API Keys y reemplázalo en tu .env."
+        );
+      }
+      return null;
+    }
+
     if (!apiKey || !apiSecret || !cloudName) {
       return null;
     }
@@ -106,7 +127,7 @@ export async function uploadImageToCloudinary(
   const config = getCloudinaryConfig();
   if (!config) {
     throw new Error(
-      "Cloudinary no está configurado. Copia y pega en tu archivo .env el valor completo VITE_CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name> tal como aparece en el panel."
+      "Cloudinary no está configurado. Copia y pega en tu archivo .env el valor completo VITE_CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name> tal como aparece en el panel (sin llaves ni textos de ejemplo)."
     );
   }
 
@@ -158,7 +179,7 @@ export async function uploadImageToCloudinary(
     const message = data.error?.message ?? "No se pudo subir la imagen a Cloudinary.";
     if (response.status === 401) {
       throw new Error(
-        `${message} Verifica que VITE_CLOUDINARY_URL contenga el api_key, api_secret y cloud_name correctos sin espacios adicionales.`
+        `${message} Verifica que VITE_CLOUDINARY_URL contenga el api_key, api_secret y cloud_name reales (sin llaves ni placeholders) y sin espacios adicionales.`
       );
     }
 
