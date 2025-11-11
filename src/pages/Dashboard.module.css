@@ -241,9 +241,9 @@
 }
 
 /* Contenedor central de widgets: en escritorio, los siguientes widgets tienen margen arriba */
-.centerCol .widget + .widget {
+/* ESTE ES EL WIDGET CON SCROLL INTERNO EN DESKTOP */
+.centerCol .widget:last-child { 
   margin-top: 20px;
-  /* Estas propiedades se eliminan en móvil/tablet en las media queries */
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 200px); /* Lógica de scroll en escritorio */
@@ -326,7 +326,7 @@
 /* --- 2) Tablet (Máx 1200px): Pasamos a 2 columnas (Izquierda y Centro a la izquierda, Derecha a la derecha) --- */
 @media (max-width: 1200px) {
   .wide {
-    padding: 0 16px; /* Ajuste de padding para tablet */
+    padding: 0 16px; 
   }
   .grid121 {
     display: grid;
@@ -340,34 +340,36 @@
     padding: 20px 0 30px;
   }
 
-  /* Desactivar sticky/altura fija en las columnas para que crezcan con el contenido */
+  /* **CRÍTICO: Desactivar sticky/altura fija en las 3 columnas para que crezcan con el contenido** */
   .leftCol,
   .centerCol,
   .rightCol {
     position: static;
     height: auto;
     overflow: visible;
-    max-height: none; /* Elimina la altura fija calc(100vh - X) */
+    max-height: none; 
     padding-right: 0;
   }
 
-  /* Los widgets ya no necesitan la altura limitada en el centro */
-  .centerCol .widget {
+  /* CRÍTICO: Eliminar límites de altura en los widgets centrales */
+  .centerCol .widget:last-child {
     max-height: none;
     overflow: visible;
-    display: block; /* Vuelve a ser un bloque normal */
-    flex-direction: initial; /* Resetea el flex */
+    display: block; 
+    flex-direction: initial; 
   }
 
   /* --- Scroll del "Mi Diario de Hoy" en Tablet --- */
+  /* **AJUSTE CLAVE: Eliminar max-height del contenedor principal, solo limitar la lista interna** */
   .rightCol .widget:first-child {
-    /* Ocupa hasta 60vh para un buen espacio de scroll */
-    max-height: 60vh;
+    max-height: none; /* Dejar que el widget crezca sin límites */
     display: flex;
     flex-direction: column;
   }
   .intakeList {
     overflow-y: auto;
+    /* Aplicar un límite más suave aquí, solo si hay mucho contenido */
+    max-height: 400px; 
     min-height: 0;
   }
 }
@@ -410,18 +412,16 @@
   .progressCompact { display: block; }
   
   /* --- Scroll del "Mi Diario de Hoy" en Móvil --- */
+  /* Dejamos que el widget crezca, y controlamos la lista de items */
   .rightCol .widget:first-child {
-    max-height: none; /* Se elimina el 60vh del tablet */
-    /* Altura que se ajusta, pero garantiza un mínimo visible (ej. 4 items) */
-    min-height: clamp(320px, 65vh, 560px); 
+    max-height: none; 
     display: flex;
     flex-direction: column;
   }
   .intakeList {
     overflow-y: auto;
-    /* Se asegura un alto mínimo para que el scroll esté siempre ahí */
+    /* Usamos clamp para un mejor control en distintas resoluciones móviles */
     min-height: 220px;
     max-height: clamp(280px, 60vh, 520px);
   }
 }
-
