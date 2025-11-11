@@ -4,7 +4,8 @@
   background: var(--bg);
   overflow-x: hidden; 
 }
-/* ... (Header, Nav, etc. sin cambios) ... */
+
+/* --- 2. Header --- */
 .header {
   background: var(--surface-elevated);
   border-bottom: 1px solid var(--border);
@@ -86,48 +87,53 @@
   margin: 0;
 }
 
-/* --- 4. El Grid de 3 Columnas (Escritorio > 1200px) --- */
+/* --- 4. El Grid de 3 Columnas (Escritorio) --- */
 .grid121 {
   display: grid;
   grid-template-columns: minmax(280px, 1fr) minmax(600px, 2fr) minmax(280px, 1fr);
   gap: 30px;
   align-items: start;
   padding: 24px 0 40px;
+  /* Definición de áreas para uso en media queries */
   grid-template-areas: "left center right";
 }
 
 /* --- 5. Columnas "Sticky" (Escritorio) --- */
 
-/* Columna Izquierda: Sticky, scroll interno (Solo en Desktop) */
+/* Columna Izquierda: Sticky, scroll interno */
 .leftCol {
-  grid-area: left;
+  grid-area: left; /* Asignación de área */
   position: sticky;
   top: 88px;
   align-self: start;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: calc(100vh - 128px);
+  /* CAMBIO: Usar altura más flexible */
+  max-height: min(800px, 85vh);
+  min-height: 500px;
   overflow-y: auto;
   padding-right: 0.25rem;
 }
 
 /* Columna Central: Crece naturalmente */
 .centerCol {
-  grid-area: center;
+  grid-area: center; /* Asignación de área */
   min-width: 0;
 }
 
-/* Columna Derecha: Sticky, scroll interno (Solo en Desktop) */
+/* Columna Derecha: Sticky, scroll interno */
 .rightCol {
-  grid-area: right;
+  grid-area: right; /* Asignación de área */
   position: sticky;
   top: 88px;
   align-self: start;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: calc(100vh - 128px);
+  /* CAMBIO: Usar altura más flexible */
+  max-height: min(800px, 85vh);
+  min-height: 500px;
   overflow-y: auto;
   padding-right: 0.25rem;
 }
@@ -167,7 +173,7 @@
   flex-shrink: 0;
 }
 
-/* Lista de intake con scroll interno (Solo en Desktop) */
+/* Lista de intake con scroll interno */
 .intakeList {
   display: flex;
   flex-direction: column;
@@ -238,10 +244,10 @@
   font-size: 1.1rem;
 }
 
-/* Contenedor central de widgets: en escritorio, solo el widget de sugerencias tiene scroll */
-/* CRÍTICO: CAMBIAMOS A SELECTOR ÚNICO PARA SER MÁS EXPLÍCITOS EN DESKTOP */
-.centerCol .widget:last-child {
+/* Contenedor central de widgets: en escritorio, los siguientes widgets tienen margen arriba */
+.centerCol .widget + .widget {
   margin-top: 20px;
+  /* Estas propiedades se eliminan en móvil/tablet en las media queries */
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 200px); /* Lógica de scroll en escritorio */
@@ -266,7 +272,7 @@
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 15px;
   margin-top: 15px;
-  overflow-y: auto; /* Scroll interno en escritorio */
+  overflow-y: auto;
   padding-right: 6px;
   flex: 1;
   min-height: 0;
@@ -321,10 +327,10 @@
 /* ====== 🖥️ MEDIA QUERIES PARA RESPONSIVE DESIGN ====== */
 /* ======================================================= */
 
-/* --- 2) Tablet/Laptop (Máx 1200px): Pasamos a 2 columnas (Flow Vertical) --- */
+/* --- 2) Tablet (Máx 1200px): Pasamos a 2 columnas (Izquierda y Centro a la izquierda, Derecha a la derecha) --- */
 @media (max-width: 1200px) {
   .wide {
-    padding: 0 16px;
+    padding: 0 16px; /* Ajuste de padding para tablet */
   }
   .grid121 {
     display: grid;
@@ -336,54 +342,42 @@
       "center right";
     gap: 20px;
     padding: 20px 0 30px;
-    align-items: start;
   }
 
-  /* **CRÍTICO: ELIMINAR TODA LÓGICA DE STICKY Y ALTURA FIJA EN COLUMNAS** */
+  /* Desactivar sticky/altura fija en las columnas para que crezcan con el contenido */
   .leftCol,
   .centerCol,
   .rightCol {
     position: static;
     height: auto;
     overflow: visible;
-    max-height: none; 
+    max-height: none; /* Elimina la altura fija */
+    min-height: auto; /* Elimina la altura mínima */
     padding-right: 0;
-    display: flex; /* Mantiene flexbox para que los widgets internos se apilen */
-    flex-direction: column;
-    gap: 16px;
   }
 
-  /* CRÍTICO: Eliminar scroll y límites de altura del widget de sugerencias */
-  /* Debería fluir verticalmente con la página */
-  .centerCol .widget:last-child {
+  /* Los widgets ya no necesitan la altura limitada en el centro */
+  .centerCol .widget {
     max-height: none;
     overflow: visible;
-    display: block; 
-    flex-direction: initial; 
-    margin-top: 20px; /* Mantiene el margen entre widgets */
-  }
-  .foodGrid {
-    overflow-y: visible; /* Elimina scroll interno de la lista de sugerencias */
+    display: block; /* Vuelve a ser un bloque normal */
+    flex-direction: initial; /* Resetea el flex */
   }
 
-  /* CRÍTICO: Eliminar scroll y límites de altura del widget del diario */
+  /* --- Scroll del "Mi Diario de Hoy" en Tablet --- */
   .rightCol .widget:first-child {
-    max-height: none; 
-    display: block; 
-    flex-direction: initial;
-    flex: initial;
+    /* Ocupa hasta 60vh para un buen espacio de scroll */
+    max-height: 60vh;
+    display: flex;
+    flex-direction: column;
   }
-
-  /* CRÍTICO: Eliminar scroll interno de la lista de entradas */
   .intakeList {
-    overflow-y: visible;
-    max-height: none;
-    min-height: auto;
-    flex: initial;
+    overflow-y: auto;
+    min-height: 0;
   }
 }
 
-/* --- 3) Móvil (Máx 900px): Pasamos a 1 columna apilada (Flow Vertical) --- */
+/* --- 3) Móvil (Máx 900px): Pasamos a 1 columna apilada --- */
 @media (max-width: 900px) {
   .wide {
     padding: 0 16px;
@@ -399,7 +393,7 @@
     padding: 16px 0 20px;
   }
 
-  /* Asegurarse que las columnas estén completamente estáticas y auto-ajustables (redundante pero seguro) */
+  /* Asegurarse que las columnas estén completamente estáticas y auto-ajustables */
   .leftCol,
   .centerCol,
   .rightCol {
@@ -407,30 +401,8 @@
     height: auto;
     overflow: visible;
     max-height: none;
-    padding-right: 0;
-  }
-  
-  /* CRÍTICO: Eliminar scroll y límites de altura del widget de sugerencias */
-  .centerCol .widget:last-child {
-    max-height: none;
-    overflow: visible;
-    display: block; 
-    flex-direction: initial; 
-  }
-  
-  /* CRÍTICO: Eliminar scroll y límites de altura del widget del diario */
-  .rightCol .widget:first-child {
-    max-height: none; 
-    display: block; 
-    flex-direction: initial;
-  }
-
-  /* CRÍTICO: Eliminar scroll interno de la lista de entradas y sugerencias */
-  .intakeList, .foodGrid {
-    overflow-y: visible;
-    max-height: none;
     min-height: auto;
-    flex: initial;
+    padding-right: 0;
   }
 
   /* Header flexible en móvil */
@@ -442,4 +414,19 @@
   /* --- Control de la barra de progreso (Versión Compacta) --- */
   .progressFull { display: none; }
   .progressCompact { display: block; }
+  
+  /* --- Scroll del "Mi Diario de Hoy" en Móvil --- */
+  .rightCol .widget:first-child {
+    max-height: none; /* Se elimina el 60vh del tablet */
+    /* Altura que se ajusta, pero garantiza un mínimo visible (ej. 4 items) */
+    min-height: clamp(320px, 65vh, 560px); 
+    display: flex;
+    flex-direction: column;
+  }
+  .intakeList {
+    overflow-y: auto;
+    /* Se asegura un alto mínimo para que el scroll esté siempre ahí */
+    min-height: 220px;
+    max-height: clamp(280px, 60vh, 520px);
+  }
 }
