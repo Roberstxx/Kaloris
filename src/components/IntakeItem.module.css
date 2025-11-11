@@ -1,20 +1,26 @@
+/*
+  Ajuste visual del componente IntakeItem:
+  - Mayor tamaño general y legibilidad
+  - Botones e inputs más amplios
+  - Mejor balance de espacios internos
+*/
+
 .item {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
-  padding: 1rem;
+  padding: 1.25rem; /* ↑ antes 1rem */
   background: var(--surface-elevated);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  gap: 0.75rem;
+  border-radius: calc(var(--radius) + 2px);
+  gap: 1rem; /* ↑ antes 0.75rem */
   transition: var(--transition);
-  /* En desktop/laptop: horizontal */
-  flex-direction: row;
+  flex-direction: column;
 }
 
 .item:hover {
   border-color: var(--border-light);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .content {
@@ -23,13 +29,12 @@
   align-items: center;
   gap: 1rem;
   min-width: 0;
-  /* En desktop/laptop: sin wrap */
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .name {
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-size: 1rem; /* ↑ antes 0.9375rem */
+  font-weight: 600;
   color: var(--text);
   margin: 0;
   flex: 1;
@@ -37,21 +42,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  /* En desktop/laptop: no ocupa toda la línea */
-  flex-basis: auto;
+  flex-basis: 100%;
 }
 
 .controls {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
+  gap: 0.75rem; /* ↑ antes 0.5rem */
 }
 
 .controlBtn {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
+  width: 38px; /* ↑ antes 32px */
+  height: 38px;
+  border-radius: var(--radius);
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text-secondary);
@@ -59,7 +62,7 @@
   align-items: center;
   justify-content: center;
   transition: var(--transition);
-  flex-shrink: 0;
+  font-size: 1rem;
 }
 
 .controlBtn:hover {
@@ -69,45 +72,43 @@
 }
 
 .unitsInput {
-  width: 60px;
-  padding: 0.375rem 0.5rem;
+  width: 70px; /* ↑ antes 60px */
+  padding: 0.5rem 0.6rem; /* ↑ antes 0.375rem 0.5rem */
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text);
   text-align: center;
-  font-size: 0.875rem;
-  font-weight: 500;
-  flex-shrink: 0;
+  font-size: 1rem; /* ↑ antes 0.875rem */
+  font-weight: 600;
 }
 
 .unitsInput:focus {
   outline: none;
   border-color: var(--brand);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 25%, transparent);
 }
 
 .kcal {
-  font-size: 0.9375rem;
-  font-weight: 600;
+  font-size: 1rem; /* ↑ antes 0.9375rem */
+  font-weight: 700;
   color: var(--brand);
   white-space: nowrap;
-  flex-shrink: 0;
-  /* En desktop/laptop: sin margin-left auto */
-  margin-left: 0;
+  margin-left: auto;
 }
 
 .deleteBtn {
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
+  width: 42px; /* ↑ antes 36px */
+  height: 42px;
+  border-radius: var(--radius);
   background: transparent;
   color: var(--text-tertiary);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: var(--transition);
-  align-self: center;
+  align-self: flex-end;
 }
 
 .deleteBtn:hover {
@@ -115,26 +116,4 @@
   color: white;
 }
 
-/* Media query para móviles pequeños (menos de 640px) */
-@media (max-width: 640px) {
-  .item {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .content {
-    flex-wrap: wrap;
-  }
-  
-  .name {
-    flex-basis: 100%;
-  }
-  
-  .kcal {
-    margin-left: auto;
-  }
-  
-  .deleteBtn {
-    align-self: flex-end;
-  }
-}
+
