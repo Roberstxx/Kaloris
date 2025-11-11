@@ -1,11 +1,12 @@
 // src/pages/Settings.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Home, History, Edit, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Edit, X } from "lucide-react";
 import { useSession } from "../context/SessionContext";
 import { ActivityLevel, Sex } from "../types";
 import UserAvatar from "@/components/UserAvatar";
 import { isCloudinaryConfigured, uploadImageToCloudinary } from "@/lib/cloudinary";
+import AppHeader from "@/components/ui/AppHeader";
 
 const ACTIVITY_LEVELS: Record<ActivityLevel, { label: string; factor: number; help: string }> = {
   sedentario: { label: "Sedentario", factor: 1.2, help: "Poco o nada de ejercicio" },
@@ -146,7 +147,6 @@ const Settings: React.FC = () => {
     if (file) {
       void handleAvatarFile(file);
     }
-    // Reset para permitir volver a subir el mismo archivo
     event.target.value = "";
   };
 
@@ -199,53 +199,8 @@ const Settings: React.FC = () => {
 
   return (
     <div>
-      <header
-        className="header"
-        style={{
-          background: "var(--surface-elevated)",
-          borderBottom: "1px solid var(--border)",
-          padding: "1rem 0",
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-        }}
-      >
-        <div className="container" style={{ maxWidth: "100%", width: "100%", margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <h1
-              className="logo"
-              style={{
-                margin: 0,
-                fontSize: "1.25rem",
-                background: "var(--gradient-brand)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              Contador de Calorías
-            </h1>
-            <nav style={{ display: "flex", gap: ".5rem", alignItems: "center" }}>
-              <Link to="/dashboard" className="navLink" style={navLinkStyle}>
-                <Home size={20} />
-              </Link>
-              <Link to="/historial" className="navLink" style={navLinkStyle}>
-                <History size={20} />
-              </Link>
-              <Link to="/settings" className="navLink" style={navLinkStyle}>
-                <UserAvatar
-                  src={user.avatarUrl}
-                  name={user.name}
-                  username={user.username}
-                  size={36}
-                  style={navAvatarStyle}
-                  imageStyle={avatarImageStyle}
-                  fallbackStyle={navAvatarFallbackStyle}
-                />
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      {/* Header global reutilizable */}
+      <AppHeader />
 
       <main className="container" style={{ paddingTop: "2rem", paddingBottom: "3rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
@@ -595,17 +550,7 @@ const Settings: React.FC = () => {
 
 export default Settings;
 
-const navLinkStyle: React.CSSProperties = {
-  width: 44,
-  height: 44,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: 12,
-  color: "var(--text-secondary)",
-  transition: "var(--transition)",
-};
-
+/* ===== estilos locales usados en la página (sin los del header) ===== */
 const gridTwoCols: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "1fr",
@@ -664,20 +609,6 @@ const avatarFallbackStyle: React.CSSProperties = {
   color: "var(--text-secondary)",
 };
 
-const navAvatarStyle: React.CSSProperties = {
-  border: "2px solid var(--border)",
-  backgroundColor: "var(--surface)",
-  boxShadow: "0 2px 4px rgb(15 23 42 / 0.08)",
-};
-
-const navAvatarFallbackStyle: React.CSSProperties = {
-  fontSize: ".65rem",
-  fontWeight: 600,
-  letterSpacing: "0.02em",
-  textTransform: "uppercase",
-  color: "var(--text-secondary)",
-};
-
 const helperText: React.CSSProperties = {
   color: "var(--text-tertiary)",
   display: "block",
@@ -689,3 +620,4 @@ const errorText: React.CSSProperties = {
   display: "block",
   marginTop: "0.5rem",
 };
+
