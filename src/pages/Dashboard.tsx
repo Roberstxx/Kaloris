@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Home, History, Download, Undo, RotateCcw, Plus, Flame } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Download, Undo, RotateCcw, Plus } from "lucide-react";
 
 import { useSession } from "../context/SessionContext";
 import { useIntake } from "../context/IntakeContext";
@@ -10,10 +10,8 @@ import { SearchBar } from "../components/SearchBar";
 import { CategoryFilter } from "../components/CategoryFilter";
 import { FoodCard } from "../components/FoodCard";
 import { IntakeItem } from "../components/IntakeItem";
-import { ThemeToggle } from "../components/ThemeToggle";
 import { MacrosSummary } from "../components/MacrosSummary";
-import { StreakWidget } from "../components/StreakWidget"; // <-- NUEVA IMPORTACIÓN
-import UserAvatar from "@/components/UserAvatar";
+import { StreakWidget } from "../components/StreakWidget";
 
 import { FoodItem } from "../types";
 import { getTodayISO } from "../utils/date";
@@ -23,6 +21,7 @@ import type { MealSlot } from "../utils/meals";
 import foodsData from "../data/foods.seed.json";
 
 import styles from "./Dashboard.module.css";
+import AppHeader from "@/components/ui/AppHeader";
 
 /** Normaliza texto para búsquedas */
 const normalize = (s: string) =>
@@ -38,7 +37,7 @@ const Dashboard: React.FC = () => {
 
   const {
     todayEntries, // entradas de hoy
-    todayTotal, // kcal consumidas hoy
+    todayTotal,   // kcal consumidas hoy
     addEntry,
     updateEntry,
     deleteEntry,
@@ -114,43 +113,8 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className={styles.page}>
-      {/* ===== Header ===== */}
-      <header className={styles.header}>
-        <div className={`container ${styles.wide}`}>
-          <div className={styles.headerContent}>
-            <h1 className={styles.logo}>Contador de Calorías</h1>
-            <nav className={styles.nav}>
-              <Link to="/dashboard" className={styles.navLink} title="Inicio">
-                <Home size={18} />
-              </Link>
-              <Link to="/historial" className={styles.navLink} title="Historial">
-                <History size={18} />
-              </Link>
-              {/* ENLACE A LA PÁGINA DE RACHA */}
-              <Link to="/streak" className={styles.navLink} title="Racha de Metas">
-                <Flame size={18} />
-              </Link>
-              {/* FIN ENLACE RACHA */}
-              <Link
-                to="/settings"
-                className={`${styles.navLink} ${styles.navProfileLink}`}
-                title="Configuración"
-              >
-                <UserAvatar
-                  src={user.avatarUrl}
-                  name={user.name}
-                  username={user.username}
-                  size={36}
-                  className={styles.navAvatar}
-                  imageClassName={styles.navAvatarImage}
-                  fallbackClassName={styles.navAvatarFallback}
-                />
-              </Link>
-              <ThemeToggle />
-            </nav>
-          </div>
-        </div>
-      </header>
+      {/* ===== Header global ===== */}
+      <AppHeader showStreakLink />
 
       {/* ===== Grid 1–2–1 ===== */}
       <main>
@@ -186,14 +150,6 @@ const Dashboard: React.FC = () => {
                 <h3>📊 Macronutrientes</h3>
                 <MacrosSummary />
               </div>
-              
-              {/* ELIMINAMOS EL ENLACE RÁPIDO AQUÍ */}
-              {/* <div className={styles.widget}>
-                <Link to="/streak" className="btn btn-secondary" style={{ width: '100%' }}>
-                  <Flame size={16} /> Ver mi Racha de Metas
-                </Link>
-              </div> */}
-
             </aside>
 
             {/* ---------- CENTRO: BUSCADOR + SUGERENCIAS ---------- */}
@@ -286,7 +242,7 @@ const Dashboard: React.FC = () => {
               </div>
             </section>
 
-            {/* ---------- DERECHA: DIARIO + TOTALES + RACHA (NUEVA POSICIÓN) ---------- */}
+            {/* ---------- DERECHA: DIARIO + TOTALES + RACHA ---------- */}
             <aside className={styles.rightCol}>
               <div className={styles.widget}>
                 <h3>📜 Mi Diario de Hoy</h3>
@@ -312,9 +268,8 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
 
-              {/* WIDGET DE RACHA (NUEVA POSICIÓN) */}
               <div className={styles.widget}>
-                 <StreakWidget /> 
+                <StreakWidget />
               </div>
 
               <div className={styles.widget}>
@@ -322,15 +277,15 @@ const Dashboard: React.FC = () => {
                 <ul className={styles.mealSummary}>
                   <li>
                     <span>Desayuno</span>
-                    <strong>{mealTotals.breakfast ? `${mealTotals.breakfast} kcal` : '—'}</strong>
+                    <strong>{mealTotals.breakfast ? `${mealTotals.breakfast} kcal` : "—"}</strong>
                   </li>
                   <li>
                     <span>Comida</span>
-                    <strong>{mealTotals.lunch ? `${mealTotals.lunch} kcal` : '—'}</strong>
+                    <strong>{mealTotals.lunch ? `${mealTotals.lunch} kcal` : "—"}</strong>
                   </li>
                   <li>
                     <span>Cena</span>
-                    <strong>{mealTotals.dinner ? `${mealTotals.dinner} kcal` : '—'}</strong>
+                    <strong>{mealTotals.dinner ? `${mealTotals.dinner} kcal` : "—"}</strong>
                   </li>
                   <li className={styles.mealTotal}>
                     <span>TOTAL</span>
@@ -361,3 +316,4 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
