@@ -330,25 +330,31 @@
   }
   .grid121 {
     display: grid;
-    /* Grid de 2 columnas: 1fr (izq) y 1fr (der) */
-    grid-template-columns: minmax(320px, 1fr) minmax(280px, 1fr);
+    /* Grid de 2 columnas: columna izquierda más ancha, derecha fija */
+    grid-template-columns: 1fr 340px;
     /* Izquierda (left) arriba, Centro (center) abajo, Derecha (right) en la columna 2 */
     grid-template-areas:
       "left  right"
       "center right";
-    gap: 20px;
+    gap: 24px;
     padding: 20px 0 30px;
+    align-items: start;
   }
 
   /* Desactivar sticky y permitir crecimiento natural - IMPORTANTE PARA LAPTOPS */
   .leftCol,
-  .centerCol,
-  .rightCol {
-    position: static; /* Elimina el sticky */
-    height: auto; /* Altura automática */
-    overflow: visible; /* Sin overflow oculto */
-    max-height: none; /* Sin límite de altura */
+  .centerCol {
+    position: static;
+    height: auto;
+    overflow: visible;
+    max-height: none;
     padding-right: 0;
+  }
+  
+  .leftCol {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
   }
 
   /* Los widgets del centro sin restricción de altura */
@@ -366,15 +372,21 @@
     display: block;
   }
 
-  /* Columna derecha sin límite - crece naturalmente */
+  /* Columna derecha sin límite - crece naturalmente CON GAP INTERNO */
+  .rightCol {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Gap entre widgets */
+  }
+  
   .rightCol .widget:first-child {
-    max-height: none; /* Sin límite de altura */
+    max-height: none;
     display: block;
   }
   
   /* Lista de intake sin scroll - crece con todo el contenido */
   .intakeList {
-    overflow-y: visible; /* Sin scroll, muestra todo */
+    overflow-y: visible;
     min-height: 0;
   }
 }
