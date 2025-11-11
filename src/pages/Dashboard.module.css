@@ -366,18 +366,18 @@
     display: block;
   }
 
-  /* Columna derecha crece naturalmente, sin scroll forzado */
+  /* Columna derecha con altura controlada para scroll interno */
   .rightCol .widget:first-child {
-    max-height: none; /* Sin límite de altura */
-    display: block; /* Bloque normal */
-    flex-direction: initial;
+    max-height: calc(100vh - 180px); /* Altura máxima basada en viewport */
+    display: flex;
+    flex-direction: column;
   }
   
-  /* Lista de intake sin scroll en tablet/laptop - crece naturalmente */
+  /* Lista de intake CON scroll en tablet/laptop */
   .intakeList {
-    overflow-y: visible; /* Sin scroll, crece con contenido */
+    overflow-y: auto; /* Scroll interno para ver todo el contenido */
     min-height: 0;
-    flex: initial;
+    flex: 1;
   }
 }
 
