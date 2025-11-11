@@ -436,3 +436,48 @@
     max-height: clamp(280px, 60vh, 520px);
   }
 }
+
+
+/* === Scrollbars modernos y suaves === */
+.leftCol::-webkit-scrollbar,
+.rightCol::-webkit-scrollbar,
+.intakeList::-webkit-scrollbar,
+.foodGrid::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.leftCol::-webkit-scrollbar-track,
+.rightCol::-webkit-scrollbar-track,
+.intakeList::-webkit-scrollbar-track,
+.foodGrid::-webkit-scrollbar-track {
+  background: var(--surface);
+  border-radius: 10px;
+}
+
+.leftCol::-webkit-scrollbar-thumb,
+.rightCol::-webkit-scrollbar-thumb,
+.intakeList::-webkit-scrollbar-thumb,
+.foodGrid::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--brand) 0%, var(--brand-light) 100%);
+  border-radius: 10px;
+  border: 2px solid var(--surface);
+}
+
+.leftCol::-webkit-scrollbar-thumb:hover,
+.rightCol::-webkit-scrollbar-thumb:hover,
+.intakeList::-webkit-scrollbar-thumb:hover,
+.foodGrid::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--brand-dark) 0%, var(--brand) 100%);
+}
+
+/* Scroll suave */
+.leftCol,
+.rightCol,
+.intakeList,
+.foodGrid {
+  scrollbar-width: thin;
+  scrollbar-color: var(--brand) var(--surface);
+  scroll-behavior: smooth;
+}
+
