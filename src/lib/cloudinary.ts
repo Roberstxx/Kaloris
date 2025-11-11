@@ -6,27 +6,65 @@ export type CloudinaryUploadResult = {
   [k: string]: unknown;
 };
 
-function must(v: string | undefined, name: string) {
-  if (!v || !v.trim()) throw new Error(`Falta variable de entorno: ${name}`);
-  return v;
+type CloudinaryEnv = {
+  cloudName: string;
+  uploadPreset: string;
+};
+
+/**
+ * Lee las variables de entorno sin romper el build.
+ * Si algo falta, lo reportaremos cuando se intente subir.
+ */
+function readEnv(): CloudinaryEnv {
+  const cloudName = (import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "").trim();
+  const uploadPreset = (import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "").trim();
+  return { cloudName, uploadPreset };
 }
 
-const CLOUD_NAME = must(import.meta.env.VITE_CLOUDINARY_CLOUD_NAME, "VITE_CLOUDINARY_CLOUD_NAME");
-const UPLOAD_PRESET = must(import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET, "VITE_CLOUDINARY_UPLOAD_PRESET");
+/**
+ * Sube una imagen a Cloudinary usando un preset UNSIGNED.
+ * @param file   File/Blob o data URL. (Si le pasas string URL http(s), Cloudinary también acepta.)
+ * @param folder Carpeta destino (opcional).
+ * @returns      Respuesta de Cloudinary (incluye secure_url).
+ */
+export async function uploadImageToCloudinary(
+  file: File | Blob | string,
+  folder?: string
+): Promise<CloudinaryUploadResult> {
+  const { cloudName, uploadPreset } = readEnv();
 
-export async function uploadImageToCloudinary(file: File, folder?: string): Promise<CloudinaryUploadResult> {
+  if (!cloudName || !uploadPreset) {
+    const missing = [
+      !cloudName && "VITE_CLOUDINARY_CLOUD_NAME",
+      !uploadPreset && "VITE_CLOUDINARY_UPLOAD_PRESET",
+    ].filter(Boolean) as string[];
+    throw new Error(
+      `Cloudinary no está configurado. Faltan: ${missing.join(", ")}`
+    );
+  }
+
   const form = new FormData();
-  form.append("file", file);
-  form.append("upload_preset", UPLOAD_PRESET);
+  form.append("file", file as any);
+  form.append("upload_preset", uploadPreset);
   if (folder?.trim()) form.append("folder", folder.trim());
 
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, { method: "POST", body: form });
-  const json = (await res.json()) as CloudinaryUploadResult & { error?: { message?: string } };
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
+    method: "POST",
+    body: form,
+  });
 
-  if (!res.ok) throw new Error(json.error?.message || "No se pudo subir la imagen.");
+  const json = (await res.json()) as CloudinaryUploadResult & {
+    error?: { message?: string };
+  };
+
+  if (!res.ok) {
+    throw new Error(json.error?.message || "No se pudo subir la imagen.");
+  }
   return json;
 }
 
-export function isCloudinaryConfigured() {
-  return Boolean(CLOUD_NAME && UPLOAD_PRESET);
+/** Útil para toggles en UI de settings, sin romper el build */
+export function isCloudinaryConfigured(): boolean {
+  const { cloudName, uploadPreset } = readEnv();
+  return Boolean(cloudName && uploadPreset);
 }
