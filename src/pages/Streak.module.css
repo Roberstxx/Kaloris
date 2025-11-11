@@ -1,277 +1,166 @@
-.page {
-    max-width: 1000px;
-    margin: 2rem auto 4rem;
-    padding: 0 1rem;
+.page { margin: 0 0 3rem; }
+
+.headerRow {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 1.25rem 0 .75rem; padding-bottom: .25rem; border-bottom: 1px solid var(--border);
 }
+.h1 { font-size: 1.5rem; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: .5rem; }
 
-.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 2rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border);
+/* Métricas */
+.overviewGrid { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 1rem; margin: 1rem 0 1.75rem; }
+.card { background: var(--card-background); border-radius: var(--border-radius); padding: 1.25rem; box-shadow: var(--shadow-small); text-align: center; }
+.icon { color: var(--accent); margin-bottom: .35rem; }
+.value { font-size: 2.75rem; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: .15rem; }
+.label { font-size: .95rem; color: var(--text-secondary); font-weight: 600; }
+
+/* Calendario */
+.calendarCard { background: var(--card-background); border-radius: var(--border-radius); box-shadow: var(--shadow-small); padding: 1rem 1rem 1.25rem; }
+
+.calHeader { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding-bottom: .75rem; border-bottom: 1px solid var(--border); }
+.calTitle { margin: 0; font-size: 1.2rem; color: var(--text-primary); }
+.headerActions { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+
+.compactToggle { display: inline-flex; align-items: center; gap: .35rem; font-weight: 700; color: var(--text-secondary); }
+.compactToggle input { accent-color: var(--accent); }
+
+.dowRow { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; margin-top: .75rem; }
+.dow { text-align: center; font-size: .78rem; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; padding-bottom: .15rem; }
+
+.grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; }
+
+.cell {
+  position: relative;
+  aspect-ratio: 1/1;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  color: var(--text-tertiary); /* color base (para el dot en "empty") */
 }
+.cell:hover { transform: translateY(-1px); box-shadow: 0 0 0 3px var(--accent); z-index: 1; }
 
-.header h1 {
-    font-size: 2rem;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+.cellMuted { opacity: .55; filter: grayscale(.15); }
+
+.cellEmpty { /* borde base */ }
+.cellOk {
+  background: color-mix(in srgb, var(--success) 18%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--success) 55%, transparent);
+  color: var(--success); /* dot hereda este color */
 }
-
-/* Estilos de la Tarjeta de Resumen de Racha */
-.overviewGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.card {
-    background-color: var(--card-background);
-    border-radius: var(--border-radius);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-small);
-    text-align: center;
-}
-
-.card .icon {
-    color: var(--accent);
-    margin-bottom: 0.5rem;
-}
-
-.card .value {
-    font-size: 3.5rem;
-    font-weight: 700;
-    color: var(--accent);
-    line-height: 1;
-    margin-bottom: 0.25rem;
-}
-
-.card .label {
-    font-size: 1rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-/* Estilos de la Sección de Historial */
-.historySection h2 {
-    font-size: 1.5rem;
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-}
-
-.historyList {
-    background-color: var(--card-background);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-small);
-    overflow: hidden;
-}
-
-.historyItem {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border-light);
-}
-
-.historyItem:last-child {
-    border-bottom: none;
-}
-
-.historyItem .date {
-    font-weight: 600;
-    color: var(--text-primary);
-    flex-grow: 1;
-}
-
-.historyItem .kcal {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-right: 1rem;
-}
-
-.historyItem .status {
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 0.85rem;
-}
-
-.status.met {
-    background-color: var(--success-light);
-    color: var(--success);
-}
-
-.status.missed {
-    background-color: var(--error-light);
-    color: var(--error);
-}
-
-@media (max-width: 600px) {
-    .page {
-        padding: 0 0.5rem;
-    }
-}
-
-
-
-
-/* src/pages/Streak.module.css */
-
-/* ... (Estilos existentes) ... */
-
-
-/* === Sección de Calendario de Racha === */
-
-.calendarContainer {
-    padding: 1.5rem;
-    background-color: var(--card-background);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-small);
-}
-
-.calendarHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.calendarHeader h3 {
-    margin: 0;
-    font-size: 1.1rem;
-}
-
-/* LEYENDA CLARA */
-.legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem 1.25rem;
-    padding: 0.75rem 0;
-    border-top: 1px dashed var(--border-light);
-    margin-top: 1rem;
-    font-size: 0.85rem;
-}
-
-.legendItem {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.legendDot {
-    width: 14px; /* Un poco más grande */
-    height: 14px;
-    border-radius: 4px; /* Cuadrado para coincidir con la celda */
-    display: inline-block;
-    border: 1px solid transparent;
-}
-/* Colores de leyenda */
-.dotSuccess { 
-    background-color: color-mix(in srgb, var(--success) 15%, transparent);
-    border-color: var(--success);
-}
-.dotNear { 
-    background-color: color-mix(in srgb, var(--warning) 15%, transparent);
-    border-color: var(--warning);
-}
-.dotFail { 
-    background-color: color-mix(in srgb, var(--danger) 15%, transparent);
-    border-color: var(--danger);
-}
-.dotEmpty { 
-    background-color: var(--surface);
-    border-color: var(--border);
-}
-
-
-.calendarGrid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr); /* 7 días de la semana */
-    gap: 5px;
-    margin-top: 1rem;
-}
-
-.dayLabel {
-    text-align: center;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--text-tertiary);
-    text-transform: uppercase;
-    padding-bottom: 0.25rem;
-}
-
-.dayCell {
-    position: relative;
-    aspect-ratio: 1 / 1; 
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem; 
-    font-weight: 600;
-    transition: background-color 0.2s, box-shadow 0.2s;
-    cursor: default; /* Mantenemos default, la info va en el title */
-    box-shadow: inset 0 0 0 1px var(--border-light);
-    color: var(--text-secondary);
-    user-select: none;
-}
-
-.dayCell:hover {
-    box-shadow: 0 0 0 3px var(--accent); /* Un borde más grueso al hacer hover */
-    z-index: 10;
-}
-
-/* Estados de Cumplimiento con fondos más contrastantes */
-.cellEmpty {
-    background-color: var(--surface);
-    color: var(--text-tertiary);
-    opacity: 0.6;
-    box-shadow: inset 0 0 0 1px var(--border);
-}
-/* NOTA: Las celdas sin fecha (padding inicial) no deben tener box-shadow */
-.cellEmpty:not(:has(span)) { 
-    box-shadow: none; 
-    background: transparent;
-}
-
-.cellFail {
-    background-color: color-mix(in srgb, var(--danger) 18%, transparent);
-    color: var(--danger);
-    font-weight: 700;
-    border: 1px solid color-mix(in srgb, var(--danger) 50%, transparent);
-}
-
 .cellNear {
-    background-color: color-mix(in srgb, var(--warning) 18%, transparent);
-    color: var(--warning);
-    font-weight: 700;
-    border: 1px solid color-mix(in srgb, var(--warning) 50%, transparent);
+  background: color-mix(in srgb, var(--warning) 22%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warning) 60%, transparent);
+  color: var(--warning);
+}
+.cellFail {
+  background: color-mix(in srgb, var(--danger) 26%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 65%, transparent);
+  color: var(--danger);
 }
 
-.cellSuccess {
-    background-color: color-mix(in srgb, var(--success) 18%, transparent);
-    color: var(--success);
-    font-weight: 700;
-    border: 1px solid color-mix(in srgb, var(--success) 50%, transparent);
+.cellStreak {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.cellToday { box-shadow: 0 0 0 3px var(--accent) !important; }
+
+.dateNum { font-weight: 800; font-size: clamp(.7rem, 1.8vw, .9rem); color: var(--text); }
+
+/* puntito de estado (usa currentColor del cell) */
+.dot { position: absolute; bottom: 6px; right: 6px; width: 8px; height: 8px; border-radius: 999px; background: currentColor; opacity: .7; }
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  inset: auto 50% calc(100% + 8px) auto;
+  transform: translateX(50%) translateZ(0);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-small);
+  border-radius: 8px;
+  padding: .45rem .6rem;
+  font-size: .78rem;
+  color: var(--text);
+  opacity: 0; pointer-events: none;
+  transition: opacity .12s ease, transform .12s ease;
+  white-space: nowrap; z-index: 3;
+}
+.cell:hover .tooltip, .cell:focus-within .tooltip { opacity: 1; transform: translateX(50%) translateY(-2px); }
+.tooltipTitle { font-weight: 800; margin-right: .5rem; }
+.tooltipLine { color: var(--text-secondary); margin-right: .5rem; }
+.tooltipBadge { padding: .15rem .4rem; border-radius: 999px; font-weight: 800; }
+.badgeOk   { background: color-mix(in srgb, var(--success) 18%, transparent); color: var(--success); border: 1px solid color-mix(in srgb, var(--success) 60%, transparent); }
+.badgeNear { background: color-mix(in srgb, var(--warning) 18%, transparent); color: var(--warning); border: 1px solid color-mix(in srgb, var(--warning) 60%, transparent); }
+.badgeFail { background: color-mix(in srgb, var(--danger) 18%, transparent);  color: var(--danger);  border: 1px solid color-mix(in srgb, var(--danger) 60%, transparent); }
+
+/* Leyenda linda y alineada */
+.legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: .6rem 1rem;
+  padding-top: .75rem;
+  border-top: 1px dashed var(--border-light);
+  margin-top: .75rem;
+  font-size: .9rem;
+}
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.legendDot { width: 14px; height: 14px; border-radius: 4px; display: inline-block; border: 1px solid transparent; flex-shrink: 0; }
+.legendText { line-height: 1; }
+
+.legOk   { background: color-mix(in srgb, var(--success) 15%, transparent); border-color: var(--success); }
+.legNear { background: color-mix(in srgb, var(--warning) 15%, transparent); border-color: var(--warning); }
+.legFail { background: color-mix(in srgb, var(--danger) 15%, transparent); border-color: var(--danger); }
+.legEmpty{ background: var(--surface); border-color: var(--border); }
+.legStreak{ background: var(--surface); border: 2px solid var(--accent); }
+.legToday{ background: var(--accent); }
+
+/* Píldoras de meses */
+.monthPills { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; justify-content: center; }
+.monthPill {
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary);
+  border-radius: 999px; padding: .35rem .6rem; font-weight: 700; font-size: .8rem;
+  transition: background .12s ease, color .12s ease, border-color .12s ease;
+}
+.monthPill:hover { background: var(--card-background); }
+.monthPillActive { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* Chips semanales */
+.weekChips {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: .5rem; margin-top: .75rem;
+}
+.weekChip {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 999px; padding: .35rem .6rem; font-size: .82rem; font-weight: 800;
+  color: var(--text-secondary);
 }
 
-.cellToday {
-    box-shadow: 0 0 0 3px var(--accent) !important;
+/* Lista ligera */
+.historyLite { margin-top: 1.25rem; }
+.historyLite h2 { margin: .25rem 0 1rem; font-size: 1.05rem; }
+.logList { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
+.logList li {
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+  padding: .5rem .75rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface);
 }
+.empty { color: var(--text-tertiary); }
 
-.cellCurrentStreak {
-    /* Resalta los días que forman parte de la racha actual */
-    border: 2px solid var(--accent) !important;
-}
+/* Compact mode */
+.compact .grid { gap: 4px; }
+.compact .cell { border-radius: 8px; }
+.compact .monthPills { display: none; }
 
-/* Ocultar el historial de lista simple */
-.historyList {
-    display: none; 
+/* Very small screens */
+@media (max-width: 520px) {
+  .dow { font-size: .7rem; }
+  .monthPills { display: none; }
 }
