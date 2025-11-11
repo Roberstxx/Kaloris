@@ -1,60 +1,68 @@
 // src/pages/Settings.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Edit, X } from "lucide-react";
-import { useSession } from "../context/SessionContext";
-import { ActivityLevel, Sex } from "../types";
-import UserAvatar from "@/components/UserAvatar";
-import { isCloudinaryConfigured, uploadImageToCloudinary } from "@/lib/cloudinary";
 import AppHeader from "@/components/ui/AppHeader";
+import UserAvatar from "@/components/UserAvatar";
+import { useSession } from "@/context/SessionContext";
+import type { ActivityLevel, Sex } from "@/types";
+
 import styles from "./Settings.module.css";
 
-const ACTIVITY_LEVELS: Record<ActivityLevel, { label: string; factor: number; help: string }> = {
-  sedentario: { label: "Sedentario", factor: 1.2, help: "Poco o nada de ejercicio" },
-  ligero: { label: "Ligero", factor: 1.375, help: "Ejercicio 1–3 veces por semana" },
-  moderado: { label: "Moderado", factor: 1.55, help: "Ejercicio 3–5 veces por semana" },
-  intenso: { label: "Intenso", factor: 1.725, help: "Entrenamientos fuertes 6–7 veces" },
-  muy_intenso: { label: "Muy intenso", factor: 1.9, help: "Trabajo físico o doble sesión diaria" },
+/* =========================================================
+   Utilidades de notificación y protección de navegación
+   ========================================================= */
+
+/** Hook de toast simple (sin dependencias externas) */
+function useToast() {
+  const [msg, setMsg] = React.useState<string | null>(null);
+
+  const push = React.useCallback((text: string, ms = 2200) => {
+    setMsg(text);
+    // limpiar cualquier timeout previo
+    window.clearTimeout((push as any)._t);
+    (push as any)._t = window.setTimeout(() => setMsg(null), ms);
+  }, []);
+
+  return { msg, push };
+}
+
+/** Hook para advertir cierre/recarga si hay cambios sin guardar */
+function useBeforeUnload(when: boolean) {
+  React.useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!when) return;
+      e.preventDefault();
+      e.returnValue = ""; // obliga a mostrar el diálogo nativo
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [when]);
+}
+
+/* =========================================================
+   Component
+   ========================================================= */
+
+const ACTIVITY_LABELS: Record<ActivityLevel, string> = {
+  sedentario: "Sedentario",
+  ligero: "Ligero",
+  moderado: "Moderado",
+  intenso: "Intenso",
+  muy_intenso: "Muy intenso",
 };
-
-const LEGACY_ACTIVITY_MAP: Record<string, ActivityLevel> = {
-  sedentary: "sedentario",
-  light: "ligero",
-  moderate: "moderado",
-  intense: "intenso",
-  athlete: "muy_intenso",
-};
-
-const DEFAULT_ACTIVITY: ActivityLevel = "moderado";
-
-const normalizeActivity = (value?: string): ActivityLevel => {
-  if (value && Object.prototype.hasOwnProperty.call(ACTIVITY_LEVELS, value)) {
-    return value as ActivityLevel;
-  }
-  if (value && LEGACY_ACTIVITY_MAP[value]) {
-    return LEGACY_ACTIVITY_MAP[value];
-  }
-  return DEFAULT_ACTIVITY;
-};
-
-const resolveMacros = (macros?: { carbPct: number; protPct: number; fatPct: number }) => ({
-  carbPct: Number(macros?.carbPct ?? 50),
-  protPct: Number(macros?.protPct ?? 25),
-  fatPct: Number(macros?.fatPct ?? 25),
-});
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, updateProfile, logout } = useSession();
+  const { isAuthenticated, user, updateProfile, logout } = useSession();
 
-  const [isEditing, setIsEditing] = useState(false);
-
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isAuthenticated) navigate("/login");
   }, [isAuthenticated, navigate]);
 
-  const profileSnapshot = useMemo(() => {
+  // ===== Snapshot de usuario (estado base) =====
+  const snapshot = React.useMemo(() => {
     return {
+      avatarUrl: user?.avatarUrl ?? "",
       name: user?.name ?? "",
       email: user?.email ?? "",
       username: user?.username ?? "",
@@ -62,177 +70,113 @@ const Settings: React.FC = () => {
       age: Number(user?.age ?? 21),
       heightCm: Number(user?.heightCm ?? 170),
       weightKg: Number(user?.weightKg ?? 70),
-      activity: normalizeActivity(user?.activity),
+      activity: (user?.activity as ActivityLevel) ?? "moderado",
       tdee: Number(user?.tdee ?? 2000),
-      macros: resolveMacros(user?.macros),
-      avatarUrl: user?.avatarUrl ?? "",
+      macros: {
+        carbPct: Number(user?.macros?.carbPct ?? 50),
+        protPct: Number(user?.macros?.protPct ?? 25),
+        fatPct: Number(user?.macros?.fatPct ?? 25),
+      },
     };
   }, [user]);
 
-  const [sex, setSex] = useState<Sex>(profileSnapshot.sex);
-  const [age, setAge] = useState<number>(profileSnapshot.age);
-  const [heightCm, setHeightCm] = useState<number>(profileSnapshot.heightCm);
-  const [weightKg, setWeightKg] = useState<number>(profileSnapshot.weightKg);
-  const [activity, setActivity] = useState<ActivityLevel>(profileSnapshot.activity);
-  const [targetKcal, setTargetKcal] = useState<number>(profileSnapshot.tdee);
-  const [carbPct, setCarbPct] = useState<number>(profileSnapshot.macros.carbPct);
-  const [protPct, setProtPct] = useState<number>(profileSnapshot.macros.protPct);
-  const [fatPct, setFatPct] = useState<number>(profileSnapshot.macros.fatPct);
-  const [avatarUrl, setAvatarUrl] = useState<string>(profileSnapshot.avatarUrl);
+  // ===== Estado editable (igual a tu versión original) =====
+  const [avatarUrl, setAvatarUrl] = React.useState<string>(snapshot.avatarUrl);
+  const [sex, setSex] = React.useState<Sex>(snapshot.sex);
+  const [age, setAge] = React.useState<number>(snapshot.age);
+  const [heightCm, setHeightCm] = React.useState<number>(snapshot.heightCm);
+  const [weightKg, setWeightKg] = React.useState<number>(snapshot.weightKg);
+  const [activity, setActivity] = React.useState<ActivityLevel>(snapshot.activity);
+  const [tdee, setTdee] = React.useState<number>(snapshot.tdee);
+  const [carbPct, setCarbPct] = React.useState<number>(snapshot.macros.carbPct);
+  const [protPct, setProtPct] = React.useState<number>(snapshot.macros.protPct);
+  const [fatPct, setFatPct] = React.useState<number>(snapshot.macros.fatPct);
 
-  // --- estado de subida de avatar / avisos
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const [avatarError, setAvatarError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const cloudinaryEnabled = useMemo(() => isCloudinaryConfigured(), []);
+  // ===== Modo edición (como tenías) =====
+  const [isEditing, setIsEditing] = React.useState(false);
 
-  // --- toast simple
-  const [toast, setToast] = useState<string | null>(null);
-  const pushToast = (msg: string) => {
-    setToast(msg);
-    window.clearTimeout((pushToast as any)._t);
-    (pushToast as any)._t = window.setTimeout(() => setToast(null), 2200);
-  };
+  // ===== Toast + dirty =====
+  const { msg: toast, push: pushToast } = useToast();
+  const [dirty, setDirty] = React.useState(false);
+  const firstDirtyShown = React.useRef(false);
 
-  // --- dirty detector (para barra de guardado y beforeunload)
-  const [dirty, setDirty] = useState(false);
-  useEffect(() => {
-    const snap = profileSnapshot;
+  // Determinar si hay cambios respecto al snapshot
+  React.useEffect(() => {
     const changed =
-      sex !== snap.sex ||
-      age !== snap.age ||
-      heightCm !== snap.heightCm ||
-      weightKg !== snap.weightKg ||
-      activity !== snap.activity ||
-      targetKcal !== snap.tdee ||
-      carbPct !== snap.macros.carbPct ||
-      protPct !== snap.macros.protPct ||
-      fatPct !== snap.macros.fatPct ||
-      avatarUrl !== snap.avatarUrl;
+      avatarUrl !== snapshot.avatarUrl ||
+      sex !== snapshot.sex ||
+      age !== snapshot.age ||
+      heightCm !== snapshot.heightCm ||
+      weightKg !== snapshot.weightKg ||
+      activity !== snapshot.activity ||
+      tdee !== snapshot.tdee ||
+      carbPct !== snapshot.macros.carbPct ||
+      protPct !== snapshot.macros.protPct ||
+      fatPct !== snapshot.macros.fatPct;
 
     setDirty(changed && isEditing);
   }, [
     isEditing,
+    avatarUrl,
     sex,
     age,
     heightCm,
     weightKg,
     activity,
-    targetKcal,
+    tdee,
     carbPct,
     protPct,
     fatPct,
-    avatarUrl,
-    profileSnapshot,
+    snapshot,
   ]);
 
-  // advertencia al cerrar/recargar pestaña con cambios sin guardar
-  useEffect(() => {
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (dirty) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [dirty]);
+  // Mostrar aviso la primera vez que se ensucia el formulario
+  React.useEffect(() => {
+    if (dirty && !firstDirtyShown.current) {
+      pushToast("Tienes cambios sin guardar.");
+      firstDirtyShown.current = true;
+    }
+    if (!dirty) firstDirtyShown.current = false;
+  }, [dirty, pushToast]);
 
-  useEffect(() => {
-    setSex(profileSnapshot.sex);
-    setAge(profileSnapshot.age);
-    setHeightCm(profileSnapshot.heightCm);
-    setWeightKg(profileSnapshot.weightKg);
-    setActivity(profileSnapshot.activity);
-    setTargetKcal(profileSnapshot.tdee);
-    setCarbPct(profileSnapshot.macros.carbPct);
-    setProtPct(profileSnapshot.macros.protPct);
-    setFatPct(profileSnapshot.macros.fatPct);
-    setAvatarUrl(profileSnapshot.avatarUrl);
-    setAvatarError(null);
-  }, [profileSnapshot]);
+  // Proteger cierre/recarga con cambios sin guardar
+  useBeforeUnload(dirty);
 
-  const pctTotal = carbPct + protPct + fatPct;
+  // ===== Handlers =====
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
-  const bmr = useMemo(() => {
-    const base = 10 * weightKg + 6.25 * heightCm - 5 * age;
-    return Math.round(sex === "male" ? base + 5 : base - 161);
-  }, [sex, weightKg, heightCm, age]);
+  const handlePickFile = () => fileInputRef.current?.click();
 
-  const tdeeSuggested = useMemo(() => {
-    const factor = ACTIVITY_LEVELS[activity].factor;
-    return Math.round(bmr * factor);
-  }, [bmr, activity]);
-
-  useEffect(() => {
-    if (Math.abs(targetKcal - tdeeSuggested) < 50) setTargetKcal(tdeeSuggested);
-  }, [tdeeSuggested]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const carbGr = useMemo(() => Math.round((targetKcal * (carbPct / 100)) / 4), [targetKcal, carbPct]);
-  const protGr = useMemo(() => Math.round((targetKcal * (protPct / 100)) / 4), [targetKcal, protPct]);
-  const fatGr = useMemo(() => Math.round((targetKcal * (fatPct / 100)) / 9), [targetKcal, fatPct]);
-
-  // ===================== Avatar ======================
-  const handleAvatarFile = async (file: File) => {
+  const handleAvatarFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite volver a seleccionar la misma imagen
     if (!file) return;
-    if (!cloudinaryEnabled) {
-      setAvatarError("Cloudinary no está configurado.");
-      return;
-    }
-    setAvatarError(null);
-    setIsUploadingAvatar(true);
-    try {
-      const response = await uploadImageToCloudinary(file, { folder: "kaloris/profile" });
-      const nextUrl = (response.secure_url ?? response.url ?? "").trim();
-      if (!nextUrl) throw new Error("La respuesta de Cloudinary no devolvió una URL válida.");
 
-      // 1) reflejar en UI
-      setAvatarUrl(nextUrl);
-
-      // 2) AUTOSAVE inmediato (solo avatar) -> sin necesidad de “Guardar cambios”
-      await updateProfile({ avatarUrl: nextUrl });
-      // si estabas editando otros campos, mantenemos el modo edición, pero la foto ya quedó persistida
-      pushToast("Foto de perfil actualizada ✅");
-    } catch (error) {
-      console.error(error);
-      const message =
-        error instanceof Error ? error.message : "No se pudo subir la imagen. Intenta nuevamente.";
-      setAvatarError(message);
-      pushToast("Error al subir la imagen");
-    } finally {
-      setIsUploadingAvatar(false);
-    }
+    // Solo previsualiza y marca como sucio; NO guarda aún (sin autosave)
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAvatarUrl(String(reader.result || ""));
+      pushToast("Imagen cargada. No olvides guardar los cambios.");
+      setIsEditing(true); // si no estaba en edición, entra
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleAvatarInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) void handleAvatarFile(file);
-    event.target.value = "";
-  };
-
-  const handleRemoveAvatar = async () => {
-    // Limpia en UI y guarda de inmediato (consistente con autosave)
-    setAvatarUrl("");
-    await updateProfile({ avatarUrl: "" });
-    pushToast("Foto removida ✅");
-  };
-
-  // ===================== Guardar / Cancelar ======================
   const handleSave = async () => {
-    if (pctTotal !== 100) {
-      alert("El reparto de macros debe sumar 100%.");
+    if (carbPct + protPct + fatPct !== 100) {
+      pushToast("El reparto de macros debe sumar 100%.");
       return;
     }
+
     const next = {
+      avatarUrl,
       sex,
       age,
       heightCm,
       weightKg,
       activity,
-      tdee: targetKcal,
+      tdee,
       macros: { carbPct, protPct, fatPct },
-      // avatarUrl ya se guarda c/ autosave; igual lo incluimos por consistencia
-      avatarUrl: avatarUrl.trim(),
     };
 
     await updateProfile(next);
@@ -240,24 +184,23 @@ const Settings: React.FC = () => {
     setIsEditing(false);
   };
 
-  const handleCancelEdit = () => {
-    setSex(profileSnapshot.sex);
-    setAge(profileSnapshot.age);
-    setHeightCm(profileSnapshot.heightCm);
-    setWeightKg(profileSnapshot.weightKg);
-    setActivity(profileSnapshot.activity);
-    setTargetKcal(profileSnapshot.tdee);
-    setCarbPct(profileSnapshot.macros.carbPct);
-    setProtPct(profileSnapshot.macros.protPct);
-    setFatPct(profileSnapshot.macros.fatPct);
-    setAvatarUrl(profileSnapshot.avatarUrl);
-    setAvatarError(null);
-    setIsEditing(false);
+  const handleCancel = () => {
+    setAvatarUrl(snapshot.avatarUrl);
+    setSex(snapshot.sex);
+    setAge(snapshot.age);
+    setHeightCm(snapshot.heightCm);
+    setWeightKg(snapshot.weightKg);
+    setActivity(snapshot.activity);
+    setTdee(snapshot.tdee);
+    setCarbPct(snapshot.macros.carbPct);
+    setProtPct(snapshot.macros.protPct);
+    setFatPct(snapshot.macros.fatPct);
     pushToast("Cambios descartados");
+    setIsEditing(false);
   };
 
   const handleLogout = () => {
-    if (dirty && !confirm("Tienes cambios sin guardar. ¿Salir de todos modos?")) return;
+    if (dirty && !confirm("Tienes cambios sin guardar. ¿Salir igualmente?")) return;
     logout();
     navigate("/login");
   };
@@ -271,209 +214,167 @@ const Settings: React.FC = () => {
       <main className="container" style={{ paddingTop: "2rem", paddingBottom: "3rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
           <h2 style={{ margin: 0 }}>Ajustes</h2>
+
           {!isEditing ? (
             <button className="btn btn-primary" onClick={() => setIsEditing(true)}>
-              <Edit size={16} style={{ marginRight: "0.5rem" }} />
               Editar Perfil
             </button>
           ) : (
-            <span className={styles.muted}>Los cambios se guardarán al presionar “Guardar”. La foto se guarda automáticamente.</span>
+            <span style={{ color: "var(--text-tertiary)" }}>
+              Estás editando. No olvides guardar los cambios.
+            </span>
           )}
         </div>
 
-        <div style={gridTwoCols}>
-          <section className="card" style={{ background: "var(--surface-elevated)" }}>
-            <h3 style={{ marginBottom: "1rem" }}>Perfil</h3>
+        <section className="card" style={{ background: "var(--surface-elevated)", marginBottom: "1rem" }}>
+          <h3 style={{ marginBottom: "1rem" }}>Perfil</h3>
 
-            <div style={avatarRow}>
-              <UserAvatar
-                src={avatarUrl}
-                name={profileSnapshot.name}
-                username={profileSnapshot.username}
-                size={64}
-                style={avatarPreview}
-                imageStyle={avatarImageStyle}
-                fallbackStyle={avatarFallbackStyle}
-              />
-              <div style={{ flex: 1 }}>
-                <span className="label" style={{ display: "block", marginBottom: ".25rem" }}>
-                  Foto de perfil
-                </span>
+          {/* Avatar */}
+          <div style={{ display: "flex", alignItems: "center", gap: ".75rem", flexWrap: "wrap", marginBottom: "1rem" }}>
+            <UserAvatar
+              src={avatarUrl}
+              name={user.name}
+              username={user.username}
+              size={64}
+              style={{
+                border: "2px solid var(--border)",
+                backgroundColor: "var(--surface)",
+                boxShadow: "0 2px 6px rgb(15 23 42 / 0.08)",
+              }}
+              imageStyle={{ width: "100%", height: "100%", objectFit: "cover" }}
+              fallbackStyle={{
+                fontSize: ".75rem",
+                fontWeight: 600,
+                letterSpacing: "0.02em",
+                textTransform: "uppercase",
+                color: "var(--text-secondary)",
+              }}
+            />
 
-                <div style={{ display: "flex", gap: ".5rem", flexWrap: "wrap", alignItems: "center" }}>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    style={{ display: "none" }}
-                    onChange={handleAvatarInputChange}
-                    disabled={!cloudinaryEnabled}
-                  />
+            <div style={{ flex: 1 }}>
+              <span className="label" style={{ display: "block", marginBottom: ".25rem" }}>
+                Foto de perfil
+              </span>
+
+              <div style={{ display: "flex", gap: ".5rem", flexWrap: "wrap" }}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleAvatarFile}
+                />
+
+                <button className="btn btn-secondary" type="button" onClick={handlePickFile}>
+                  Cambiar foto
+                </button>
+
+                {avatarUrl && isEditing && (
                   <button
                     className="btn btn-secondary"
                     type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploadingAvatar || !cloudinaryEnabled}
+                    onClick={() => setAvatarUrl("")}
                   >
-                    {cloudinaryEnabled
-                      ? isUploadingAvatar
-                        ? "Subiendo…"
-                        : "Cambiar foto"
-                      : "Configura Cloudinary"}
+                    Quitar
                   </button>
-
-                  {avatarUrl && (
-                    <button
-                      className="btn btn-secondary"
-                      type="button"
-                      onClick={handleRemoveAvatar}
-                      disabled={isUploadingAvatar}
-                    >
-                      Quitar
-                    </button>
-                  )}
-                </div>
-
-                {!cloudinaryEnabled && (
-                  <small style={helperText}>
-                    Copia <code>cloudinary://&#123;api_key&#125;:&#123;api_secret&#125;@&#123;cloud_name&#125;</code> en tu <code>.env</code> como <code>VITE_CLOUDINARY_URL</code>.
-                  </small>
                 )}
-                {avatarError && <small style={errorText}>{avatarError}</small>}
-
-                <small className={styles.muted} style={{ display: "block", marginTop: ".5rem" }}>
-                  Consejo: la foto se guarda automáticamente al subirla ✅
-                </small>
               </div>
-            </div>
 
-            <div style={row}>
-              <div style={labelCol}>
-                <span className="label">Información básica</span>
-              </div>
+              <small style={{ color: "var(--text-tertiary)", display: "block", marginTop: ".5rem" }}>
+                Esta imagen se mostrará en toda la aplicación.
+              </small>
             </div>
-            <div style={rowsGrid}>
+          </div>
+
+          {/* Información básica (solo lectura, como tenías) */}
+          <div style={grid}>
+            <div>
+              <span className="label">Nombre</span>
+              <div className="input" style={readonly}>{user.name || "-"}</div>
+            </div>
+            <div>
+              <span className="label">Email</span>
+              <div className="input" style={readonly}>{user.email || "-"}</div>
+            </div>
+            <div>
+              <span className="label">Usuario</span>
+              <div className="input" style={readonly}>{user.username || "-"}</div>
+            </div>
+          </div>
+        </section>
+
+        {/* Datos físicos */}
+        <section className="card" style={{ background: "var(--surface-elevated)", marginBottom: "1rem" }}>
+          <h3 style={{ marginBottom: "1rem" }}>Datos físicos</h3>
+
+          {isEditing ? (
+            <div style={grid}>
               <div>
-                <span className="label">Nombre</span>
-                <div className="input" style={readOnlyInput}>{profileSnapshot.name}</div>
+                <span className="label">Sexo</span>
+                <select className="input" value={sex} onChange={(e) => setSex(e.target.value as Sex)}>
+                  <option value="male">Hombre</option>
+                  <option value="female">Mujer</option>
+                </select>
               </div>
               <div>
-                <span className="label">Email</span>
-                <div className="input" style={readOnlyInput}>{profileSnapshot.email || "-"}</div>
+                <span className="label">Edad (años)</span>
+                <input className="input" type="number" value={age || ""} onChange={(e) => setAge(Number(e.target.value) || 0)} />
               </div>
               <div>
-                <span className="label">Usuario</span>
-                <div className="input" style={readOnlyInput}>{profileSnapshot.username || "-"}</div>
+                <span className="label">Altura (cm)</span>
+                <input className="input" type="number" value={heightCm || ""} onChange={(e) => setHeightCm(Number(e.target.value) || 0)} />
+              </div>
+              <div>
+                <span className="label">Peso (kg)</span>
+                <input className="input" type="number" value={weightKg || ""} onChange={(e) => setWeightKg(Number(e.target.value) || 0)} />
               </div>
             </div>
-
-            <div style={{ marginTop: "1.25rem", marginBottom: ".5rem", display: "flex", alignItems: "center", gap: ".5rem" }}>
-              <span className="label" style={{ margin: 0 }}>Datos físicos</span>
-            </div>
-
-            {isEditing ? (
-              <div style={rowsGrid}>
-                <div>
-                  <span className="label">Sexo</span>
-                  <select className="input" value={sex} onChange={(e) => setSex(e.target.value as Sex)}>
-                    <option value="male">Hombre</option>
-                    <option value="female">Mujer</option>
-                  </select>
-                </div>
-                <div>
-                  <span className="label">Edad (años)</span>
-                  <input className="input" type="number" value={age || ""} onChange={(e) => setAge(Number(e.target.value) || 0)} />
-                </div>
-                <div>
-                  <span className="label">Altura (cm)</span>
-                  <input className="input" type="number" value={heightCm || ""} onChange={(e) => setHeightCm(Number(e.target.value) || 0)} />
-                </div>
-                <div>
-                  <span className="label">Peso (kg)</span>
-                  <input className="input" type="number" value={weightKg || ""} onChange={(e) => setWeightKg(Number(e.target.value) || 0)} />
-                </div>
+          ) : (
+            <div style={grid}>
+              <div>
+                <span className="label">Sexo</span>
+                <div className="input" style={readonly}>{sex === "male" ? "Hombre" : "Mujer"}</div>
               </div>
-            ) : (
-              <div style={rowsGrid}>
-                <div>
-                  <span className="label">Sexo</span>
-                  <div className="input" style={readOnlyInput}>{sex === "male" ? "Hombre" : "Mujer"}</div>
-                </div>
-                <div>
-                  <span className="label">Edad (años)</span>
-                  <div className="input" style={readOnlyInput}>{age}</div>
-                </div>
-                <div>
-                  <span className="label">Altura (cm)</span>
-                  <div className="input" style={readOnlyInput}>{heightCm} cm</div>
-                </div>
-                <div>
-                  <span className="label">Peso (kg)</span>
-                  <div className="input" style={readOnlyInput}>{weightKg} kg</div>
-                </div>
+              <div>
+                <span className="label">Edad</span>
+                <div className="input" style={readonly}>{age}</div>
               </div>
-            )}
-
-            <div style={{ marginTop: "1.25rem", marginBottom: ".5rem", display: "flex", alignItems: "center", gap: ".5rem" }}>
-              <span className="label" style={{ margin: 0 }}>Actividad y Meta</span>
+              <div>
+                <span className="label">Altura</span>
+                <div className="input" style={readonly}>{heightCm} cm</div>
+              </div>
+              <div>
+                <span className="label">Peso</span>
+                <div className="input" style={readonly}>{weightKg} kg</div>
+              </div>
             </div>
+          )}
+        </section>
 
-            {isEditing ? (
-              <div style={rowsGrid}>
+        {/* Actividad, TDEE y Macros */}
+        <section className="card" style={{ background: "var(--surface-elevated)" }}>
+          <h3 style={{ marginBottom: "1rem" }}>Actividad y meta</h3>
+
+          {isEditing ? (
+            <>
+              <div style={grid}>
                 <div>
-                  <span className="label">Nivel</span>
-                  <select className="input" value={activity} onChange={(e) => setActivity(normalizeActivity(e.target.value))}>
-                    {Object.entries(ACTIVITY_LEVELS).map(([k, v]) => (
-                      <option key={k} value={k}>
-                        {v.label} · x{v.factor}
-                      </option>
+                  <span className="label">Actividad</span>
+                  <select className="input" value={activity} onChange={(e) => setActivity(e.target.value as ActivityLevel)}>
+                    {Object.entries(ACTIVITY_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
                     ))}
                   </select>
-                  <small style={{ color: "var(--text-tertiary)" }}>
-                    {ACTIVITY_LEVELS[activity].help} — Multiplicador {ACTIVITY_LEVELS[activity].factor.toFixed(3)}
-                  </small>
                 </div>
-
                 <div>
-                  <span className="label">BMR estimado</span>
-                  <div className="input" style={readOnlyInput}>{bmr} kcal</div>
-                </div>
-
-                <div>
-                  <span className="label">TDEE sugerido</span>
-                  <div className="input" style={readOnlyInput}>{tdeeSuggested} kcal</div>
-                </div>
-
-                <div>
-                  <span className="label">Meta diaria (TDEE en kcal)</span>
-                  <input className="input" type="number" value={targetKcal || ""} onChange={(e) => setTargetKcal(Number(e.target.value) || 0)} />
+                  <span className="label">Meta diaria (TDEE, kcal)</span>
+                  <input className="input" type="number" value={tdee || ""} onChange={(e) => setTdee(Number(e.target.value) || 0)} />
                 </div>
               </div>
-            ) : (
-              <div style={rowsGrid}>
-                <div>
-                  <span className="label">Nivel</span>
-                  <div className="input" style={readOnlyInput}>{ACTIVITY_LEVELS[activity].label}</div>
-                </div>
-                <div>
-                  <span className="label">BMR estimado</span>
-                  <div className="input" style={readOnlyInput}>{bmr} kcal</div>
-                </div>
-                <div>
-                  <span className="label">TDEE sugerido</span>
-                  <div className="input" style={readOnlyInput}>{tdeeSuggested} kcal</div>
-                </div>
-                <div>
-                  <span className="label">Meta diaria (TDEE)</span>
-                  <div className="input" style={readOnlyInput}>{targetKcal} kcal</div>
-                </div>
-              </div>
-            )}
 
-            <div style={{ marginTop: "1.25rem" }}>
-              <span className="label">Reparto de macros (%)</span>
-              {isEditing ? (
-                <div style={rowsGrid}>
+              <div style={{ marginTop: "1rem" }}>
+                <span className="label">Reparto de macros (%)</span>
+                <div style={grid}>
                   <div>
                     <span className="label">Carbohidratos</span>
                     <input className="input" type="number" value={carbPct || ""} onChange={(e) => setCarbPct(Number(e.target.value) || 0)} />
@@ -488,124 +389,81 @@ const Settings: React.FC = () => {
                   </div>
                   <div>
                     <span className="label">Total</span>
-                    <div className="input" style={readOnlyInput}>{pctTotal}%</div>
+                    <div className="input" style={readonly}>{carbPct + protPct + fatPct}%</div>
                   </div>
                 </div>
-              ) : (
-                <div style={rowsGrid}>
+              </div>
+
+              <div style={{ display: "flex", gap: ".75rem", marginTop: "1.25rem", flexWrap: "wrap" }}>
+                <button className="btn btn-primary" onClick={handleSave}>Guardar cambios</button>
+                <button className="btn btn-secondary" onClick={handleCancel}>Cancelar</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={grid}>
+                <div>
+                  <span className="label">Actividad</span>
+                  <div className="input" style={readonly}>{ACTIVITY_LABELS[activity]}</div>
+                </div>
+                <div>
+                  <span className="label">Meta diaria (TDEE)</span>
+                  <div className="input" style={readonly}>{tdee} kcal</div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: "1rem" }}>
+                <span className="label">Reparto de macros (%)</span>
+                <div style={grid}>
                   <div>
                     <span className="label">Carbohidratos</span>
-                    <div className="input" style={readOnlyInput}>{carbPct}%</div>
+                    <div className="input" style={readonly}>{carbPct}%</div>
                   </div>
                   <div>
                     <span className="label">Proteína</span>
-                    <div className="input" style={readOnlyInput}>{protPct}%</div>
+                    <div className="input" style={readonly}>{protPct}%</div>
                   </div>
                   <div>
                     <span className="label">Grasa</span>
-                    <div className="input" style={readOnlyInput}>{fatPct}%</div>
+                    <div className="input" style={readonly}>{fatPct}%</div>
                   </div>
                   <div>
                     <span className="label">Total</span>
-                    <div className="input" style={readOnlyInput}>{pctTotal}%</div>
+                    <div className="input" style={readonly}>{carbPct + protPct + fatPct}%</div>
                   </div>
                 </div>
-              )}
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                  gap: "1rem",
-                  marginTop: "1rem",
-                }}
-              >
-                <div className="card" style={{ padding: "1rem" }}>
-                  <div className="label" style={{ marginBottom: ".25rem" }}>Carbohidratos (g/día)</div>
-                  <strong>{carbGr} g</strong>
-                </div>
-                <div className="card" style={{ padding: "1rem" }}>
-                  <div className="label" style={{ marginBottom: ".25rem" }}>Proteína (g/día)</div>
-                  <strong>{protGr} g</strong>
-                </div>
-                <div className="card" style={{ padding: "1rem" }}>
-                  <div className="label" style={{ marginBottom: ".25rem" }}>Grasa (g/día)</div>
-                  <strong>{fatGr} g</strong>
-                </div>
               </div>
-            </div>
+            </>
+          )}
+        </section>
 
-            {isEditing && (
-              <div
-                style={{
-                  display: "flex",
-                  gap: ".75rem",
-                  marginTop: "1.5rem",
-                  flexWrap: "wrap",
-                  borderTop: "1px solid var(--border)",
-                  paddingTop: "1.5rem",
-                }}
-              >
-                <button className="btn btn-primary" onClick={handleSave}>
-                  Guardar cambios
-                </button>
-                <button className="btn btn-secondary" onClick={handleCancelEdit}>
-                  <X size={16} style={{ marginRight: "0.25rem" }} />
-                  Cancelar
-                </button>
-              </div>
-            )}
-          </section>
-
-          <section className={`card ${styles.session}`} style={{ background: "var(--surface-elevated)" }}>
-            <h3 style={{ marginBottom: "1rem" }}>Sesión</h3>
-            <p style={{ color: "var(--text-secondary)", marginBottom: "1rem" }}>
-              Control de acceso. Puedes cerrar sesión de forma segura. Tus datos quedan guardados localmente.
-            </p>
-            <button className="btn btn-danger" onClick={handleLogout}>
-              Cerrar sesión
-            </button>
-          </section>
-        </div>
+        {/* Sesión */}
+        <section className="card" style={{ background: "var(--surface-elevated)", marginTop: "1rem" }}>
+          <h3 style={{ marginBottom: "1rem" }}>Sesión</h3>
+          <p style={{ color: "var(--text-secondary)", marginBottom: "1rem" }}>
+            Puedes cerrar sesión de forma segura. Tus datos quedarán guardados localmente.
+          </p>
+          <button className="btn btn-danger" onClick={handleLogout}>Cerrar sesión</button>
+        </section>
       </main>
 
-      {/* Toast flotante */}
+      {/* Toast */}
       {toast && <div className={styles.toast}>{toast}</div>}
-
-      {/* Barra fija de guardado cuando hay cambios */}
-      {isEditing && dirty && (
-        <div className={styles.saveBar}>
-          <span>Tienes cambios sin guardar.</span>
-          <div className={styles.saveBarActions}>
-            <button className="btn btn-secondary" onClick={handleCancelEdit}>Descartar</button>
-            <button className="btn btn-primary" onClick={handleSave}>Guardar ahora</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
 export default Settings;
 
-/* ===== estilos locales usados en la página (sin los del header) ===== */
-const gridTwoCols: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr",
-  gap: "1.5rem",
-};
+/* ====== estilos inline usados arriba (mantén tu CSS como prefieras) ====== */
 
-const row: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between" };
-const labelCol: React.CSSProperties = { display: "flex", alignItems: "center", gap: ".5rem" };
-
-const rowsGrid: React.CSSProperties = {
+const grid: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
   gap: "1rem",
-  marginTop: ".5rem",
 };
 
-const readOnlyInput: React.CSSProperties = {
+const readonly: React.CSSProperties = {
   background: "var(--surface)",
   pointerEvents: "none",
   userSelect: "none",
@@ -613,47 +471,6 @@ const readOnlyInput: React.CSSProperties = {
   border: "1px solid var(--border)",
   borderRadius: "6px",
   color: "var(--text)",
-  lineHeight: "1.5",
+  lineHeight: 1.5,
   fontSize: "0.875rem",
-};
-
-const avatarRow: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: ".75rem",
-  marginBottom: "1.5rem",
-  flexWrap: "wrap",
-};
-
-const avatarPreview: React.CSSProperties = {
-  flexShrink: 0,
-  border: "2px solid var(--border)",
-  backgroundColor: "var(--surface)",
-  boxShadow: "0 2px 6px rgb(15 23 42 / 0.08)",
-};
-
-const avatarImageStyle: React.CSSProperties = {
-  width: "100%",
-  height: "100%",
-  objectFit: "cover",
-};
-
-const avatarFallbackStyle: React.CSSProperties = {
-  fontSize: ".75rem",
-  fontWeight: 600,
-  letterSpacing: "0.02em",
-  textTransform: "uppercase",
-  color: "var(--text-secondary)",
-};
-
-const helperText: React.CSSProperties = {
-  color: "var(--text-tertiary)",
-  display: "block",
-  marginTop: "0.5rem",
-};
-
-const errorText: React.CSSProperties = {
-  color: "var(--status-error, #ef4444)",
-  display: "block",
-  marginTop: "0.5rem",
 };
