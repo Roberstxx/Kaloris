@@ -85,6 +85,8 @@
   box-sizing: border-box;
   max-width: none;
   margin: 0;
+  /* ✅ Opción 3: permitir scroll horizontal cuando el grid exceda el viewport */
+  overflow-x: auto;
 }
 
 /* --- 4. El Grid de 3 Columnas (Escritorio) --- */
@@ -109,9 +111,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  /* CAMBIO: Usar altura más flexible */
-  max-height: min(800px, 85vh);
-  min-height: 500px;
+  max-height: calc(100vh - 128px);
   overflow-y: auto;
   padding-right: 0.25rem;
 }
@@ -131,9 +131,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  /* CAMBIO: Usar altura más flexible */
-  max-height: min(800px, 85vh);
-  min-height: 500px;
+  max-height: calc(100vh - 128px);
   overflow-y: auto;
   padding-right: 0.25rem;
 }
@@ -322,7 +320,6 @@
 .progressFull { display: block; }
 .progressCompact { display: none; }
 
-
 /* ======================================================= */
 /* ====== 🖥️ MEDIA QUERIES PARA RESPONSIVE DESIGN ====== */
 /* ======================================================= */
@@ -351,8 +348,7 @@
     position: static;
     height: auto;
     overflow: visible;
-    max-height: none; /* Elimina la altura fija */
-    min-height: auto; /* Elimina la altura mínima */
+    max-height: none; /* Elimina la altura fija calc(100vh - X) */
     padding-right: 0;
   }
 
@@ -401,7 +397,6 @@
     height: auto;
     overflow: visible;
     max-height: none;
-    min-height: auto;
     padding-right: 0;
   }
 
