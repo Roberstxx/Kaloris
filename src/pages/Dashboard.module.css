@@ -323,73 +323,70 @@
 /* ====== 🖥️ MEDIA QUERIES PARA RESPONSIVE DESIGN ====== */
 /* ======================================================= */
 
-/* --- 2) Tablet/Laptop (Máx 1200px): Pasamos a 2 columnas con scroll natural --- */
+/* --- 2) Tablet/Laptop (Máx 1200px): Pasamos a 1 COLUMNA APILADA --- */
 @media (max-width: 1200px) {
   .wide {
-    padding: 0 16px; /* Ajuste de padding para tablet */
+    padding: 0 16px;
   }
   .grid121 {
     display: grid;
-    /* Grid de 2 columnas: columna izquierda más ancha, derecha fija */
-    grid-template-columns: 1fr 340px;
-    /* Izquierda (left) arriba, Centro (center) abajo, Derecha (right) en la columna 2 */
+    /* UNA SOLA COLUMNA - todo apilado verticalmente */
+    grid-template-columns: 1fr;
+    /* Orden: Izquierda (progreso) → Centro (alimentos) → Derecha (diario) */
     grid-template-areas:
-      "left  right"
-      "center right";
-    gap: 24px;
+      "left"
+      "center"
+      "right";
+    gap: 20px;
     padding: 20px 0 30px;
-    align-items: start;
   }
 
-  /* Desactivar sticky y permitir crecimiento natural - IMPORTANTE PARA LAPTOPS */
+  /* Desactivar sticky y permitir crecimiento natural */
   .leftCol,
-  .centerCol {
+  .centerCol,
+  .rightCol {
     position: static;
     height: auto;
     overflow: visible;
     max-height: none;
     padding-right: 0;
   }
-  
-  .leftCol {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
 
   /* Los widgets del centro sin restricción de altura */
-  .centerCol .widget {
+  .centerCol .widget,
+  .centerCol .widget + .widget {
     max-height: none;
     overflow: visible;
-    display: block; /* Vuelve a ser un bloque normal */
-    flex-direction: initial; /* Resetea el flex */
+    display: block;
+    flex-direction: initial;
+    margin-top: 20px;
   }
 
-  /* Widget de progreso izquierdo sin restricciones */
+  /* Widget de progreso sin restricciones */
   .leftCol .widget:first-child {
     flex: initial;
     min-height: auto;
     display: block;
   }
 
-  /* Columna derecha sin límite - crece naturalmente CON GAP INTERNO */
-  .rightCol {
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* Gap entre widgets */
-  }
-  
+  /* Columna derecha sin límite - crece naturalmente */
   .rightCol .widget:first-child {
     max-height: none;
     display: block;
+  }
+  
+  .rightCol .widget:last-child {
+    flex-shrink: initial;
   }
   
   /* Lista de intake sin scroll - crece con todo el contenido */
   .intakeList {
     overflow-y: visible;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
-}
 
 /* --- 3) Móvil (Máx 900px): Pasamos a 1 columna apilada --- */
 @media (max-width: 900px) {
