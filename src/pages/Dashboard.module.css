@@ -5,7 +5,7 @@
   overflow-x: hidden; 
 }
 
-/* --- 2. Header --- */
+/* --- 2. Header (Se mantiene fijo) --- */
 .header {
   background: var(--surface-elevated);
   border-bottom: 1px solid var(--border);
@@ -20,6 +20,7 @@
   align-items: center;
   justify-content: space-between;
 }
+/* ... Estilos del Header y Avatar (sin cambios) ... */
 .logo {
   margin: 0;
   font-size: 1.25rem;
@@ -78,7 +79,8 @@
   background: transparent;
 }
 
-/* --- 3. Contenedor Principal --- */
+
+/* --- 3. Contenedor Principal (wide) --- */
 .wide {
   padding: 0 24px;
   width: 100%;
@@ -94,15 +96,13 @@
   gap: 30px;
   align-items: start;
   padding: 24px 0 40px;
-  /* Definición de áreas para uso en media queries */
   grid-template-areas: "left center right";
 }
 
-/* --- 5. Columnas "Sticky" (Escritorio) --- */
+/* --- 5. Columnas "Sticky" (Escritorio) - Mantiene scroll y sticky aquí --- */
 
-/* Columna Izquierda: Sticky, scroll interno */
 .leftCol {
-  grid-area: left; /* Asignación de área */
+  grid-area: left;
   position: sticky;
   top: 88px;
   align-self: start;
@@ -114,15 +114,13 @@
   padding-right: 0.25rem;
 }
 
-/* Columna Central: Crece naturalmente */
 .centerCol {
-  grid-area: center; /* Asignación de área */
+  grid-area: center;
   min-width: 0;
 }
 
-/* Columna Derecha: Sticky, scroll interno */
 .rightCol {
-  grid-area: right; /* Asignación de área */
+  grid-area: right;
   position: sticky;
   top: 88px;
   align-self: start;
@@ -169,7 +167,7 @@
   flex-shrink: 0;
 }
 
-/* Lista de intake con scroll interno */
+/* Lista de intake con scroll interno (Escritorio) */
 .intakeList {
   display: flex;
   flex-direction: column;
@@ -181,6 +179,7 @@
 }
 
 /* --- Estilos de Widgets --- */
+/* ... (Estilos intermedios sin cambios) ... */
 .hi {
   font-size: 1.65rem;
   margin: 0 0 0.1rem;
@@ -240,9 +239,8 @@
   font-size: 1.1rem;
 }
 
-/* Contenedor central de widgets: en escritorio, los siguientes widgets tienen margen arriba */
-/* ESTE ES EL WIDGET CON SCROLL INTERNO EN DESKTOP */
-.centerCol .widget:last-child { 
+/* Contenedor central de widgets: en escritorio, solo el widget de sugerencias tiene scroll */
+.centerCol .widget:last-child {
   margin-top: 20px;
   display: flex;
   flex-direction: column;
@@ -340,7 +338,7 @@
     padding: 20px 0 30px;
   }
 
-  /* **CRÍTICO: Desactivar sticky/altura fija en las 3 columnas para que crezcan con el contenido** */
+  /* **CRÍTICO: ELIMINAR STICKY/ALTURA FIJA EN COLUMNAS** */
   .leftCol,
   .centerCol,
   .rightCol {
@@ -351,26 +349,26 @@
     padding-right: 0;
   }
 
-  /* CRÍTICO: Eliminar límites de altura en los widgets centrales */
+  /* CRÍTICO: Eliminar límites de altura en el widget central de sugerencias (scroll de la página) */
   .centerCol .widget:last-child {
     max-height: none;
     overflow: visible;
     display: block; 
     flex-direction: initial; 
   }
-
-  /* --- Scroll del "Mi Diario de Hoy" en Tablet --- */
-  /* **AJUSTE CLAVE: Eliminar max-height del contenedor principal, solo limitar la lista interna** */
+  
+  /* CRÍTICO: Eliminar límites de altura del widget de diario para que el contenido fluya */
   .rightCol .widget:first-child {
-    max-height: none; /* Dejar que el widget crezca sin límites */
-    display: flex;
-    flex-direction: column;
+    max-height: none; 
+    display: block; /* Volver a display: block si no es necesario flex */
+    flex-direction: initial;
   }
+
+  /* CRÍTICO: Eliminar scroll interno del intakeList y dejar que contribuya al scroll de la página */
   .intakeList {
-    overflow-y: auto;
-    /* Aplicar un límite más suave aquí, solo si hay mucho contenido */
-    max-height: 400px; 
-    min-height: 0;
+    overflow-y: visible; /* La lista debe fluir sin scroll interno */
+    max-height: none;
+    min-height: auto;
   }
 }
 
@@ -400,7 +398,29 @@
     max-height: none;
     padding-right: 0;
   }
+  
+  /* CRÍTICO: Eliminar límites de altura en los widgets centrales */
+  .centerCol .widget:last-child {
+    max-height: none;
+    overflow: visible;
+    display: block; 
+    flex-direction: initial; 
+  }
+  
+  /* CRÍTICO: Eliminar límites de altura del widget de diario */
+  .rightCol .widget:first-child {
+    max-height: none; 
+    display: block; 
+    flex-direction: initial;
+  }
 
+  /* CRÍTICO: Eliminar scroll interno del intakeList */
+  .intakeList {
+    overflow-y: visible;
+    max-height: none;
+    min-height: auto;
+  }
+  
   /* Header flexible en móvil */
   .headerContent {
     flex-wrap: wrap;
@@ -410,18 +430,5 @@
   /* --- Control de la barra de progreso (Versión Compacta) --- */
   .progressFull { display: none; }
   .progressCompact { display: block; }
-  
-  /* --- Scroll del "Mi Diario de Hoy" en Móvil --- */
-  /* Dejamos que el widget crezca, y controlamos la lista de items */
-  .rightCol .widget:first-child {
-    max-height: none; 
-    display: flex;
-    flex-direction: column;
-  }
-  .intakeList {
-    overflow-y: auto;
-    /* Usamos clamp para un mejor control en distintas resoluciones móviles */
-    min-height: 220px;
-    max-height: clamp(280px, 60vh, 520px);
-  }
 }
+
