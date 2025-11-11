@@ -109,8 +109,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: calc(100vh - 128px);
-  overflow-y: auto;
+  max-height: none; /* SIN LÍMITE */
+  overflow-y: visible;
   padding-right: 0.25rem;
 }
 
@@ -129,8 +129,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: calc(100vh - 128px);
-  overflow-y: auto;
+  max-height: none; /* SIN LÍMITE */
+  overflow-y: visible;
   padding-right: 0.25rem;
 }
 
@@ -176,7 +176,7 @@
   gap: 10px;
   padding-right: 6px;
   flex: 1;
-  overflow-y: auto;
+  overflow-y: visible; /* SIN SCROLL FORZADO */
   min-height: 0;
 }
 
@@ -243,11 +243,10 @@
 /* Contenedor central de widgets: en escritorio, los siguientes widgets tienen margen arriba */
 .centerCol .widget + .widget {
   margin-top: 20px;
-  /* Estas propiedades se eliminan en móvil/tablet en las media queries */
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 200px); /* Lógica de scroll en escritorio */
-  overflow: hidden;
+  max-height: none; /* SIN LÍMITE */
+  overflow: visible;
 }
 
 .sectionHeaderTight {
@@ -268,7 +267,7 @@
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 15px;
   margin-top: 15px;
-  overflow-y: auto;
+  overflow-y: visible; /* SIN SCROLL FORZADO */
   padding-right: 6px;
   flex: 1;
   min-height: 0;
