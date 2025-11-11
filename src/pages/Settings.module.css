@@ -91,4 +91,55 @@
 .muted {
   color: var(--text-tertiary);
   font-size: .9rem;
+
+}
+
+
+
+
+
+
+/* === Barra fija de guardado (sticky) === */
+.saveBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  margin: 0 auto;
+  max-width: 980px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: .75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  z-index: 90;
+}
+
+.saveBarActions {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+/* === Toast simple === */
+.toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .6rem .8rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  z-index: 95;
+}
+
+/* Reutilizado arriba */
+.muted {
+  color: var(--text-tertiary);
+  font-size: .9rem;
 }
