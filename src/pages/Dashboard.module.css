@@ -2,7 +2,7 @@
 .page {
   min-height: 100vh;
   background: var(--bg);
-  overflow-x: hidden; 
+  overflow-x: hidden;
 }
 
 /* --- 2. Header --- */
@@ -15,412 +15,162 @@
   top: 0;
   z-index: 100;
 }
-.headerContent {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+.headerContent { display: flex; align-items: center; justify-content: space-between; }
 .logo {
-  margin: 0;
-  font-size: 1.25rem;
+  margin: 0; font-size: 1.25rem;
   background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
 }
-.nav {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
+.nav { display: flex; gap: .5rem; align-items: center; }
 .navLink {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  color: var(--text-secondary);
-  transition: var(--transition);
+  width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+  border-radius: 12px; color: var(--text-secondary); transition: var(--transition);
 }
-.navLink:hover {
-  background: var(--surface);
-  color: var(--brand);
-}
-
-.navProfileLink {
-  padding: 4px;
-}
-
+.navLink:hover { background: var(--surface); color: var(--brand); }
+.navProfileLink { padding: 4px; }
 .navAvatar {
-  width: 36px;
-  height: 36px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08);
-  overflow: hidden;
-  border-radius: 9999px;
-  flex-shrink: 0;
+  width: 36px; height: 36px; border: 2px solid var(--border); background: var(--surface);
+  box-shadow: 0 2px 4px rgba(15,23,42,.08); overflow: hidden; border-radius: 9999px; flex-shrink: 0;
 }
-
-.navAvatarImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.navAvatarFallback {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  background: transparent;
-}
+.navAvatarImage { width: 100%; height: 100%; object-fit: cover; }
+.navAvatarFallback { font-size: .7rem; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: var(--text-secondary); }
 
 /* --- 3. Contenedor Principal --- */
 .wide {
-  padding: 0 24px;
-  width: 100%;
-  box-sizing: border-box;
-  max-width: none;
-  margin: 0;
-  /* ✅ Opción 3: permitir scroll horizontal cuando el grid exceda el viewport */
-  overflow-x: auto;
+  padding: 0 24px; width: 100%; box-sizing: border-box; max-width: none; margin: 0;
 }
 
-/* --- 4. El Grid de 3 Columnas (Escritorio) --- */
+/* --- 4. Grid 1–2–1 (Escritorio) --- */
 .grid121 {
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(600px, 2fr) minmax(280px, 1fr);
-  gap: 30px;
+  grid-template-columns: minmax(260px, 1fr) minmax(520px, 2fr) minmax(260px, 1fr); /* compactado */
+  gap: 24px; /* antes 30px */
   align-items: start;
   padding: 24px 0 40px;
-  /* Definición de áreas para uso en media queries */
   grid-template-areas: "left center right";
+  min-width: 0; /* evita overflow por min-width:auto */
 }
 
-/* --- 5. Columnas "Sticky" (Escritorio) --- */
-
-/* Columna Izquierda: Sticky, scroll interno */
+/* --- 5. Columnas Sticky (Escritorio) --- */
 .leftCol {
-  grid-area: left; /* Asignación de área */
-  position: sticky;
-  top: 88px;
-  align-self: start;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-height: calc(100vh - 128px);
-  overflow-y: auto;
-  padding-right: 0.25rem;
+  grid-area: left;
+  position: sticky; top: 88px;
+  align-self: start; display: flex; flex-direction: column; gap: 16px;
+  max-height: calc(100vh - 128px); overflow-y: auto; padding-right: .25rem; min-width: 0; overflow-x: hidden;
+}
+.centerCol { grid-area: center; min-width: 0; }
+.rightCol {
+  grid-area: right;
+  position: sticky; top: 88px;
+  align-self: start; display: flex; flex-direction: column; gap: 16px;
+  max-height: calc(100vh - 128px); overflow-y: auto; padding-right: .25rem; min-width: 0; overflow-x: hidden;
 }
 
-/* Columna Central: Crece naturalmente */
-.centerCol {
-  grid-area: center; /* Asignación de área */
+/* --- Widgets --- */
+.widget {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,.2);
   min-width: 0;
 }
+.widget h3 { margin: 0 0 .5rem; font-size: 1rem; flex-shrink: 0; }
 
-/* Columna Derecha: Sticky, scroll interno */
-.rightCol {
-  grid-area: right; /* Asignación de área */
-  position: sticky;
-  top: 88px;
-  align-self: start;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-height: calc(100vh - 128px);
-  overflow-y: auto;
-  padding-right: 0.25rem;
-}
+/* Izquierda */
+.leftCol .widget:first-child { flex: 1.1; min-height: 0; display: flex; flex-direction: column; }
 
-/* --- Widgets Internos (Estilos Base) --- */
-.widget {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
+/* Derecha */
+.rightCol .widget:first-child { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.rightCol .widget:last-child { flex-shrink: 0; }
 
-.widget h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-
-/* --- Lógica de Widgets Columna Izquierda --- */
-.leftCol .widget:first-child {
-  flex: 1.1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* --- Lógica de Widgets Columna Derecha --- */
-.rightCol .widget:first-child {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.rightCol .widget:last-child {
-  flex-shrink: 0;
-}
-
-/* Lista de intake con scroll interno */
+/* Lista del diario */
 .intakeList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-right: 6px;
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
+  display: flex; flex-direction: column; gap: 10px; padding-right: 6px;
+  flex: 1; overflow-y: auto; min-height: 0;
 }
 
-/* --- Estilos de Widgets --- */
-.hi {
-  font-size: 1.65rem;
-  margin: 0 0 0.1rem;
-  flex-shrink: 0;
-}
-.metaLine {
-  margin: 0 0 10px;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-  font-size: 0.875rem;
-}
-.widgetEnergy h3 {
-  margin: 0 0 0.5rem;
-  flex-shrink: 0;
-  font-size: 1rem;
-}
-.ringWrap {
-  text-align: center;
-  margin: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 0;
-}
-.progressText {
-  margin-top: 8px;
-}
-.consumed {
-  display: block;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--success);
-}
-.target {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
+/* Otros */
+.hi { font-size: 1.65rem; margin: 0 0 .1rem; flex-shrink: 0; }
+.metaLine { margin: 0 0 10px; color: var(--text-secondary); flex-shrink: 0; font-size: .875rem; }
+.widgetEnergy h3 { margin: 0 0 .5rem; font-size: 1rem; }
+.ringWrap { text-align: center; margin: 0; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 0; }
+.progressText { margin-top: 8px; }
+.consumed { display: block; font-size: 1.75rem; font-weight: 700; color: var(--success); }
+.target { font-size: .85rem; color: var(--text-secondary); }
 .goalStatus {
-  margin-top: auto;
-  padding: 8px 10px;
+  margin-top: auto; padding: 8px 10px;
   background: color-mix(in srgb, var(--success) 15%, transparent);
-  border-left: 5px solid var(--success);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  border-left: 5px solid var(--success); border-radius: 8px;
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
 }
-.goalStatus p {
-  margin: 0;
-  font-size: 0.85rem;
-  line-height: 1.3;
-}
-.goalIcon {
-  font-size: 1.1rem;
-}
+.goalStatus p { margin: 0; font-size: .85rem; line-height: 1.3; }
+.goalIcon { font-size: 1.1rem; }
 
-/* Contenedor central de widgets: en escritorio, los siguientes widgets tienen margen arriba */
 .centerCol .widget + .widget {
-  margin-top: 20px;
-  /* Estas propiedades se eliminan en móvil/tablet en las media queries */
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - 200px); /* Lógica de scroll en escritorio */
-  overflow: hidden;
+  margin-top: 20px; display: flex; flex-direction: column;
+  max-height: calc(100vh - 200px); overflow: hidden;
 }
 
-.sectionHeaderTight {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  flex-shrink: 0;
-}
-.actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
+.sectionHeaderTight { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; flex-shrink: 0; }
+.actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
 .foodGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 15px;
-  margin-top: 15px;
-  overflow-y: auto;
-  padding-right: 6px;
-  flex: 1;
-  min-height: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px; margin-top: 15px; overflow-y: auto; padding-right: 6px; flex: 1; min-height: 0;
 }
-.manualCard {
-  background: var(--surface-elevated);
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 15px;
-  flex-shrink: 0;
-}
-.manualRow {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.mealSummary {
-  list-style: none;
-  margin: 20px 0 0;
-  padding: 0;
-}
-.mealSummary li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  background: var(--surface-elevated);
-}
-.mealTotal {
-  border-top: 2px solid var(--success);
-}
-.sideActions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-top: 12px;
-}
-.empty {
-  color: var(--text-secondary);
-  padding: 10px 0;
-}
+.manualCard { background: var(--surface-elevated); padding: 15px; border-radius: 8px; margin-top: 15px; flex-shrink: 0; }
+.manualRow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.mealSummary { list-style: none; margin: 20px 0 0; padding: 0; }
+.mealSummary li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 8px; margin-bottom: 10px; background: var(--surface-elevated); }
+.mealTotal { border-top: 2px solid var(--success); }
+.sideActions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 12px; }
+.empty { color: var(--text-secondary); padding: 10px 0; }
 
-/* --- Control de la barra de progreso (Compacta vs Full) --- */
+/* Progreso compact/full */
 .progressFull { display: block; }
 .progressCompact { display: none; }
 
 /* ======================================================= */
-/* ====== 🖥️ MEDIA QUERIES PARA RESPONSIVE DESIGN ====== */
+/* ====== Breakpoints ====== */
 /* ======================================================= */
 
-/* --- 2) Tablet (Máx 1200px): Pasamos a 2 columnas (Izquierda y Centro a la izquierda, Derecha a la derecha) --- */
-@media (max-width: 1200px) {
-  .wide {
-    padding: 0 16px; /* Ajuste de padding para tablet */
-  }
+/* 🔸 Laptop: 2 columnas para evitar recortes en 1366px */
+@media (max-width: 1366px) {
+  .wide { padding: 0 16px; }
   .grid121 {
-    display: grid;
-    /* Grid de 2 columnas: 1fr (izq) y 1fr (der) */
-    grid-template-columns: minmax(320px, 1fr) minmax(280px, 1fr);
-    /* Izquierda (left) arriba, Centro (center) abajo, Derecha (right) en la columna 2 */
+    grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
     grid-template-areas:
       "left  right"
       "center right";
-    gap: 20px;
-    padding: 20px 0 30px;
+    gap: 20px; padding: 20px 0 30px;
   }
-
-  /* Desactivar sticky/altura fija en las columnas para que crezcan con el contenido */
-  .leftCol,
-  .centerCol,
-  .rightCol {
-    position: static;
-    height: auto;
-    overflow: visible;
-    max-height: none; /* Elimina la altura fija calc(100vh - X) */
-    padding-right: 0;
+  .leftCol, .centerCol, .rightCol {
+    position: static; height: auto; overflow: visible; max-height: none; padding-right: 0; min-width: 0;
   }
-
-  /* Los widgets ya no necesitan la altura limitada en el centro */
-  .centerCol .widget {
-    max-height: none;
-    overflow: visible;
-    display: block; /* Vuelve a ser un bloque normal */
-    flex-direction: initial; /* Resetea el flex */
-  }
-
-  /* --- Scroll del "Mi Diario de Hoy" en Tablet --- */
-  .rightCol .widget:first-child {
-    /* Ocupa hasta 60vh para un buen espacio de scroll */
-    max-height: 60vh;
-    display: flex;
-    flex-direction: column;
-  }
-  .intakeList {
-    overflow-y: auto;
-    min-height: 0;
-  }
+  .centerCol .widget { max-height: none; overflow: visible; display: block; flex-direction: initial; }
+  .rightCol .widget:first-child { max-height: 60vh; display: flex; flex-direction: column; }
+  .intakeList { overflow-y: auto; min-height: 0; }
 }
 
-/* --- 3) Móvil (Máx 900px): Pasamos a 1 columna apilada --- */
+/* 🔸 Móvil */
 @media (max-width: 900px) {
-  .wide {
-    padding: 0 16px;
-  }
+  .wide { padding: 0 16px; }
   .grid121 {
     grid-template-columns: 1fr;
-    /* Orden lógico: Progreso (left) → Centro (center) → Derecha (right) */
-    grid-template-areas:
-      "left"
-      "center"
-      "right";
-    gap: 16px;
-    padding: 16px 0 20px;
+    grid-template-areas: "left" "center" "right";
+    gap: 16px; padding: 16px 0 20px;
   }
-
-  /* Asegurarse que las columnas estén completamente estáticas y auto-ajustables */
-  .leftCol,
-  .centerCol,
-  .rightCol {
-    position: static;
-    height: auto;
-    overflow: visible;
-    max-height: none;
-    padding-right: 0;
+  .leftCol, .centerCol, .rightCol {
+    position: static; height: auto; overflow: visible; max-height: none; padding-right: 0; min-width: 0;
   }
-
-  /* Header flexible en móvil */
-  .headerContent {
-    flex-wrap: wrap;
-    row-gap: 8px;
-  }
-
-  /* --- Control de la barra de progreso (Versión Compacta) --- */
+  .headerContent { flex-wrap: wrap; row-gap: 8px; }
   .progressFull { display: none; }
   .progressCompact { display: block; }
-  
-  /* --- Scroll del "Mi Diario de Hoy" en Móvil --- */
   .rightCol .widget:first-child {
-    max-height: none; /* Se elimina el 60vh del tablet */
-    /* Altura que se ajusta, pero garantiza un mínimo visible (ej. 4 items) */
-    min-height: clamp(320px, 65vh, 560px); 
-    display: flex;
-    flex-direction: column;
+    max-height: none;
+    min-height: clamp(320px, 65vh, 560px);
+    display: flex; flex-direction: column;
   }
   .intakeList {
     overflow-y: auto;
-    /* Se asegura un alto mínimo para que el scroll esté siempre ahí */
     min-height: 220px;
     max-height: clamp(280px, 60vh, 520px);
   }
