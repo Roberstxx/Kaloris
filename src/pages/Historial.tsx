@@ -1,20 +1,22 @@
-import React, { useEffect, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Home, History, Flame, Target, TrendingUp, CalendarDays } from 'lucide-react';
+import React, { useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { Flame, Target, TrendingUp, CalendarDays } from "lucide-react";
 
-import { HistoryChart } from '../components/HistoryChart';
-import { HistoryScatterChart } from '../components/HistoryScatterChart';
-import { ThemeToggle } from '../components/ThemeToggle';
-import { useIntake } from '../context/IntakeContext';
-import { useSession } from '../context/SessionContext';
-import type { WeeklyStatsSummary } from '../types';
-import { getLastNDays, getDateLabel } from '../utils/date';
-import { formatKcal } from '../utils/format';
-import styles from './Dashboard.module.css';
-import historyStyles from './Historial.module.css';
-import UserAvatar from '@/components/UserAvatar';
+import { HistoryChart } from "../components/HistoryChart";
+import { HistoryScatterChart } from "../components/HistoryScatterChart";
+import { useIntake } from "../context/IntakeContext";
+import { useSession } from "../context/SessionContext";
+import type { WeeklyStatsSummary } from "../types";
+import { getLastNDays, getDateLabel } from "../utils/date";
+import { formatKcal } from "../utils/format";
+import styles from "./Dashboard.module.css";
+import historyStyles from "./Historial.module.css";
+import AppHeader from "@/components/ui/AppHeader";
 
-type SummaryMetrics = Pick<WeeklyStatsSummary, 'totalKcal' | 'averageKcal' | 'daysWithinTarget' | 'compliance' | 'bestDay' | 'trend'>;
+type SummaryMetrics = Pick<
+  WeeklyStatsSummary,
+  "totalKcal" | "averageKcal" | "daysWithinTarget" | "compliance" | "bestDay" | "trend"
+>;
 
 const Historial = () => {
   const navigate = useNavigate();
@@ -22,7 +24,7 @@ const Historial = () => {
   const { getLogsForDateRange, weeklyStats } = useIntake();
 
   useEffect(() => {
-    if (!isAuthenticated) navigate('/login');
+    if (!isAuthenticated) navigate("/login");
   }, [isAuthenticated, navigate]);
 
   const dates = getLastNDays(7);
@@ -56,7 +58,9 @@ const Historial = () => {
     const totalKcal = logs.reduce((sum, log) => sum + log.totalKcal, 0);
     const averageKcal = totalKcal / logs.length;
     const withinRangeThreshold = targetKcal * 0.05;
-    const daysWithinTarget = logs.filter((log) => Math.abs(log.totalKcal - targetKcal) <= withinRangeThreshold).length;
+    const daysWithinTarget = logs.filter(
+      (log) => Math.abs(log.totalKcal - targetKcal) <= withinRangeThreshold
+    ).length;
     const bestDay = logs.reduce((best, log) => {
       const bestDiff = Math.abs(best.totalKcal - targetKcal);
       const currentDiff = Math.abs(log.totalKcal - targetKcal);
@@ -79,7 +83,7 @@ const Historial = () => {
   const getDifferenceLabel = (difference: number) => {
     if (difference > 0) return `+${Math.abs(Math.round(difference))} kcal sobre meta`;
     if (difference < 0) return `${Math.abs(Math.round(difference))} kcal por debajo`;
-    return 'En la meta';
+    return "En la meta";
   };
 
   const getDifferenceClass = (difference: number) => {
@@ -90,37 +94,7 @@ const Historial = () => {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div className="container">
-          <div className={styles.headerContent}>
-            <h1 className={styles.logo}>Historial</h1>
-            <nav className={styles.nav}>
-              <Link to="/dashboard" className={styles.navLink} title="Dashboard">
-                <Home size={20} />
-              </Link>
-              <Link to="/historial" className={styles.navLink} title="Historial">
-                <History size={20} />
-              </Link>
-              <Link
-                to="/settings"
-                className={`${styles.navLink} ${styles.navProfileLink}`}
-                title="Configuración"
-              >
-                <UserAvatar
-                  src={user.avatarUrl}
-                  name={user.name}
-                  username={user.username}
-                  size={36}
-                  className={styles.navAvatar}
-                  imageClassName={styles.navAvatarImage}
-                  fallbackClassName={styles.navAvatarFallback}
-                />
-              </Link>
-              <ThemeToggle />
-            </nav>
-          </div>
-        </div>
-      </header>
+      <AppHeader title="Historial" />
 
       <main className={`container ${historyStyles.main}`}>
         <h2 className={historyStyles.sectionTitle}>Últimos 7 días</h2>
@@ -161,12 +135,10 @@ const Historial = () => {
               <span>Tendencia reciente</span>
             </div>
             <p className={historyStyles.summaryValue}>
-              {logs.length >= 2 ? `${summary.trend > 0 ? '+' : ''}${Math.round(summary.trend)} kcal` : 'Sin datos'}
+              {logs.length >= 2 ? `${summary.trend > 0 ? "+" : ""}${Math.round(summary.trend)} kcal` : "Sin datos"}
             </p>
             <p className={historyStyles.summaryMeta}>
-              {logs.length >= 2
-                ? 'vs. día anterior'
-                : 'Registra más días para ver la tendencia'}
+              {logs.length >= 2 ? "vs. día anterior" : "Registra más días para ver la tendencia"}
             </p>
             {summary.bestDay && (
               <p className={historyStyles.summaryMeta}>
@@ -200,7 +172,7 @@ const Historial = () => {
                         <span className={historyStyles.timelineKcal}>{formatKcal(log.totalKcal)}</span>
                       </div>
                       <p className={historyStyles.timelineMeta}>
-                        {log.entries.length} {log.entries.length === 1 ? 'registro' : 'registros'}
+                        {log.entries.length} {log.entries.length === 1 ? "registro" : "registros"}
                       </p>
                       <span className={`${historyStyles.diffBadge} ${getDifferenceClass(difference)}`}>
                         {getDifferenceLabel(difference)}
@@ -222,3 +194,4 @@ const Historial = () => {
 };
 
 export default Historial;
+
