@@ -79,9 +79,14 @@ export const db = getFirestore(app);
  */
 const ERROR_MAP: Record<string, string> = {
   "auth/invalid-email": "El correo no tiene un formato válido.",
+  "auth/missing-password": "Debes ingresar una contraseña para continuar.",
   "auth/user-disabled": "Tu cuenta está deshabilitada.",
   "auth/user-not-found": "No existe una cuenta con ese correo.",
-  "auth/wrong-password": "La contraseña es incorrecta.",
+  "auth/wrong-password": "La contraseña no coincide con el correo ingresado.",
+  "auth/invalid-credential": "El correo o la contraseña no son correctos.",
+  "auth/invalid-login-credentials": "El correo o la contraseña no son correctos.",
+  "auth/email-already-in-use": "Este correo ya está registrado. Inicia sesión o usa otro correo.",
+  "auth/weak-password": "La contraseña es muy corta. Usa al menos 6 caracteres.",
   "auth/too-many-requests": "Demasiados intentos. Intenta más tarde.",
   "auth/network-request-failed": "Problema de red. Revisa tu conexión.",
   "auth/invalid-api-key": "API Key inválida. Revisa la configuración.",
