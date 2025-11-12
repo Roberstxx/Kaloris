@@ -59,7 +59,7 @@ export default function Login() {
       // → Splash tipo “otra página” (5s)
       navigate("/splash", {
         replace: true,
-        state: { text, durationMs: 5000, next, fromLogin: true },
+        state: { text, durationMs: 5000, next },
       });
     } catch (err) {
       setIsSubmitting(false);
@@ -160,5 +160,3 @@ export default function Login() {
     </div>
   );
 }
-
-
