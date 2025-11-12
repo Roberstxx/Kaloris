@@ -24,10 +24,10 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* Splash (página de loader) */}
+            {/* Splash (página del loader) */}
             <Route path="/splash" element={<SplashLoader />} />
 
-            {/* Solo autenticación (para completar perfil) */}
+            {/* Solo usuarios autenticados */}
             <Route path="/registro" element={<RequireAuth><Registro /></RequireAuth>} />
 
             {/* Perfil completo */}
