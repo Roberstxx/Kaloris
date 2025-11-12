@@ -5,7 +5,6 @@ import styles from "./Login.module.css";
 import { getAuthErrorMessage } from "@/utils/firebaseErrors";
 
 const carouselImages = [
-  // 🔁 Sustituye por tus rutas reales
   "/image/login-1.png",
   "/image/login-2.jpg",
   "/image/login-3.jpg",
@@ -14,20 +13,22 @@ const carouselImages = [
 export default function Login() {
   const navigate: NavigateFunction = useNavigate();
   const { login, isAuthenticated, needsProfile } = useSession();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const [slide, setSlide] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Si ya está autenticado, vete directo
   useEffect(() => {
     if (!isAuthenticated) return;
     navigate(needsProfile ? "/registro" : "/dashboard");
   }, [isAuthenticated, needsProfile, navigate]);
 
-  // ⏱️ Carrusel simple (no cambia tu UI del form)
+  // Carrusel
   useEffect(() => {
     const id = setInterval(() => setSlide((s) => (s + 1) % carouselImages.length), 4500);
     return () => clearInterval(id);
@@ -36,24 +37,51 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
+    if (isSubmitting) return;
+    setIsSubmitting(true);
 
     try {
       const ok = await login(email, password, remember);
       if (!ok) {
+        setIsSubmitting(false);
         setError("Correo o contraseña incorrectos");
+        return;
       }
+
+      // Intenta traer frase (opcional)
+      const controller = new AbortController();
+      const kill = setTimeout(() => controller.abort(), 3500);
+      let text: string | undefined;
+      try {
+        const r = await fetch("https://api.quotable.io/random?tags=inspirational", { signal: controller.signal });
+        if (r.ok) {
+          const data = await r.json();
+          if (typeof data?.content === "string") text = data.content;
+        }
+      } catch {}
+      clearTimeout(kill);
+      if (!text) text = "Tu constancia construye tu meta.";
+
+      // Siguiente página real
+      const next = needsProfile ? "/registro" : "/dashboard";
+
+      // → A la “página” de loader (4s por default; cambia a 5000 si prefieres 5s exactos)
+      navigate("/splash", {
+        replace: true,
+        state: { text, durationMs: 4000, next },
+      });
     } catch (err) {
+      setIsSubmitting(false);
       setError(
         getAuthErrorMessage(
           err,
           "Ocurrió un error inesperado al iniciar sesión. Vuelve a intentarlo."
         )
       );
-    } finally {
-      setLoading(false);
     }
   };
+
+  const disabled = isSubmitting;
 
   return (
     <div className={styles.pageSplit}>
@@ -79,6 +107,7 @@ export default function Login() {
               className={`${styles.dot} ${i === slide ? styles.dotActive : ""}`}
               onClick={() => setSlide(i)}
               aria-label={`Ir a imagen ${i + 1}`}
+              disabled={disabled}
             />
           ))}
         </div>
@@ -87,15 +116,6 @@ export default function Login() {
       {/* Panel del formulario (50%) */}
       <main className={styles.formPanel}>
         <div className={styles.card}>
-          {loading && (
-            <div className={styles.loadingOverlay} role="status" aria-live="polite">
-              <div className={styles.loadingContent}>
-                <span className={styles.loadingSpinner} aria-hidden />
-                <p>Preparando tu experiencia saludable…</p>
-              </div>
-            </div>
-          )}
-          {/* Logo real */}
           <img src="/image/LogoK.png" alt="Logo" className={styles.logoImg} />
 
           <header className={styles.header}>
@@ -103,12 +123,7 @@ export default function Login() {
             <p>Inicia sesión para continuar</p>
           </header>
 
-          <form
-            className={styles.form}
-            onSubmit={handleSubmit}
-            noValidate
-            aria-busy={loading}
-          >
+          <form className={styles.form} onSubmit={handleSubmit} noValidate aria-busy={disabled}>
             <label htmlFor="email">Correo</label>
             <div className={styles.field}>
               <input
@@ -120,6 +135,7 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
                 required
+                disabled={disabled}
               />
             </div>
 
@@ -133,13 +149,14 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
                 required
+                disabled={disabled}
               />
               <button
                 type="button"
                 className={styles.eye}
                 onClick={() => setShowPwd((v) => !v)}
                 aria-label={showPwd ? "Ocultar contraseña" : "Mostrar contraseña"}
-                disabled={loading}
+                disabled={disabled}
               >
                 {showPwd ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -177,17 +194,18 @@ export default function Login() {
                 type="checkbox"
                 checked={remember}
                 onChange={(e) => setRemember(e.target.checked)}
+                disabled={disabled}
               />
               Recordar sesión
             </label>
 
             {error && <p className={styles.error}>{error}</p>}
 
-            <button type="submit" className={styles.cta} disabled={loading}>
+            <button type="submit" className={styles.cta} disabled={disabled}>
               <span className={styles.ctaIcon} aria-hidden>
                 ↪
               </span>
-              {loading ? "Iniciando sesión…" : "Ingresar"}
+              {disabled ? "Procesando…" : "Ingresar"}
             </button>
           </form>
 
@@ -201,4 +219,3 @@ export default function Login() {
     </div>
   );
 }
-
