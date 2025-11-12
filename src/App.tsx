@@ -4,6 +4,7 @@ import { SessionProvider } from "./context/SessionContext";
 import { IntakeProvider } from "./context/IntakeContext";
 import RequireAuth from "./lib/RequireAuth";
 import RequireProfile from "./lib/RequireProfile";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Registro from "./pages/Registro";
@@ -11,7 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Historial from "./pages/Historial";
 import Settings from "./pages/Settings";
 import StreakPage from "./pages/Streak";
-import SplashLoader from "./pages/SplashLoader"; // ⬅️ NUEVO
+import SplashLoader from "./pages/SplashLoader"; // ⬅️ splash
 
 const App = () => (
   <SessionProvider>
@@ -24,10 +25,17 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* Splash (página del loader) */}
-            <Route path="/splash" element={<SplashLoader />} />
+            {/* Splash protegido (no entra sin sesión) */}
+            <Route
+              path="/splash"
+              element={
+                <RequireAuth>
+                  <SplashLoader />
+                </RequireAuth>
+              }
+            />
 
-            {/* Solo usuarios autenticados */}
+            {/* Solo autenticación (para completar perfil) */}
             <Route path="/registro" element={<RequireAuth><Registro /></RequireAuth>} />
 
             {/* Perfil completo */}
@@ -46,3 +54,4 @@ const App = () => (
 );
 
 export default App;
+
