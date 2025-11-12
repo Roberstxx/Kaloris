@@ -12,7 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Historial from "./pages/Historial";
 import Settings from "./pages/Settings";
 import StreakPage from "./pages/Streak";
-import SplashLoader from "./pages/SplashLoader"; // ⬅️ splash
+import SplashLoader from "./pages/SplashLoader";
 
 const App = () => (
   <SessionProvider>
@@ -25,7 +25,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* Splash protegido (no entra sin sesión) */}
+            {/* Splash protegido (solo con sesión) */}
             <Route
               path="/splash"
               element={
@@ -54,4 +54,5 @@ const App = () => (
 );
 
 export default App;
+
 
