@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Link, NavigateFunction, useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useNavigate, NavigateFunction } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import styles from "./Login.module.css";
 import { getAuthErrorMessage } from "@/utils/firebaseErrors";
@@ -28,16 +28,22 @@ export default function Login() {
   const [pendingRedirect, setPendingRedirect] = useState(false);
   const closeTimer = useRef<number | null>(null);
 
+  // --- Bloqueo de navegación para evitar la condición de carrera ---
+  const blockNav = useRef(false);
+
   // Carrusel (sin cambios)
   useEffect(() => {
-    const id = setInterval(() => setSlide((s) => (s + 1) % carouselImages.length), 4500);
+    const id = window.setInterval(
+      () => setSlide((s) => (s + 1) % carouselImages.length),
+      4500
+    );
     return () => clearInterval(id);
   }, []);
 
-  // Navegación automática original, pero ahora se bloquea si el loader está abierto o si hay redirect pendiente
+  // Navegación automática original, ahora bloqueada si el loader está activo o si blockNav está levantado
   useEffect(() => {
     if (!isAuthenticated) return;
-    if (loaderOpen || pendingRedirect) return; // espera a que cierre el loader si aplica
+    if (blockNav.current || loaderOpen || pendingRedirect) return;
     navigate(needsProfile ? "/registro" : "/dashboard");
   }, [isAuthenticated, needsProfile, navigate, loaderOpen, pendingRedirect]);
 
@@ -45,15 +51,19 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
+    // Bloquea navegación automática APENAS se intenta loguear
+    blockNav.current = true;
+
     try {
       const ok = await login(email, password, remember);
       if (!ok) {
+        blockNav.current = false;
         setError("Correo o contraseña incorrectos");
         return;
       }
 
-      // Login exitoso → mostrar loader y pedir frase
-      setPendingRedirect(true);          // evita que el useEffect navegue de inmediato
+      // Login OK → muestra loader y pide frase
+      setPendingRedirect(true);
       setLoaderText("Cargando tu frase del día…");
       setLoaderOpen(true);
 
@@ -61,16 +71,16 @@ export default function Login() {
         const frase = await getDailyQuote();
         if (frase) setLoaderText(frase);
       } catch {
-        // usa fallback por si falla la API
         setLoaderText("Tu constancia construye tu meta.");
       }
 
-      // Cierre automático (~4s). Si el usuario pulsa "Saltar", se limpia este timer.
+      // Cierre automático (~4s; respeta reduce motion)
       const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const ms = prefersReduced ? 1000 : 4000;
       closeTimer.current = window.setTimeout(() => handleCloseLoader(), ms);
 
     } catch (err) {
+      blockNav.current = false;
       setError(
         getAuthErrorMessage(
           err,
@@ -86,8 +96,10 @@ export default function Login() {
       closeTimer.current = null;
     }
     setLoaderOpen(false);
-    // ahora sí redirige según el estado real
     setPendingRedirect(false);
+    blockNav.current = false; // liberar navegación
+
+    // Redirige según tu estado real
     navigate(needsProfile ? "/registro" : "/dashboard");
   };
 
@@ -220,7 +232,7 @@ export default function Login() {
         </div>
       </main>
 
-      {/* ====== LOADER OVERLAY (mínimo y aislado) ====== */}
+      {/* ====== LOADER OVERLAY (minimal) ====== */}
       {loaderOpen && (
         <section
           role="dialog"
@@ -252,7 +264,12 @@ export default function Login() {
           </button>
 
           <div aria-hidden="true" style={loaderStyles.progressWrap}>
-            <i style={{ ...loaderStyles.progressBar, animation: `fill 4000ms cubic-bezier(.22,.61,.36,1) forwards` }} />
+            <i
+              style={{
+                ...loaderStyles.progressBar,
+                animation: `fill 4000ms cubic-bezier(.22,.61,.36,1) forwards`,
+              }}
+            />
           </div>
 
           <style>
@@ -276,16 +293,24 @@ export default function Login() {
 
 function formatToday() {
   const d = new Date();
-  const s = d.toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const s = d.toLocaleDateString("es-MX", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 async function getDailyQuote(): Promise<string | null> {
-  // API pública: cambiala por tu endpoint cuando quieras
+  // API pública: cámbiala por tu endpoint (VITE_QUOTES_URL) o por Firestore cuando gustes.
   const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), 3500);
+  const t = window.setTimeout(() => controller.abort(), 3500);
   try {
-    const res = await fetch("https://api.quotable.io/random?tags=inspirational", { signal: controller.signal });
+    const res = await fetch(
+      "https://api.quotable.io/random?tags=inspirational",
+      { signal: controller.signal }
+    );
     if (!res.ok) return null;
     const data = await res.json();
     return typeof data?.content === "string" ? data.content : null;
@@ -300,55 +325,90 @@ async function getDailyQuote(): Promise<string | null> {
 
 const loaderStyles: Record<string, React.CSSProperties> = {
   screen: {
-    position: "fixed", inset: 0, display: "grid",
-    gridTemplateRows: "auto 1fr auto", alignItems: "center",
-    background: "var(--bg)", color: "var(--fg)", zIndex: 9999,
+    position: "fixed",
+    inset: 0,
+    display: "grid",
+    gridTemplateRows: "auto 1fr auto",
+    alignItems: "center",
+    background: "var(--bg)",
+    color: "var(--fg)",
+    zIndex: 9999,
     backgroundImage:
       "radial-gradient(1200px 600px at 50% 100%, color-mix(in oklab, var(--accent), transparent 85%), transparent)," +
       "linear-gradient(180deg, color-mix(in oklab, var(--bg), #000 3%), var(--bg))",
   },
   topbar: {
-    display: "flex", alignItems: "center", justifyContent: "space-between",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: "clamp(12px, 2vw, 28px)",
   },
   brand: {
-    letterSpacing: ".04em", fontWeight: 600, fontSize: "clamp(12px, 1.2vw, 14px)",
-    textTransform: "uppercase", color: "var(--muted)",
-    border: "1px solid color-mix(in oklab, var(--muted), transparent 70%)" as any,
-    padding: ".35rem .55rem", borderRadius: 999,
+    letterSpacing: ".04em",
+    fontWeight: 600,
+    fontSize: "clamp(12px, 1.2vw, 14px)",
+    textTransform: "uppercase",
+    color: "var(--muted)",
+    border:
+      "1px solid color-mix(in oklab, var(--muted), transparent 70%)" as any,
+    padding: ".35rem .55rem",
+    borderRadius: 999,
     backdropFilter: "blur(2px)",
   },
   content: {
-    display: "grid", placeItems: "center",
-    paddingInline: "clamp(16px, 4vw, 48px)", textAlign: "center",
+    display: "grid",
+    placeItems: "center",
+    paddingInline: "clamp(16px, 4vw, 48px)",
+    textAlign: "center",
   },
   quote: {
-    maxWidth: "18ch", margin: 0, lineHeight: 1.12, fontWeight: 700,
-    fontSize: "clamp(1.8rem, 6.2vw, 5.5rem)", letterSpacing: "-0.015em",
-    fontFamily: "Poppins, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial",
+    maxWidth: "18ch",
+    margin: 0,
+    lineHeight: 1.12,
+    fontWeight: 700,
+    fontSize: "clamp(1.8rem, 6.2vw, 5.5rem)",
+    letterSpacing: "-0.015em",
+    fontFamily:
+      "Poppins, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial",
   },
   mark: {
-    background: "linear-gradient(90deg, color-mix(in oklab, var(--accent), transparent 60%), transparent)",
-    borderRadius: ".2em", padding: "0 .06em",
+    background:
+      "linear-gradient(90deg, color-mix(in oklab, var(--accent), transparent 60%), transparent)",
+    borderRadius: ".2em",
+    padding: "0 .06em",
   },
   meta: {
-    marginTop: "clamp(10px, 1.6vw, 18px)", color: "var(--muted)",
+    marginTop: "clamp(10px, 1.6vw, 18px)",
+    color: "var(--muted)",
     fontSize: "clamp(.9rem, 1.4vw, 1.05rem)",
   },
   skip: {
-    position: "fixed", right: "clamp(12px, 2vw, 24px)", bottom: "clamp(12px, 2vw, 24px)",
+    position: "fixed",
+    right: "clamp(12px, 2vw, 24px)",
+    bottom: "clamp(12px, 2vw, 24px)",
     border: "1px solid rgba(120,120,120,.3)",
     background: "rgba(255,255,255,.02)",
-    color: "var(--fg)", fontSize: ".95rem",
-    padding: ".55rem .8rem", borderRadius: 999, opacity: .9, cursor: "pointer",
+    color: "var(--fg)",
+    fontSize: ".95rem",
+    padding: ".55rem .8rem",
+    borderRadius: 999,
+    opacity: 0.9,
+    cursor: "pointer",
     transition: "transform .15s ease, opacity .15s ease",
   },
   progressWrap: {
-    position: "fixed", left: 0, right: 0, bottom: 0,
-    height: 3, overflow: "hidden", background: "rgba(120,120,120,.15)",
+    position: "fixed",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 3,
+    overflow: "hidden",
+    background: "rgba(120,120,120,.15)",
   },
   progressBar: {
-    display: "block", height: "100%", width: "0%",
+    display: "block",
+    height: "100%",
+    width: "0%",
     background: "linear-gradient(90deg, var(--accent), rgba(255,255,255,.2))",
   },
 };
