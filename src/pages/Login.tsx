@@ -19,7 +19,7 @@ export default function Login() {
   const [slide, setSlide] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Si ya está autenticado → ir a su destino
+  // Si ya está autenticado, vete directo
   useEffect(() => {
     if (!isAuthenticated) return;
     navigate(needsProfile ? "/registro" : "/dashboard");
@@ -56,10 +56,10 @@ export default function Login() {
 
       const next = needsProfile ? "/registro" : "/dashboard";
 
-      // → Splash tipo “otra página” (5s)
+      // → Splash “otra página” (5s) con bandera de origen
       navigate("/splash", {
         replace: true,
-        state: { text, durationMs: 5000, next },
+        state: { text, durationMs: 5000, next, from: "login" },
       });
     } catch (err) {
       setIsSubmitting(false);
@@ -103,7 +103,7 @@ export default function Login() {
             <p>Inicia sesión para continuar</p>
           </header>
 
-          <form className={styles.form} onSubmit={handleSubmit} noValidate aria-busy={disabled}>
+        <form className={styles.form} onSubmit={handleSubmit} noValidate aria-busy={disabled}>
             <label htmlFor="email">Correo</label>
             <div className={styles.field}>
               <input id="email" type="email" className={styles.input} placeholder="tucorreo@gmail.com"
