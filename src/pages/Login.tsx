@@ -7,12 +7,6 @@ import { getDailyQuoteCachedES } from "@/lib/dailyQuote";
 
 const carouselImages = [ "/image/login-1.png", "/image/login-2.jpg", "/image/login-3.jpg" ];
 
-type PendingSplash = {
-  text: string;
-  next: string;
-  durationMs: number;
-} | null;
-
 export default function Login() {
   const navigate: NavigateFunction = useNavigate();
   const { login, isAuthenticated, needsProfile } = useSession();
@@ -25,24 +19,11 @@ export default function Login() {
   const [slide, setSlide] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 🟢 Nuevo: guardamos “lo que el splash necesita” y navegamos cuando la sesión esté lista
-  const [pendingSplash, setPendingSplash] = useState<PendingSplash>(null);
-
-  // Si ya está autenticado, vete directo (en caso de entrar a /login logueado)
+  // Si ya está autenticado → ir a su destino
   useEffect(() => {
     if (!isAuthenticated) return;
-    if (pendingSplash) {
-      // venimos de un login recién hecho: ahora sí navega al splash
-      navigate("/splash", {
-        replace: true,
-        state: { ...pendingSplash, from: "login" },
-      });
-      setPendingSplash(null);
-      return;
-    }
-    // sesión ya existente
     navigate(needsProfile ? "/registro" : "/dashboard");
-  }, [isAuthenticated, needsProfile, navigate, pendingSplash]);
+  }, [isAuthenticated, needsProfile, navigate]);
 
   // Carrusel
   useEffect(() => {
@@ -69,14 +50,17 @@ export default function Login() {
         return;
       }
 
-      // Prepara la frase y el destino, pero NO navegues aún
+      // Frase ES cacheada por día
       let text = "Tu constancia construye tu meta.";
       try { text = await getDailyQuoteCachedES(); } catch {}
+
       const next = needsProfile ? "/registro" : "/dashboard";
 
-      // 🟢 Guardar intención de splash; el useEffect de arriba navegará
-      setPendingSplash({ text, next, durationMs: 5000 });
-      // No seteamos false aquí; dejamos el botón en “Procesando…” un instante hasta que cambie la ruta
+      // → Splash tipo “otra página” (5s)
+      navigate("/splash", {
+        replace: true,
+        state: { text, durationMs: 5000, next },
+      });
     } catch (err) {
       setIsSubmitting(false);
       setError(
@@ -176,4 +160,5 @@ export default function Login() {
     </div>
   );
 }
+
 
