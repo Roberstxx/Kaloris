@@ -7,6 +7,12 @@ import { getDailyQuoteCachedES } from "@/lib/dailyQuote";
 
 const carouselImages = [ "/image/login-1.png", "/image/login-2.jpg", "/image/login-3.jpg" ];
 
+type PendingSplash = {
+  text: string;
+  next: string;
+  durationMs: number;
+} | null;
+
 export default function Login() {
   const navigate: NavigateFunction = useNavigate();
   const { login, isAuthenticated, needsProfile } = useSession();
@@ -19,11 +25,24 @@ export default function Login() {
   const [slide, setSlide] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Si ya está autenticado, vete directo
+  // 🟢 Nuevo: guardamos “lo que el splash necesita” y navegamos cuando la sesión esté lista
+  const [pendingSplash, setPendingSplash] = useState<PendingSplash>(null);
+
+  // Si ya está autenticado, vete directo (en caso de entrar a /login logueado)
   useEffect(() => {
     if (!isAuthenticated) return;
+    if (pendingSplash) {
+      // venimos de un login recién hecho: ahora sí navega al splash
+      navigate("/splash", {
+        replace: true,
+        state: { ...pendingSplash, from: "login" },
+      });
+      setPendingSplash(null);
+      return;
+    }
+    // sesión ya existente
     navigate(needsProfile ? "/registro" : "/dashboard");
-  }, [isAuthenticated, needsProfile, navigate]);
+  }, [isAuthenticated, needsProfile, navigate, pendingSplash]);
 
   // Carrusel
   useEffect(() => {
@@ -50,17 +69,14 @@ export default function Login() {
         return;
       }
 
-      // Frase ES cacheada por día
+      // Prepara la frase y el destino, pero NO navegues aún
       let text = "Tu constancia construye tu meta.";
       try { text = await getDailyQuoteCachedES(); } catch {}
-
       const next = needsProfile ? "/registro" : "/dashboard";
 
-      // → Splash “otra página” (5s) con bandera de origen
-      navigate("/splash", {
-        replace: true,
-        state: { text, durationMs: 5000, next, from: "login" },
-      });
+      // 🟢 Guardar intención de splash; el useEffect de arriba navegará
+      setPendingSplash({ text, next, durationMs: 5000 });
+      // No seteamos false aquí; dejamos el botón en “Procesando…” un instante hasta que cambie la ruta
     } catch (err) {
       setIsSubmitting(false);
       setError(
@@ -103,7 +119,7 @@ export default function Login() {
             <p>Inicia sesión para continuar</p>
           </header>
 
-        <form className={styles.form} onSubmit={handleSubmit} noValidate aria-busy={disabled}>
+          <form className={styles.form} onSubmit={handleSubmit} noValidate aria-busy={disabled}>
             <label htmlFor="email">Correo</label>
             <div className={styles.field}>
               <input id="email" type="email" className={styles.input} placeholder="tucorreo@gmail.com"
@@ -160,3 +176,4 @@ export default function Login() {
     </div>
   );
 }
+
