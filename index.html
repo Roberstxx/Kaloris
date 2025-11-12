@@ -2,65 +2,67 @@
 <html lang="es-MX">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- Título principal -->
-    <title>Kaloris - Contador de Calorías y Control Nutricional Diario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Descripción -->
-    <meta name="description" content="Kaloris es una app web para calcular, registrar y monitorear tu consumo diario de calorías y macronutrientes, basada en la Guía de Alimentos Mexicana. Ideal para mantener una alimentación balanceada." />
-    
-    <!-- Palabras clave -->
-    <meta name="keywords" content="Kaloris, contador de calorías, nutrición, TDEE, dieta mexicana, alimentación saludable, macronutrientes, fitness, control de peso" />
-    
-    <!-- Autor -->
-    <meta name="author" content="Kaloris App by JARB’S Solutions" />
+    <!-- ===== Título y descripción ===== -->
+    <title>Kaloris — Contador de Calorías y Control Nutricional Diario</title>
+    <meta name="description" content="Kaloris te ayuda a calcular tu TDEE, registrar comidas y monitorear calorías y macronutrientes con base en la Guía de Alimentos Mexicana. Visual, rápido y gratis." />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <meta name="author" content="JARB’S Solutions" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/img/logo.png" />
+    <!-- ===== Iconos (usa la ruta del favicon en /public) ===== -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="/image/LogoK.png" />
+    <link rel="apple-touch-icon" href="/image/LogoK.png" />
+    <meta name="theme-color" content="#7c3aed" />
+    <meta name="application-name" content="Kaloris" />
+    <meta name="apple-mobile-web-app-title" content="Kaloris" />
 
-    <!-- ====== Open Graph (Facebook / WhatsApp) ====== -->
-    <meta property="og:title" content="Kaloris - Tu Asistente de Nutrición Diaria" />
-    <meta property="og:description" content="Lleva un control fácil y visual de tus calorías, TDEE y macros con Kaloris." />
-    <meta property="og:image" content="https://kaloris.vercel.app/img/preview.png" />
-    <meta property="og:url" content="https://kaloris.vercel.app" />
+    <!-- ===== Canonical (ajusta al dominio final) ===== -->
+    <link rel="canonical" href="https://kaloris.vercel.app/" />
+
+    <!-- ===== Open Graph (WhatsApp/FB leen esto) ===== -->
+    <meta property="og:site_name" content="Kaloris" />
+    <meta property="og:title" content="Kaloris — Tu asistente de nutrición diaria" />
+    <meta property="og:description" content="Registra tus comidas, controla tus metas y alcanza tus objetivos con Kaloris." />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_MX" />
+    <meta property="og:url" content="https://kaloris.vercel.app/" />
+    <!-- Usa URL ABSOLUTA y una imagen 1200x630 para WhatsApp -->
+    <meta property="og:image" content="https://kaloris.vercel.app/image/preview.jpg" />
+    <meta property="og:image:secure_url" content="https://kaloris.vercel.app/image/preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Vista previa de Kaloris: dashboard de calorías y macros" />
 
-    <!-- ====== Twitter Cards ====== -->
+    <!-- (Opcional) imagen cuadrada para algunos clientes -->
+    <meta property="og:image" content="https://kaloris.vercel.app/image/preview-square.jpg" />
+    <meta property="og:image:width" content="1080" />
+    <meta property="og:image:height" content="1080" />
+
+    <!-- ===== Twitter Cards ===== -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Kaloris - Contador de Calorías" />
-    <meta name="twitter:description" content="Registra tus comidas, controla tus metas y alcanza tus objetivos con Kaloris." />
-    <meta name="twitter:image" content="https://kaloris.vercel.app/img/preview.png" />
+    <meta name="twitter:site" content="@jarbssolutions" />
     <meta name="twitter:creator" content="@jarbssolutions" />
+    <meta name="twitter:title" content="Kaloris — Contador de Calorías" />
+    <meta name="twitter:description" content="Calcula tu TDEE y registra tus alimentos de forma sencilla." />
+    <meta name="twitter:image" content="https://kaloris.vercel.app/image/preview.jpg" />
 
-    <!-- ====== Colores y tema ====== -->
-    <meta name="theme-color" content="#7c3aed" />
-    <meta name="apple-mobile-web-app-title" content="Kaloris" />
-    <meta name="application-name" content="Kaloris" />
-    <meta name="msapplication-TileColor" content="#7c3aed" />
-
-    <!-- ====== Schema.org (SEO estructurado) ====== -->
+    <!-- ===== Datos estructurados ===== -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "Kaloris",
-      "url": "https://kaloris.vercel.app",
+      "url": "https://kaloris.vercel.app/",
       "applicationCategory": "HealthApplication",
       "operatingSystem": "Web",
       "description": "Contador de calorías y registro de alimentos basado en la Guía Mexicana. Calcula tu TDEE y macros fácilmente.",
-      "author": {
-        "@type": "Organization",
-        "name": "JARB’S Solutions"
-      },
-      "image": "https://kaloris.vercel.app/img/preview.png"
+      "author": { "@type": "Organization", "name": "JARB’S Solutions" },
+      "image": "https://kaloris.vercel.app/image/preview.jpg"
     }
     </script>
-
-    <!-- ====== Canonical ====== -->
-    <link rel="canonical" href="https://kaloris.vercel.app" />
-
   </head>
 
   <body>
