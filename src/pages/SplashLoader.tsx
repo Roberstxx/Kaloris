@@ -1,13 +1,22 @@
 // src/pages/SplashLoader.tsx
 import React, { useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useSession } from "@/context/SessionContext";
 
-type SplashState = { text?: string; durationMs?: number; next?: string; };
+type SplashState = {
+  text?: string;
+  durationMs?: number;
+  next?: string;
+  fromLogin?: boolean;
+};
 
 export default function SplashLoader() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { text, durationMs, next }: SplashState = (state as SplashState) || {};
+  const { text, durationMs, next, fromLogin }: SplashState =
+    (state as SplashState) || {};
+  const { isAuthenticated, isLoading } = useSession();
+  const cameFromLogin = Boolean(fromLogin);
 
   const prefersReduced = useMemo(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches, []
@@ -27,10 +36,26 @@ export default function SplashLoader() {
   const goNext = () => navigate(next || "/dashboard", { replace: true });
 
   useEffect(() => {
+    if (!cameFromLogin) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    if (!isLoading && !isAuthenticated) {
+      navigate("/login", { replace: true });
+    }
+  }, [cameFromLogin, isAuthenticated, isLoading, navigate]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return undefined;
     timerRef.current = window.setTimeout(goNext, ms);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ms, next]);
+  }, [ms, next, isAuthenticated]);
+
+  if (!cameFromLogin || (isLoading && !isAuthenticated)) {
+    return null;
+  }
 
   return (
     <section className="screen" role="dialog" aria-modal="true" aria-labelledby="quote-text">
