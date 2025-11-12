@@ -1,28 +1,16 @@
+// src/pages/SplashLoader.tsx
 import React, { useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-type SplashState = {
-  text?: string;
-  durationMs?: number;
-  next?: string;
-  from?: "login";
-};
+type SplashState = { text?: string; durationMs?: number; next?: string; };
 
 export default function SplashLoader() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { text, durationMs, next, from }: SplashState = (state as SplashState) || {};
-
-  // 🚧 Única guarda interna: debe venir desde el login con state válido
-  useEffect(() => {
-    if (from !== "login") {
-      navigate("/login", { replace: true });
-    }
-  }, [from, navigate]);
+  const { text, durationMs, next }: SplashState = (state as SplashState) || {};
 
   const prefersReduced = useMemo(
-    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    []
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches, []
   );
   const ms = prefersReduced ? 1000 : (Number(durationMs) || 5000);
   const timerRef = useRef<number | null>(null);
@@ -30,10 +18,7 @@ export default function SplashLoader() {
   const todayStr = useMemo(() => {
     const d = new Date();
     const s = d.toLocaleDateString("es-MX", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+      weekday: "long", year: "numeric", month: "long", day: "numeric",
     });
     return s.charAt(0).toUpperCase() + s.slice(1);
   }, []);
@@ -42,13 +27,10 @@ export default function SplashLoader() {
   const goNext = () => navigate(next || "/dashboard", { replace: true });
 
   useEffect(() => {
-    if (from !== "login") return;
     timerRef.current = window.setTimeout(goNext, ms);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ms, next, from]);
-
-  if (from !== "login") return null;
+  }, [ms, next]);
 
   return (
     <section className="screen" role="dialog" aria-modal="true" aria-labelledby="quote-text">
@@ -64,18 +46,16 @@ export default function SplashLoader() {
         <p className="meta" id="today">{todayStr}</p>
       </main>
 
-      <button
-        className="skip"
-        type="button"
-        aria-label="Saltar introducción"
-        onClick={() => { if (timerRef.current) clearTimeout(timerRef.current); goNext(); }}
-      >
+      <button className="skip" type="button" aria-label="Saltar introducción"
+        onClick={() => { if (timerRef.current) clearTimeout(timerRef.current); goNext(); }}>
         Saltar
       </button>
 
       <div className="progress" aria-hidden="true">
-        <i style={{ animation: prefersReduced ? "none" : `fill ${ms}ms cubic-bezier(.22,.61,.36,1) forwards`,
-                    width: prefersReduced ? "100%" : undefined }}/>
+        <i style={{
+          animation: prefersReduced ? "none" : `fill ${ms}ms cubic-bezier(.22,.61,.36,1) forwards`,
+          width: prefersReduced ? "100%" : undefined,
+        }}/>
       </div>
 
       <style>{`
@@ -109,4 +89,5 @@ export default function SplashLoader() {
     </section>
   );
 }
+
 
