@@ -19,6 +19,7 @@ export default function Login() {
   const [showPwd, setShowPwd] = useState(false);
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
@@ -35,6 +36,7 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       const ok = await login(email, password, remember);
@@ -48,6 +50,8 @@ export default function Login() {
           "Ocurrió un error inesperado al iniciar sesión. Vuelve a intentarlo."
         )
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -83,6 +87,14 @@ export default function Login() {
       {/* Panel del formulario (50%) */}
       <main className={styles.formPanel}>
         <div className={styles.card}>
+          {loading && (
+            <div className={styles.loadingOverlay} role="status" aria-live="polite">
+              <div className={styles.loadingContent}>
+                <span className={styles.loadingSpinner} aria-hidden />
+                <p>Preparando tu experiencia saludable…</p>
+              </div>
+            </div>
+          )}
           {/* Logo real */}
           <img src="/image/LogoK.png" alt="Logo" className={styles.logoImg} />
 
@@ -91,7 +103,12 @@ export default function Login() {
             <p>Inicia sesión para continuar</p>
           </header>
 
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <form
+            className={styles.form}
+            onSubmit={handleSubmit}
+            noValidate
+            aria-busy={loading}
+          >
             <label htmlFor="email">Correo</label>
             <div className={styles.field}>
               <input
@@ -122,6 +139,7 @@ export default function Login() {
                 className={styles.eye}
                 onClick={() => setShowPwd((v) => !v)}
                 aria-label={showPwd ? "Ocultar contraseña" : "Mostrar contraseña"}
+                disabled={loading}
               >
                 {showPwd ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -165,11 +183,11 @@ export default function Login() {
 
             {error && <p className={styles.error}>{error}</p>}
 
-            <button type="submit" className={styles.cta}>
+            <button type="submit" className={styles.cta} disabled={loading}>
               <span className={styles.ctaIcon} aria-hidden>
                 ↪
               </span>
-              Ingresar
+              {loading ? "Iniciando sesión…" : "Ingresar"}
             </button>
           </form>
 
