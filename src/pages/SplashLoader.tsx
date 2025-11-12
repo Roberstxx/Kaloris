@@ -1,7 +1,5 @@
-// src/pages/SplashLoader.tsx
 import React, { useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useSession } from "../context/SessionContext";
 
 type SplashState = {
   text?: string;
@@ -13,19 +11,11 @@ type SplashState = {
 export default function SplashLoader() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { isAuthenticated } = useSession();
   const { text, durationMs, next, from }: SplashState = (state as SplashState) || {};
 
-  // 🚧 GUARD 1: requiere sesión
+  // 🚧 Única guarda interna: debe venir desde el login con state válido
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login", { replace: true });
-    }
-  }, [isAuthenticated, navigate]);
-
-  // 🚧 GUARD 2: requiere venir desde el login con state válido
-  useEffect(() => {
-    if (!from || from !== "login") {
+    if (from !== "login") {
       navigate("/login", { replace: true });
     }
   }, [from, navigate]);
@@ -34,7 +24,6 @@ export default function SplashLoader() {
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     []
   );
-
   const ms = prefersReduced ? 1000 : (Number(durationMs) || 5000);
   const timerRef = useRef<number | null>(null);
 
@@ -53,21 +42,13 @@ export default function SplashLoader() {
   const goNext = () => navigate(next || "/dashboard", { replace: true });
 
   useEffect(() => {
-    // Si no hay sesión o no viene del login, no programes el timer
-    if (!isAuthenticated || from !== "login") return;
-
+    if (from !== "login") return;
     timerRef.current = window.setTimeout(goNext, ms);
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    };
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ms, next, isAuthenticated, from]);
+  }, [ms, next, from]);
 
-  // Evita parpadeo mientras redirige por las guardas
-  if (!isAuthenticated || from !== "login") return null;
+  if (from !== "login") return null;
 
   return (
     <section className="screen" role="dialog" aria-modal="true" aria-labelledby="quote-text">
@@ -87,21 +68,14 @@ export default function SplashLoader() {
         className="skip"
         type="button"
         aria-label="Saltar introducción"
-        onClick={() => {
-          if (timerRef.current) clearTimeout(timerRef.current);
-          goNext();
-        }}
+        onClick={() => { if (timerRef.current) clearTimeout(timerRef.current); goNext(); }}
       >
         Saltar
       </button>
 
       <div className="progress" aria-hidden="true">
-        <i
-          style={{
-            animation: prefersReduced ? "none" : `fill ${ms}ms cubic-bezier(.22,.61,.36,1) forwards`,
-            width: prefersReduced ? "100%" : undefined,
-          }}
-        />
+        <i style={{ animation: prefersReduced ? "none" : `fill ${ms}ms cubic-bezier(.22,.61,.36,1) forwards`,
+                    width: prefersReduced ? "100%" : undefined }}/>
       </div>
 
       <style>{`
