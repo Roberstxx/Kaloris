@@ -408,9 +408,16 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         : ready
           ? children
           : (
-            <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-200">
-              <div className="flex flex-col items-center gap-3">
-                <span className="inline-flex h-8 w-8 animate-spin rounded-full border-2 border-slate-600 border-t-white" aria-hidden="true" />
+            <div 
+              style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'var(--transition)' }}
+            >
+              <div className="flex flex-col items-center gap-3" style={{ color: 'var(--text)' }}>
+                {/* Se mantiene la clase 'animate-spin' pero se anulan los colores de Tailwind */}
+                <span 
+                  className="inline-flex h-8 w-8 animate-spin rounded-full border-2 border-slate-600 border-t-white" 
+                  aria-hidden="true" 
+                  style={{ borderColor: 'var(--border)', borderTopColor: 'var(--brand)' }} 
+                />
                 <p className="text-sm font-medium">Cargando tu sesión…</p>
               </div>
             </div>
