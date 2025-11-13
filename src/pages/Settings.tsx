@@ -5,6 +5,17 @@ import AppHeader from "@/components/ui/AppHeader";
 import UserAvatar from "@/components/UserAvatar";
 import { useSession } from "@/context/SessionContext";
 import type { ActivityLevel, Sex } from "@/types";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; // Importa los componentes de alerta
 
 import styles from "./Settings.module.css";
 
@@ -99,6 +110,9 @@ const Settings: React.FC = () => {
   const { msg: toast, push: pushToast } = useToast();
   const [dirty, setDirty] = React.useState(false);
   const firstDirtyShown = React.useRef(false);
+
+  // Estado para controlar el diálogo de alerta
+  const [showLogoutDialog, setShowLogoutDialog] = React.useState(false);
 
   // Determinar si hay cambios respecto al snapshot
   React.useEffect(() => {
@@ -199,8 +213,8 @@ const Settings: React.FC = () => {
     setIsEditing(false);
   };
 
-  const handleLogout = () => {
-    if (dirty && !confirm("Tienes cambios sin guardar. ¿Salir igualmente?")) return;
+  // Handler de confirmación del diálogo
+  const handleConfirmLogout = () => {
     logout();
     navigate("/login");
   };
@@ -437,13 +451,51 @@ const Settings: React.FC = () => {
           )}
         </section>
 
-        {/* Sesión */}
+        {/* 👈 SECCIÓN DE SESIÓN CORREGIDA */}
         <section className="card" style={{ background: "var(--surface-elevated)", marginTop: "1rem" }}>
           <h3 style={{ marginBottom: "1rem" }}>Sesión</h3>
           <p style={{ color: "var(--text-secondary)", marginBottom: "1rem" }}>
             Puedes cerrar sesión de forma segura. Tus datos quedarán guardados localmente.
           </p>
-          <button className="btn btn-danger" onClick={handleLogout}>Cerrar sesión</button>
+          
+          <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+            <AlertDialogTrigger asChild>
+              {/* Este botón ahora SÓLO abre el diálogo */}
+              <button
+                className="btn btn-danger"
+                onClick={() => setShowLogoutDialog(true)}
+              >
+                Cerrar sesión
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro de cerrar sesión?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {/* Mensaje condicional si hay cambios sin guardar */}
+                  {dirty && (
+                    <strong style={{ color: "var(--warning)", display: "block", marginBottom: "0.5rem" }}>
+                      ¡Atención! Tienes cambios sin guardar que se perderán.
+                    </strong>
+                  )}
+                  Se te redirigirá a la pantalla de inicio de sesión.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                {/* Botón de Cancelar (usa tu clase .btn-secondary) */}
+                <AlertDialogCancel className="btn btn-secondary"> 
+                  Cancelar
+                </AlertDialogCancel>
+                {/* Botón de Confirmar (usa tu clase .btn-danger) */}
+                <AlertDialogAction
+                  className="btn btn-danger" 
+                  onClick={handleConfirmLogout} // Llama al handler simple de logout
+                >
+                  {dirty ? "Descartar cambios y Salir" : "Sí, cerrar sesión"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </section>
       </main>
 
