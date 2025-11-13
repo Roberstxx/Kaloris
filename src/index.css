@@ -1,4 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Design System - Calorie Counter App */
 :root {
@@ -211,16 +214,6 @@ a:hover {
   color: var(--text);
   font-size: 0.875rem;
 }
-
-
-
-
-
-
-
-
-
-
 /* ancho fijo (se queda como está para secciones que quieras centradas) */
 .container {
   width: 100%;
@@ -230,11 +223,36 @@ a:hover {
   box-sizing: border-box;
 }
 
-/* ✅ ancho completo: elimina el margin auto y el max-width */
+/*ancho completo: elimina el margin auto y el max-width */
 .container-fluid {
   width: 100%;
   max-width: none;
   margin: 0;           /* quita el margen naranja */
   padding: 0 1.5rem;   /* conserva respiro interno */
   box-sizing: border-box;
+}
+
+/* ===============================================
+   5. Alertas personalizadas
+=============================================== */
+@layer components {
+  [data-theme="dark"] [role="alertdialog"] {
+    background-color: hsl(220, 15%, 12%);
+    border-color: hsl(220, 10%, 25%);
+    box-shadow: 0 10px 30px hsla(0, 0%, 0%, 0.5);
+  }
+
+  [role="alertdialog"] h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);              
+  line-height: 1.3;
+}
+
+[role="alertdialog"] p {
+  font-size: 1rem;
+  color: var(--text-secondary);    
+  line-height: 1.6;
+}
+
 }
