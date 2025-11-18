@@ -1,3 +1,5 @@
+/* src/pages/Dashboard.module.css */
+
 /* --- 1. Layout de Página --- */
 .page {
   min-height: 100vh;
@@ -145,6 +147,20 @@
   overflow-y: auto;
   padding-right: 0.25rem;
 }
+
+/* ⚠️ CORRECCIÓN CLAVE: Haz que el layout de 3 columnas sea fluido en pantallas de laptop (1201px a 1500px) */
+/* ESTO DESACTIVA EL STICKY y permite el scroll hacia abajo en la ventana principal */
+@media (min-width: 1201px) and (max-width: 1500px) {
+    /* Las columnas dejan de ser sticky y su altura se vuelve automática (flujo normal) */
+    .leftCol,
+    .rightCol {
+        position: static; /* Desactiva sticky */
+        max-height: none; /* Altura automática */
+        overflow-y: visible; /* El scroll pasa a la ventana principal */
+        padding-right: 0;
+    }
+}
+
 
 /* --- Widgets Internos (Estilos Base) --- */
 .widget {
@@ -335,8 +351,8 @@
 /* ====== 🖥️ MEDIA QUERIES PARA RESPONSIVE DESIGN ====== */
 /* ======================================================= */
 
-/* --- 2) Tablet (Máx 1200px): Pasamos a 2 columnas (Izquierda y Centro a la izquierda, Derecha a la derecha) --- */
-@media (max-width: 1200px) {
+/* --- 2) Tablet (Máx 1200px): Pasamos a 2 columnas (El layout flexible) --- */
+@media (max-width: 1200px) { 
   .wide {
     padding: 0 16px; /* Ajuste de padding para tablet */
   }
@@ -480,4 +496,3 @@
   scrollbar-color: var(--brand) var(--surface);
   scroll-behavior: smooth;
 }
-
