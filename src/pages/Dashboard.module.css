@@ -10,8 +10,10 @@
 /* --- 2. Header --- */
 .header {
   background: var(--surface-elevated);
+  /* MEJORA: Usar sombra sutil para un efecto elevado moderno */
+  box-shadow: var(--shadow-sm); 
   border-bottom: 1px solid var(--border);
-  padding: 1rem 0;
+  padding: 0.75rem 0; /* Ligeramente más compacto verticalmente */
   flex-shrink: 0;
   position: sticky;
   top: 0;
@@ -24,7 +26,9 @@
 }
 .logo {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.35rem; /* MEJORA: Ligeramente más grande */
+  font-weight: 800; /* MEJORA: Más impacto para el branding */
+  letter-spacing: -0.01em; 
   background: var(--gradient-brand);
   -webkit-background-clip: text;
   background-clip: text;
@@ -32,16 +36,16 @@
 }
 .nav {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.35rem; /* MEJORA: Espaciado más compacto entre iconos */
   align-items: center;
 }
 .navLink {
-  width: 44px;
-  height: 44px;
+  width: 40px; /* MEJORA: Links ligeramente más pequeños */
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: 10px; /* Ligeramente menos redondeado */
   color: var(--text-secondary);
   transition: var(--transition);
 }
@@ -53,7 +57,6 @@
 .navProfileLink {
   padding: 4px;
 }
-
 .navAvatar {
   width: 36px;
   height: 36px;
@@ -112,7 +115,7 @@
   }
 }
 
-/* --- 5. Columnas "Sticky" (Escritorio) --- */
+/* --- 5. Columna Izquierda/Derecha (Comportamiento por defecto: Sticky) --- */
 
 /* Columna Izquierda: Sticky, scroll interno */
 .leftCol {
@@ -148,16 +151,31 @@
   padding-right: 0.25rem;
 }
 
-/* ⚠️ CORRECCIÓN CLAVE: Haz que el layout de 3 columnas sea fluido en pantallas de laptop (1201px a 1500px) */
-/* ESTO DESACTIVA EL STICKY y permite el scroll hacia abajo en la ventana principal */
+/* 🚀 CORRECCIÓN DE LAYOUT FLUIDO + LÍMITE DE SCROLL EN LAPTOP (1201px a 1500px) */
 @media (min-width: 1201px) and (max-width: 1500px) {
-    /* Las columnas dejan de ser sticky y su altura se vuelve automática (flujo normal) */
+    /* Desactivar sticky y max-height para permitir scroll en la ventana principal */
     .leftCol,
     .rightCol {
-        position: static; /* Desactiva sticky */
-        max-height: none; /* Altura automática */
-        overflow-y: visible; /* El scroll pasa a la ventana principal */
+        position: static; 
+        max-height: none;
+        overflow-y: visible;
         padding-right: 0;
+    }
+    
+    /* 💥 NUEVA RESTRICCIÓN: Limitar la altura del widget "Mi Diario de Hoy" */
+    .rightCol .widget:first-child {
+        /* max-height de 380px obliga al scroll después de ~4 tarjetas */
+        max-height: 380px; 
+        /* Necesario para que flex:1 de .intakeList funcione */
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Asegurar que la lista de items tenga el scroll activado */
+    .intakeList {
+        overflow-y: auto;
+        flex: 1; /* Ocupa el espacio limitado por el padre (380px) */
+        min-height: 0;
     }
 }
 
