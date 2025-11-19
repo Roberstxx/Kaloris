@@ -1,6 +1,11 @@
+/* src/components/ThemeToggle.module.css */
 .toggle {
-  width: 44px;
-  height: 44px;
+  /* Hacemos que la altura y el ancho sean automáticos para que el padre pueda controlarlos. */
+  width: auto; 
+  height: auto;
+  min-width: 40px; /* Mantener un target táctil mínimo */
+  min-height: 40px;
+  
   border-radius: var(--radius);
   background: var(--surface-elevated);
   border: 1px solid var(--border);
@@ -13,7 +18,7 @@
 
 .toggle:hover {
   background: var(--surface);
-  transform: translateY(-2px);
+  transform: translateY(-1px); /* Ligeramente más sutil */
   box-shadow: var(--shadow-sm);
 }
 
