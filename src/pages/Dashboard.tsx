@@ -166,7 +166,7 @@ const Dashboard: React.FC = () => {
                 />
               </div>
 
-              <div className={styles.widget}>
+              <div className={`${styles.widget} ${styles.widgetCatalog}`}>
                 <div className={styles.sectionHeaderTight}>
                   <h3>Sugerencias de Hoy</h3>
                   <div className={styles.actions}>
@@ -316,4 +316,3 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-
