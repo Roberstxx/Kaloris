@@ -5,15 +5,16 @@
   min-height: 100vh;
   background: var(--bg);
   overflow-x: hidden; 
+  /* ESPACIO PARA LA BARRA INFERIOR EN MÓVIL (Será corregido en el media query) */
+  padding-bottom: 0; 
 }
 
 /* --- 2. Header --- */
 .header {
   background: var(--surface-elevated);
-  /* MEJORA: Usar sombra sutil para un efecto elevado moderno */
   box-shadow: var(--shadow-sm); 
   border-bottom: 1px solid var(--border);
-  padding: 0.75rem 0; /* Ligeramente más compacto verticalmente */
+  padding: 0.75rem 0; 
   flex-shrink: 0;
   position: sticky;
   top: 0;
@@ -26,8 +27,8 @@
 }
 .logo {
   margin: 0;
-  font-size: 1.35rem; /* MEJORA: Ligeramente más grande */
-  font-weight: 800; /* MEJORA: Más impacto para el branding */
+  font-size: 1.35rem; 
+  font-weight: 800; 
   letter-spacing: -0.01em; 
   background: var(--gradient-brand);
   -webkit-background-clip: text;
@@ -36,22 +37,25 @@
 }
 .nav {
   display: flex;
-  gap: 0.35rem; /* MEJORA: Espaciado más compacto entre iconos */
+  gap: 0.35rem; 
   align-items: center;
 }
 .navLink {
-  width: 40px; /* MEJORA: Links ligeramente más pequeños */
+  width: 40px; 
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px; /* Ligeramente menos redondeado */
+  border-radius: 10px; 
   color: var(--text-secondary);
   transition: var(--transition);
 }
 .navLink:hover {
   background: var(--surface);
   color: var(--brand);
+}
+.desktopNav {
+    display: flex; 
 }
 
 .navProfileLink {
@@ -99,7 +103,6 @@
   gap: 26px;
   align-items: start;
   padding: 24px 0 40px;
-  /* Definición de áreas para uso en media queries */
   grid-template-areas: "left center right";
 }
 
@@ -119,7 +122,7 @@
 
 /* Columna Izquierda: Sticky, scroll interno */
 .leftCol {
-  grid-area: left; /* Asignación de área */
+  grid-area: left;
   position: sticky;
   top: 88px;
   align-self: start;
@@ -133,13 +136,13 @@
 
 /* Columna Central: Crece naturalmente */
 .centerCol {
-  grid-area: center; /* Asignación de área */
+  grid-area: center;
   min-width: 0;
 }
 
 /* Columna Derecha: Sticky, scroll interno */
 .rightCol {
-  grid-area: right; /* Asignación de área */
+  grid-area: right;
   position: sticky;
   top: 88px;
   align-self: start;
@@ -162,11 +165,9 @@
         padding-right: 0;
     }
     
-    /* 💥 NUEVA RESTRICCIÓN: Limitar la altura del widget "Mi Diario de Hoy" */
+    /* 💥 RESTRICCIÓN: Limitar la altura del widget "Mi Diario de Hoy" para scroll interno */
     .rightCol .widget:first-child {
-        /* max-height de 380px obliga al scroll después de ~4 tarjetas */
         max-height: 380px; 
-        /* Necesario para que flex:1 de .intakeList funcione */
         display: flex;
         flex-direction: column;
     }
@@ -174,7 +175,7 @@
     /* Asegurar que la lista de items tenga el scroll activado */
     .intakeList {
         overflow-y: auto;
-        flex: 1; /* Ocupa el espacio limitado por el padre (380px) */
+        flex: 1;
         min-height: 0;
     }
 }
@@ -289,10 +290,9 @@
 /* Contenedor central de widgets: en escritorio, los siguientes widgets tienen margen arriba */
 .centerCol .widget + .widget {
   margin-top: 20px;
-  /* Estas propiedades se eliminan en móvil/tablet en las media queries */
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 200px); /* Lógica de scroll en escritorio */
+  max-height: calc(100vh - 200px);
   overflow: hidden;
 }
 
@@ -369,45 +369,105 @@
 /* ====== 🖥️ MEDIA QUERIES PARA RESPONSIVE DESIGN ====== */
 /* ======================================================= */
 
+/* 4. Barra de Navegación Inferior (Móvil) */
+.mobileBottomNav {
+    display: none; /* Oculto por defecto */
+}
+.bottomLink {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    flex: 1;
+    height: 100%;
+    transition: var(--transition);
+}
+.bottomLink:hover {
+    color: var(--brand);
+}
+.bottomLink svg {
+    width: 24px;
+    height: 24px;
+}
+.bottomThemeToggle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    font-size: 0.7rem;
+    font-weight: 600;
+    gap: 2px;
+    color: var(--text-secondary);
+}
+.bottomThemeToggle button {
+    /* RESET DE CAJA DURA (Override ThemeToggle.module.css) */
+    width: 100%; 
+    height: 100%;
+    min-width: 40px;
+    min-height: 40px;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    
+    /* Estilo visual y alineación */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    
+    color: var(--text-secondary);
+    transition: var(--transition);
+}
+.bottomThemeToggle button svg {
+    width: 24px;
+    height: 24px;
+}
+.bottomThemeToggle button:hover {
+    color: var(--brand);
+    transform: translateY(0);
+    background: transparent;
+    box-shadow: none;
+}
+
+
 /* --- 2) Tablet (Máx 1200px): Pasamos a 2 columnas (El layout flexible) --- */
 @media (max-width: 1200px) { 
   .wide {
-    padding: 0 16px; /* Ajuste de padding para tablet */
+    padding: 0 16px;
   }
   .grid121 {
     display: grid;
-    /* Grid de 2 columnas: 1fr (izq) y 1fr (der) */
     grid-template-columns: minmax(320px, 1fr) minmax(280px, 1fr);
-    /* Izquierda (left) arriba, Centro (center) abajo, Derecha (right) en la columna 2 */
     grid-template-areas:
       "left  right"
       "center right";
     gap: 20px;
     padding: 20px 0 30px;
   }
-
-  /* Desactivar sticky/altura fija en las columnas para que crezcan con el contenido */
   .leftCol,
   .centerCol,
   .rightCol {
     position: static;
     height: auto;
     overflow: visible;
-    max-height: none; /* Elimina la altura fija calc(100vh - X) */
+    max-height: none;
     padding-right: 0;
   }
-
-  /* Los widgets ya no necesitan la altura limitada en el centro */
   .centerCol .widget {
     max-height: none;
     overflow: visible;
-    display: block; /* Vuelve a ser un bloque normal */
-    flex-direction: initial; /* Resetea el flex */
+    display: block;
+    flex-direction: initial;
   }
-
-  /* --- Scroll del "Mi Diario de Hoy" en Tablet --- */
   .rightCol .widget:first-child {
-    /* Ocupa hasta 60vh para un buen espacio de scroll */
     max-height: 60vh;
     display: flex;
     flex-direction: column;
@@ -420,12 +480,17 @@
 
 /* --- 3) Móvil (Máx 900px): Pasamos a 1 columna apilada --- */
 @media (max-width: 900px) {
+    
+  /* 1. Ocultar enlaces de escritorio en el header */
+  .desktopNav {
+      display: none;
+  }
+
   .wide {
     padding: 0 16px;
   }
   .grid121 {
     grid-template-columns: 1fr;
-    /* Orden lógico: Progreso (left) → Centro (center) → Derecha (right) */
     grid-template-areas:
       "left"
       "center"
@@ -449,25 +514,57 @@
   .headerContent {
     flex-wrap: wrap;
     row-gap: 8px;
+    justify-content: space-between;
   }
-
+  .nav {
+      flex: 0;
+  }
+  .navProfileLink {
+      margin-left: auto;
+  }
+  
   /* --- Control de la barra de progreso (Versión Compacta) --- */
   .progressFull { display: none; }
   .progressCompact { display: block; }
   
   /* --- Scroll del "Mi Diario de Hoy" en Móvil --- */
   .rightCol .widget:first-child {
-    max-height: none; /* Se elimina el 60vh del tablet */
-    /* Altura que se ajusta, pero garantiza un mínimo visible (ej. 4 items) */
+    max-height: none;
     min-height: clamp(320px, 65vh, 560px); 
     display: flex;
     flex-direction: column;
   }
   .intakeList {
     overflow-y: auto;
-    /* Se asegura un alto mínimo para que el scroll esté siempre ahí */
     min-height: 220px;
     max-height: clamp(280px, 60vh, 520px);
+  }
+    
+  /* 2. Mostrar la barra inferior fija */
+  .mobileBottomNav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: var(--surface-elevated);
+      border-top: 1px solid var(--border);
+      z-index: 1000;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* 3. Ajustar el padding de la página para que el contenido no se oculte detrás de la barra inferior */
+  .page {
+      padding-bottom: 60px;
+  }
+  
+  /* Activar color de marca para el enlace activo */
+  .bottomLink[aria-current="page"],
+  .bottomThemeToggle button[aria-current="page"] {
+      color: var(--brand);
   }
 }
 
