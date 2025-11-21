@@ -1,4 +1,3 @@
-// src/context/SessionContext.tsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { authApi, firebaseConfigIssues, db } from "@/lib/firebase";
 import type { User as FirebaseUser } from "firebase/auth";

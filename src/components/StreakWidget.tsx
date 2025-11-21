@@ -4,7 +4,6 @@ import { useIntake } from '../context/IntakeContext';
 import styles from './StreakWidget.module.css';
 
 export const StreakWidget: React.FC = () => {
-  // Ya corregido: useIntake expone weeklyStats que tiene currentStreak y longestStreak
   const { weeklyStats } = useIntake();
   const currentStreak = weeklyStats.currentStreak;
   const longestStreak = weeklyStats.longestStreak;

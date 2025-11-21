@@ -2,7 +2,7 @@ import React from "react";
 import styles from "./DashboardLayout.module.css";
 
 interface DashboardLayoutProps {
-  top?: React.ReactNode;        // ✅ nuevo
+  top?: React.ReactNode;
   overview: React.ReactNode;
   workspace: React.ReactNode;
 }
