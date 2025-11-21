@@ -213,5 +213,12 @@ Para documentar el sistema puedes partir de los siguientes diagramas:
 3. Ejecuta `npm run lint` y `npm run build` antes de abrir el PR.
 4. Describe los cambios y adjunta capturas si afectan la UI. Considera actualizar este README si modificas el flujo principal.
 
+## Documentación del proyecto
+
+* **Manual de usuario**: [https://docs.google.com/document/d/11AlF0WSDxUkEXjyX2Rvo8fg3RWiLGpVTNUlu9vOkxiM/edit?usp=sharing](https://docs.google.com/document/d/11AlF0WSDxUkEXjyX2Rvo8fg3RWiLGpVTNUlu9vOkxiM/edit?usp=sharing)
+* **Documentación técnica**: [https://docs.google.com/document/d/1RLiMnb6F9kihcmKcCCI3fP6GdCnD-RoSMXO8-ZCCIgU/edit?usp=sharing](https://docs.google.com/document/d/1RLiMnb6F9kihcmKcCCI3fP6GdCnD-RoSMXO8-ZCCIgU/edit?usp=sharing)
+
+
+
 ## Licencia
 Proyecto de uso privado. Contacta al autor antes de reutilizar o redistribuir el código.
