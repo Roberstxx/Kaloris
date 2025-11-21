@@ -1,4 +1,3 @@
-// src/utils/date.ts
 const MX_TIMEZONE = "America/Mexico_City";
 
 const isoFormatter = new Intl.DateTimeFormat("en-CA", {

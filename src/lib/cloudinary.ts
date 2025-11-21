@@ -1,4 +1,3 @@
-// src/lib/cloudinary.ts
 export type CloudinaryUploadResult = {
   public_id?: string;
   secure_url?: string;

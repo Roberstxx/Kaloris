@@ -1,4 +1,3 @@
-// src/utils/stats.ts
 import { DailyLog, WeeklyStatsSummary } from '../types';
 import { getTodayISO } from './date';
 
