@@ -172,6 +172,8 @@ Actualmente no existen tests automatizados, pero se recomienda:
 3. Probar los flujos críticos manualmente (login, onboarding, registro diario, exportación a PDF) tras cambios en contextos.
 
 ## Despliegue en producción
+Instancia en línea: https://kaloris.vercel.app/login
+
 El proyecto está optimizado para [Vercel](https://vercel.com/):
 1. Importa el repositorio en Vercel y selecciona el framework **Vite** (config automática).
 2. Define las variables de entorno en *Project Settings → Environment Variables* (usa Scope `Production` y `Preview`).
