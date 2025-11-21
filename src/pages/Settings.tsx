@@ -1,4 +1,3 @@
-// src/pages/Settings.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "@/components/ui/AppHeader";

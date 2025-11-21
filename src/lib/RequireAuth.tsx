@@ -1,4 +1,3 @@
-// src/lib/RequireAuth.tsx
 import { Navigate } from "react-router-dom";
 import { useSession } from "@/context/SessionContext";
 

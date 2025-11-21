@@ -1,4 +1,3 @@
-// src/components/MacrosSummary.tsx
 import React, { useMemo } from "react";
 import { useSession, type AppUser } from "../context/SessionContext";
 import { useIntake } from "../context/IntakeContext";
