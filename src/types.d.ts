@@ -1,5 +1,3 @@
-// src/types.d.ts
-
 export type ActivityLevel = "sedentario" | "ligero" | "moderado" | "intenso" | "muy_intenso";
 export type Sex = "male" | "female";
 

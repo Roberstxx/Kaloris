@@ -1,4 +1,3 @@
-// src/lib/dailyQuote.ts
 const TZ = "America/Hermosillo";
 
 const FALLBACK_QUOTES_ES: string[] = [

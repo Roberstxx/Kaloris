@@ -1,4 +1,3 @@
-// src/pages/SplashLoader.tsx
 import React, { useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 

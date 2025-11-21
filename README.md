@@ -80,6 +80,23 @@ La lógica local mantiene un espejo en `localStorage` para funcionar offline y h
 | Firebase Auth & Firestore | Autenticación email/password y persistencia de perfiles/logs. | Variables `VITE_FIREBASE_*` en `.env`. El build muestra un banner si faltan valores (`firebaseConfigIssues`). |
 | Cloudinary | Subida opcional de avatares/medios desde `src/lib/cloudinary.ts`. | Variables `VITE_CLOUDINARY_CLOUD_NAME` y `VITE_CLOUDINARY_UPLOAD_PRESET`. Usa presets *unsigned*. |
 
+## Variables de entorno
+Las claves se leen desde Vite (prefijo `VITE_`) y **todas son strings**. Usa `.env.example` como guía y evita subir el archivo con valores reales.
+
+| Variable | Descripción | Obligatoria |
+|----------|-------------|-------------|
+| `VITE_FIREBASE_API_KEY` | API Key pública de Firebase. | Sí |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Dominio de Auth (ej. `tuapp.firebaseapp.com`). | Sí |
+| `VITE_FIREBASE_PROJECT_ID` | ID del proyecto en Firebase. | Sí |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Bucket de Storage (se usa para futuras subidas). | Sí |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Sender ID de FCM. | Sí |
+| `VITE_FIREBASE_APP_ID` | App ID del proyecto. | Sí |
+| `VITE_FIREBASE_MEASUREMENT_ID` | ID de Analytics. Opcional; si falta se omite. | No |
+| `VITE_CLOUDINARY_CLOUD_NAME` | Nombre de tu cloud en Cloudinary. | Solo si habilitas avatares |
+| `VITE_CLOUDINARY_UPLOAD_PRESET` | Preset **unsigned** para aceptar uploads desde cliente. | Solo si habilitas avatares |
+
+> Si alguna variable crítica falta, `SessionProvider` mostrará un banner con la lista faltante y `firebaseConfigIssues.missing` detallará los campos en consola.
+
 ## Requisitos previos
 - [Node.js](https://nodejs.org/) 18 o superior.
 - [npm](https://www.npmjs.com/) instalado con Node (puedes usar [Bun](https://bun.sh/) si prefieres: hay `bun.lockb`).
@@ -155,6 +172,8 @@ Actualmente no existen tests automatizados, pero se recomienda:
 3. Probar los flujos críticos manualmente (login, onboarding, registro diario, exportación a PDF) tras cambios en contextos.
 
 ## Despliegue en producción
+Instancia en línea: https://kaloris.vercel.app/login
+
 El proyecto está optimizado para [Vercel](https://vercel.com/):
 1. Importa el repositorio en Vercel y selecciona el framework **Vite** (config automática).
 2. Define las variables de entorno en *Project Settings → Environment Variables* (usa Scope `Production` y `Preview`).
@@ -162,6 +181,16 @@ El proyecto está optimizado para [Vercel](https://vercel.com/):
 4. Cada push a `main` gatilla un despliegue automático. Si faltan credenciales, la app mostrará un banner indicando las claves ausentes (`SessionProvider`).
 
 Para otras plataformas (Netlify, Firebase Hosting) asegúrate de exponer las variables `VITE_*` y servir el contenido estático de `dist/`.
+
+### Reglas de Firestore y seguridad
+- Las reglas sugeridas viven en `firebase/firestore.rules`. Importa el archivo en tu proyecto de Firebase y despliega con:
+
+  ```bash
+  firebase deploy --only firestore:rules
+  ```
+
+- Las reglas asumen que cada documento incluye el `uid` del propietario (por ejemplo, `dailyLogs` validan `userId`). Revisa que tus clientes siempre envíen ese campo antes de desplegar.
+- Si vas a crear colecciones adicionales, replica el helper `isOwner` para mantener el mismo modelo de permisos.
 
 ## Diagramas recomendados
 Para documentar el sistema puedes partir de los siguientes diagramas:

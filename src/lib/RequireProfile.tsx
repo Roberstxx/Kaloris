@@ -1,4 +1,3 @@
-// src/lib/RequireProfile.tsx
 import { Navigate, useLocation } from "react-router-dom";
 import { useSession } from "@/context/SessionContext";
 
