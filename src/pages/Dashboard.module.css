@@ -1,11 +1,10 @@
-/* src/pages/Dashboard.module.css */
+/* Ruta: src/pages/Dashboard.module.css */
 
 /* --- 1. Layout de Página --- */
 .page {
   min-height: 100vh;
   background: var(--bg);
   overflow-x: hidden; 
-  /* ESPACIO PARA LA BARRA INFERIOR EN MÓVIL (Será corregido en el media query) */
   padding-bottom: 0; 
 }
 
@@ -14,7 +13,7 @@
   background: var(--surface-elevated);
   box-shadow: var(--shadow-sm); 
   border-bottom: 1px solid var(--border);
-  padding: 0.75rem 0; 
+  padding: 0.75rem 0;
   flex-shrink: 0;
   position: sticky;
   top: 0;
@@ -27,8 +26,8 @@
 }
 .logo {
   margin: 0;
-  font-size: 1.35rem; 
-  font-weight: 800; 
+  font-size: 1.35rem;
+  font-weight: 800;
   letter-spacing: -0.01em; 
   background: var(--gradient-brand);
   -webkit-background-clip: text;
@@ -37,16 +36,16 @@
 }
 .nav {
   display: flex;
-  gap: 0.35rem; 
+  gap: 0.35rem;
   align-items: center;
 }
 .navLink {
-  width: 40px; 
+  width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px; 
+  border-radius: 10px;
   color: var(--text-secondary);
   transition: var(--transition);
 }
@@ -120,7 +119,6 @@
 
 /* --- 5. Columna Izquierda/Derecha (Comportamiento por defecto: Sticky) --- */
 
-/* Columna Izquierda: Sticky, scroll interno */
 .leftCol {
   grid-area: left;
   position: sticky;
@@ -134,13 +132,11 @@
   padding-right: 0.25rem;
 }
 
-/* Columna Central: Crece naturalmente */
 .centerCol {
   grid-area: center;
   min-width: 0;
 }
 
-/* Columna Derecha: Sticky, scroll interno */
 .rightCol {
   grid-area: right;
   position: sticky;
@@ -156,7 +152,6 @@
 
 /* 🚀 CORRECCIÓN DE LAYOUT FLUIDO + LÍMITE DE SCROLL EN LAPTOP (1201px a 1500px) */
 @media (min-width: 1201px) and (max-width: 1500px) {
-    /* Desactivar sticky y max-height para permitir scroll en la ventana principal */
     .leftCol,
     .rightCol {
         position: static; 
@@ -165,14 +160,12 @@
         padding-right: 0;
     }
     
-    /* 💥 RESTRICCIÓN: Limitar la altura del widget "Mi Diario de Hoy" para scroll interno */
     .rightCol .widget:first-child {
         max-height: 380px; 
         display: flex;
         flex-direction: column;
     }
     
-    /* Asegurar que la lista de items tenga el scroll activado */
     .intakeList {
         overflow-y: auto;
         flex: 1;
@@ -196,7 +189,6 @@
   flex-shrink: 0;
 }
 
-/* --- Lógica de Widgets Columna Izquierda --- */
 .leftCol .widget:first-child {
   flex: 1.1;
   min-height: 0;
@@ -204,7 +196,6 @@
   flex-direction: column;
 }
 
-/* --- Lógica de Widgets Columna Derecha --- */
 .rightCol .widget:first-child {
   flex: 1;
   min-height: 0;
@@ -216,7 +207,6 @@
   flex-shrink: 0;
 }
 
-/* Lista de intake con scroll interno */
 .intakeList {
   display: flex;
   flex-direction: column;
@@ -287,7 +277,6 @@
   font-size: 1.1rem;
 }
 
-/* Contenedor central de widgets: en escritorio, los siguientes widgets tienen margen arriba */
 .centerCol .widget + .widget {
   margin-top: 20px;
   display: flex;
@@ -360,7 +349,6 @@
   padding: 10px 0;
 }
 
-/* --- Control de la barra de progreso (Compacta vs Full) --- */
 .progressFull { display: block; }
 .progressCompact { display: none; }
 
@@ -371,7 +359,7 @@
 
 /* 4. Barra de Navegación Inferior (Móvil) */
 .mobileBottomNav {
-    display: none; /* Oculto por defecto */
+    display: none;
 }
 .bottomLink {
     text-decoration: none;
@@ -402,11 +390,10 @@
     flex: 1;
     font-size: 0.7rem;
     font-weight: 600;
-    gap: 2px;
     color: var(--text-secondary);
+    gap: 2px;
 }
 .bottomThemeToggle button {
-    /* RESET DE CAJA DURA (Override ThemeToggle.module.css) */
     width: 100%; 
     height: 100%;
     min-width: 40px;
@@ -415,14 +402,11 @@
     background: transparent;
     box-shadow: none;
     border-radius: 0;
-    
-    /* Estilo visual y alineación */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 2px;
-    
     color: var(--text-secondary);
     transition: var(--transition);
 }
@@ -481,9 +465,9 @@
 /* --- 3) Móvil (Máx 900px): Pasamos a 1 columna apilada --- */
 @media (max-width: 900px) {
     
-  /* 1. Ocultar enlaces de escritorio en el header */
+  /* 1. Ocultar TODOS los enlaces desktop en el header (menos el avatar) */
   .desktopNav {
-      display: none;
+      display: none !important;
   }
 
   .wide {
@@ -499,7 +483,6 @@
     padding: 16px 0 20px;
   }
 
-  /* Asegurarse que las columnas estén completamente estáticas y auto-ajustables */
   .leftCol,
   .centerCol,
   .rightCol {
@@ -512,22 +495,28 @@
 
   /* Header flexible en móvil */
   .headerContent {
-    flex-wrap: wrap;
-    row-gap: 8px;
+    flex-wrap: nowrap;
     justify-content: space-between;
   }
-  .nav {
-      flex: 0;
-  }
-  .navProfileLink {
-      margin-left: auto;
+  
+  .logo {
+    font-size: 1.15rem;
   }
   
-  /* --- Control de la barra de progreso (Versión Compacta) --- */
+  .nav {
+      gap: 0.5rem;
+  }
+  
+  /* Solo mostrar el avatar en el nav */
+  .navProfileLink {
+      display: flex !important;
+  }
+  
+  /* Control de la barra de progreso (Versión Compacta) */
   .progressFull { display: none; }
   .progressCompact { display: block; }
   
-  /* --- Scroll del "Mi Diario de Hoy" en Móvil --- */
+  /* Scroll del "Mi Diario de Hoy" en Móvil */
   .rightCol .widget:first-child {
     max-height: none;
     min-height: clamp(320px, 65vh, 560px); 
@@ -549,6 +538,7 @@
       height: 60px;
       background: var(--surface-elevated);
       border-top: 1px solid var(--border);
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
       z-index: 1000;
       display: flex;
       justify-content: space-around;
@@ -558,12 +548,12 @@
   
   /* 3. Ajustar el padding de la página para que el contenido no se oculte detrás de la barra inferior */
   .page {
-      padding-bottom: 60px;
+      padding-bottom: calc(60px + env(safe-area-inset-bottom));
   }
   
   /* Activar color de marca para el enlace activo */
   .bottomLink[aria-current="page"],
-  .bottomThemeToggle button[aria-current="page"] {
+  .bottomLink.active {
       color: var(--brand);
   }
 }
@@ -602,7 +592,6 @@
   background: linear-gradient(180deg, var(--brand-dark) 0%, var(--brand) 100%);
 }
 
-/* Scroll suave */
 .leftCol,
 .rightCol,
 .intakeList,
@@ -611,3 +600,31 @@
   scrollbar-color: var(--brand) var(--surface);
   scroll-behavior: smooth;
 }
+
+.goalTitle {
+  margin: 0 0 2px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.goalMessage {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+/* Variantes de color según estado */
+.goalStatusOk {
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  border-left-color: var(--success);
+}
+
+.goalStatusLow {
+  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  border-left-color: var(--warning);
+}
+
+.goalStatusOver {
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+  border-left-color: var(--danger);
+}
+
