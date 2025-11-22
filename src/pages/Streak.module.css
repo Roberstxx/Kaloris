@@ -1,4 +1,14 @@
-.page { margin: 0 0 3rem; }
+/* Ruta: src/pages/Streak.module.css */
+
+.page { 
+  /* Igual que Dashboard */
+  min-height: 100vh;
+  background: var(--bg);
+  overflow-x: hidden;
+
+  margin: 0;
+  padding-bottom: 0; /* en desktop sin espacio extra */
+}
 
 .headerRow {
   display: flex; align-items: center; justify-content: space-between;
@@ -14,7 +24,12 @@
 .label { font-size: .95rem; color: var(--text-secondary); font-weight: 600; }
 
 /* Calendario */
-.calendarCard { background: var(--card-background); border-radius: var(--border-radius); box-shadow: var(--shadow-small); padding: 1rem 1rem 1.25rem; }
+.calendarCard { 
+  background: var(--card-background); 
+  border-radius: var(--border-radius); 
+  box-shadow: var(--shadow-small); 
+  padding: 1rem; 
+}
 
 .calHeader { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding-bottom: .75rem; border-bottom: 1px solid var(--border); }
 .calTitle { margin: 0; font-size: 1.2rem; color: var(--text-primary); }
@@ -113,7 +128,7 @@
   font-weight: 600;
 }
 .legendDot { width: 14px; height: 14px; border-radius: 4px; display: inline-block; border: 1px solid transparent; flex-shrink: 0; }
-.legendText { line-height: 1; }
+.legText { line-height: 1; }
 
 .legOk   { background: color-mix(in srgb, var(--success) 15%, transparent); border-color: var(--success); }
 .legNear { background: color-mix(in srgb, var(--warning) 15%, transparent); border-color: var(--warning); }
@@ -123,7 +138,7 @@
 .legToday{ background: var(--accent); }
 
 /* Píldoras de meses */
-.monthPills { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; justify-content: center; }
+.monthPills { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; justify-content:center; }
 .monthPill {
   border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary);
   border-radius: 999px; padding: .35rem .6rem; font-weight: 700; font-size: .8rem;
@@ -145,9 +160,9 @@
 }
 
 /* Lista ligera */
-.historyLite { margin-top: 1.25rem; }
+.historyLite { margin-top: 1.25rem; margin-bottom: 2rem; }
 .historyLite h2 { margin: .25rem 0 1rem; font-size: 1.05rem; }
-.logList { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
+.logList { list-style: none; padding: 0; margin: 0 0 2rem 0; display: grid; gap: .5rem; }
 .logList li {
   display: flex; align-items: center; justify-content: space-between; gap: .75rem;
   padding: .5rem .75rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface);
@@ -163,4 +178,75 @@
 @media (max-width: 520px) {
   .dow { font-size: .7rem; }
   .monthPills { display: none; }
+}
+
+/* === ESPACIO PARA LA BOTTOM NAV EN MÓVIL === */
+@media (max-width: 900px) {
+  .page {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+}
+
+/* === OPTIMIZACIÓN MÓVIL PARA MÓDULO RACHA === */
+@media (max-width: 640px) {
+  .historyLite {
+    margin-bottom: 1rem; /* Reducir margen */
+  }
+  
+  .overviewGrid {
+    grid-template-columns: 1fr; 
+    gap: 0.75rem;
+  }
+  .value {
+    font-size: 2.25rem; 
+  }
+  
+  .calHeader {
+    flex-direction: column; 
+    align-items: center;
+    gap: 0.75rem;
+    padding-left: 0; 
+    padding-right: 0; 
+  }
+  
+  .calTitle {
+    width: 100%;
+    text-align: center;
+    font-size: 1.5rem; 
+    margin-bottom: 0.5rem; 
+  }
+  
+  .headerActions {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+}
+
+/* === OPTIMIZACIÓN EXTREMA PARA PANTALLAS DE MENOS DE 400PX === */
+@media (max-width: 400px) {
+  .value {
+    font-size: 2rem; 
+  }
+  
+  .card {
+    padding: 1rem 0.5rem; 
+  }
+  
+  .label {
+    font-size: 0.8rem;
+  }
+  
+  .headerActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .weekChips {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.35rem;
+  }
+  .weekChip {
+    font-size: 0.75rem;
+  }
 }
