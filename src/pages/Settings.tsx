@@ -98,6 +98,8 @@ const Settings: React.FC = () => {
   const { msg: toast, push: pushToast } = useToast();
   const [dirty, setDirty] = React.useState(false);
   const firstDirtyShown = React.useRef(false);
+  const [logoutPrompt, setLogoutPrompt] = React.useState<string | null>(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
 
   // Determinar si hay cambios respecto al snapshot
   React.useEffect(() => {
@@ -199,15 +201,38 @@ const Settings: React.FC = () => {
   };
 
   const handleLogout = () => {
-    if (dirty) {
-      if (!confirm("Tienes cambios sin guardar. ¿Cerrar sesión igualmente?")) return;
-    } else if (!confirm("¿Estás seguro que quieres cerrar sesión?")) {
-      return;
-    }
+    const message = dirty
+      ? "Tienes cambios sin guardar. ¿Cerrar sesión igualmente?"
+      : "¿Estás seguro que quieres cerrar sesión?";
 
+    setLogoutPrompt(message);
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutConfirm(false);
     logout();
     navigate("/login");
   };
+
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);
+  };
+
+  // Cerrar el modal con Escape
+  React.useEffect(() => {
+    if (!showLogoutConfirm) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        cancelLogout();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [showLogoutConfirm]);
 
   if (!user) return null;
 
@@ -454,6 +479,35 @@ const Settings: React.FC = () => {
 
       {/* Toast */}
       {toast && <div className={styles.toast}>{toast}</div>}
+
+      {showLogoutConfirm && (
+        <div className={styles.logoutOverlay} role="presentation" onClick={cancelLogout}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="logout-title"
+            aria-describedby="logout-desc"
+            className={styles.logoutModal}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h4 id="logout-title" className={styles.logoutTitle}>
+              Confirmar cierre de sesión
+            </h4>
+            <p id="logout-desc" className={styles.logoutMessage}>
+              {logoutPrompt}
+            </p>
+
+            <div className={styles.logoutActions}>
+              <button className="btn btn-primary" onClick={confirmLogout}>
+                Aceptar
+              </button>
+              <button className={styles.ghostButton} onClick={cancelLogout}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
