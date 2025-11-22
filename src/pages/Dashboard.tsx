@@ -31,13 +31,48 @@ const normalize = (s: string) =>
     .replace(/\p{Diacritic}/gu, "")
     .trim();
 
+/* ===================== FRASES MOTIVADORAS ===================== */
+
+type GoalTone = "ok" | "low" | "over";
+
+const FALLBACK_QUOTES: Record<GoalTone, string[]> = {
+  ok: [
+    "¡Buen trabajo! Mantén este ritmo.",
+    "Vas excelente, sigue así.",
+    "Tu constancia está dando resultados.",
+    "Estás tomando decisiones inteligentes hoy.",
+  ],
+  low: [
+    "Aún tienes espacio para nutrirte mejor.",
+    "Recuerda hacer una comida completa más tarde.",
+    "Puedes aprovechar para agregar una porción de proteína.",
+    "No descuides tu energía, tu cuerpo la necesita.",
+  ],
+  over: [
+    "Lo importante es aprender del día de hoy.",
+    "Mañana tienes otra oportunidad de hacerlo mejor.",
+    "Una comida no define tu progreso.",
+    "Respira, ajusta y sigue adelante.",
+  ],
+};
+
+const MOTIVATION_TEXT_KEY = "kaloris:motivationText";
+const MOTIVATION_TONE_KEY = "kaloris:motivationTone";
+const MOTIVATION_DATE_KEY = "kaloris:motivationDate";
+
+function pickRandom(arr: string[]): string {
+  if (!arr.length) return "";
+  const idx = Math.floor(Math.random() * arr.length);
+  return arr[idx];
+}
+
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSession();
 
   const {
     todayEntries, // entradas de hoy
-    todayTotal,   // kcal consumidas hoy
+    todayTotal, // kcal consumidas hoy
     addEntry,
     updateEntry,
     deleteEntry,
@@ -110,6 +145,80 @@ const Dashboard: React.FC = () => {
 
   if (!user) return null;
   const dailyGoal = user.tdee || 2304;
+  const remaining = dailyGoal - todayTotal;
+
+  /* ========= LÓGICA DEL ESTADO DE META + FRASE ========= */
+
+  let tone: GoalTone = "ok";
+  let statusTitle = "Dentro de tu meta";
+  let statusEmoji = "✅";
+
+  if (todayTotal === 0) {
+    tone = "low";
+    statusTitle = "Aún no registras nada";
+    statusEmoji = "🕒";
+  } else if (remaining > dailyGoal * 0.25) {
+    // bastante por debajo
+    tone = "low";
+    statusTitle = "Por debajo de tu meta";
+    statusEmoji = "⚖️";
+  } else if (remaining >= 0) {
+    // dentro o ligeramente debajo
+    tone = "ok";
+    statusTitle = "Dentro de tu meta";
+    statusEmoji = "✅";
+  } else {
+    // por encima
+    tone = "over";
+    statusTitle = "Sobre tu meta hoy";
+    statusEmoji = "⚠️";
+  }
+
+  const [motivationText, setMotivationText] = useState<string>("");
+
+  useEffect(() => {
+    const today = getTodayISO();
+
+    try {
+      const storedText = localStorage.getItem(MOTIVATION_TEXT_KEY);
+      const storedDate = localStorage.getItem(MOTIVATION_DATE_KEY);
+      const storedTone = localStorage.getItem(MOTIVATION_TONE_KEY) as GoalTone | null;
+
+      // Si ya hay una frase para hoy con el mismo "estado", la reutilizamos
+      if (storedText && storedDate === today && storedTone === tone) {
+        setMotivationText(storedText);
+        return;
+      }
+
+      // Elegimos una nueva frase según el estado actual
+      const pool = FALLBACK_QUOTES[tone] ?? FALLBACK_QUOTES.ok;
+      const chosen = pickRandom(pool);
+      setMotivationText(chosen);
+
+      localStorage.setItem(MOTIVATION_TEXT_KEY, chosen);
+      localStorage.setItem(MOTIVATION_DATE_KEY, today);
+      localStorage.setItem(MOTIVATION_TONE_KEY, tone);
+    } catch {
+      // Si localStorage falla por cualquier motivo, al menos fijamos algo en memoria
+      const pool = FALLBACK_QUOTES[tone] ?? FALLBACK_QUOTES.ok;
+      setMotivationText(pickRandom(pool));
+    }
+  }, [tone]);
+
+  // Texto dinámico con las kcal que faltan / se pasaron
+  let deltaText = "";
+  if (todayTotal > 0) {
+    if (remaining > 0) {
+      deltaText = `Te faltan ${remaining.toLocaleString("es-MX")} kcal para tu meta.`;
+    } else if (remaining < 0) {
+      deltaText = `Te pasaste ${Math.abs(remaining).toLocaleString("es-MX")} kcal de tu meta.`;
+    }
+  }
+
+  const fullMotivation =
+    deltaText && motivationText
+      ? `${motivationText} ${deltaText}`
+      : motivationText || deltaText;
 
   return (
     <div className={styles.page}>
@@ -134,14 +243,27 @@ const Dashboard: React.FC = () => {
                   <div className={styles.progressText}>
                     <span className={styles.consumed}>{todayTotal}</span>
                     <span className={styles.target}>
-                      Restantes: {Math.max(dailyGoal - todayTotal, 0)} kcal
+                      Restantes: {Math.max(remaining, 0)} kcal
                     </span>
                   </div>
                 </div>
 
-                <div className={styles.goalStatus}>
-                  <span className={styles.goalIcon}>✅</span>
-                  <p>{todayTotal <= dailyGoal ? "¡Dentro de tu meta!" : "Sobre tu meta hoy."}</p>
+                <div
+                  className={`${styles.goalStatus} ${
+                    tone === "ok"
+                      ? styles.goalStatusOk
+                      : tone === "over"
+                      ? styles.goalStatusOver
+                      : styles.goalStatusLow
+                  }`}
+                >
+                  <span className={styles.goalIcon}>{statusEmoji}</span>
+                  <div>
+                    <p className={styles.goalTitle}>{statusTitle}</p>
+                    {fullMotivation && (
+                      <p className={styles.goalMessage}>{fullMotivation}</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -277,15 +399,21 @@ const Dashboard: React.FC = () => {
                 <ul className={styles.mealSummary}>
                   <li>
                     <span>Desayuno</span>
-                    <strong>{mealTotals.breakfast ? `${mealTotals.breakfast} kcal` : "—"}</strong>
+                    <strong>
+                      {mealTotals.breakfast ? `${mealTotals.breakfast} kcal` : "—"}
+                    </strong>
                   </li>
                   <li>
                     <span>Comida</span>
-                    <strong>{mealTotals.lunch ? `${mealTotals.lunch} kcal` : "—"}</strong>
+                    <strong>
+                      {mealTotals.lunch ? `${mealTotals.lunch} kcal` : "—"}
+                    </strong>
                   </li>
                   <li>
                     <span>Cena</span>
-                    <strong>{mealTotals.dinner ? `${mealTotals.dinner} kcal` : "—"}</strong>
+                    <strong>
+                      {mealTotals.dinner ? `${mealTotals.dinner} kcal` : "—"}
+                    </strong>
                   </li>
                   <li className={styles.mealTotal}>
                     <span>TOTAL</span>
@@ -316,3 +444,4 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
