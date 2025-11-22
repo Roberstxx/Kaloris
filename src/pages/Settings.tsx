@@ -199,7 +199,12 @@ const Settings: React.FC = () => {
   };
 
   const handleLogout = () => {
-    if (dirty && !confirm("Tienes cambios sin guardar. ¿Salir igualmente?")) return;
+    if (dirty) {
+      if (!confirm("Tienes cambios sin guardar. ¿Cerrar sesión igualmente?")) return;
+    } else if (!confirm("¿Estás seguro que quieres cerrar sesión?")) {
+      return;
+    }
+
     logout();
     navigate("/login");
   };
