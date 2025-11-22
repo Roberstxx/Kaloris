@@ -1,5 +1,7 @@
+// Ruta: src/pages/Streak.tsx
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Flame, Star, CheckCircle, CalendarDays, Home } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flame, Star, CheckCircle, Home } from "lucide-react";
 import AppHeader from "@/components/ui/AppHeader";
 import { useIntake } from "@/context/IntakeContext";
 import { DailyLog } from "@/types";
@@ -9,9 +11,10 @@ import styles from "./Streak.module.css";
 
 /* ========= util de fechas ========= */
 const pad2 = (n: number) => (n < 10 ? `0${n}` : `${n}`);
-const toISO = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const toISO = (d: Date) =>
+  `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 const startOfMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth(), 1);
-const getWeekdayMon0 = (d: Date) => ((d.getDay() + 6) % 7); // 0=lunes,6=domingo
+const getWeekdayMon0 = (d: Date) => (d.getDay() + 6) % 7; // 0=lunes,6=domingo
 
 function buildMonthMatrix(anchor: Date) {
   const first = startOfMonth(anchor);
@@ -29,7 +32,11 @@ function buildMonthMatrix(anchor: Date) {
 }
 
 /* ========= metric card ========= */
-const StatCard: React.FC<{ icon: React.ReactNode; value: string | number; label: string }> = ({ icon, value, label }) => (
+const StatCard: React.FC<{
+  icon: React.ReactNode;
+  value: string | number;
+  label: string;
+}> = ({ icon, value, label }) => (
   <div className={styles.card}>
     <div className={styles.icon}>{icon}</div>
     <p className={styles.value}>{value}</p>
@@ -38,19 +45,33 @@ const StatCard: React.FC<{ icon: React.ReactNode; value: string | number; label:
 );
 
 /* ========= chips semanales ========= */
-const WeekChips: React.FC<{ cells: Date[]; logsMap: Map<string, DailyLog>; meetsGoal: (k:number)=>boolean }> = ({ cells, logsMap, meetsGoal }) => {
+const WeekChips: React.FC<{
+  cells: Date[];
+  logsMap: Map<string, DailyLog>;
+  meetsGoal: (k: number) => boolean;
+}> = ({ cells, logsMap, meetsGoal }) => {
   // 42 celdas = 6 semanas visibles
-  const weeks = Array.from({ length: 6 }, (_, i) => cells.slice(i*7, i*7 + 7));
+  const weeks = Array.from({ length: 6 }, (_, i) => cells.slice(i * 7, i * 7 + 7));
   return (
     <div className={styles.weekChips}>
       {weeks.map((week, idx) => {
-        const days = week.map(d => logsMap.get(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`));
+        const days = week.map((d) =>
+          logsMap.get(
+            `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+              d.getDate()
+            ).padStart(2, "0")}`
+          )
+        );
         const regs = days.filter(Boolean) as DailyLog[];
-        const ok = regs.filter(r => meetsGoal(r.totalKcal)).length;
-        const pct = regs.length ? Math.round((ok / regs.length)*100) : 0;
+        const ok = regs.filter((r) => meetsGoal(r.totalKcal)).length;
+        const pct = regs.length ? Math.round((ok / regs.length) * 100) : 0;
         return (
-          <div key={idx} className={styles.weekChip} title={`Semana ${idx+1}: ${ok}/${regs.length} (${pct}%)`}>
-            <span>Sem {idx+1}</span>
+          <div
+            key={idx}
+            className={styles.weekChip}
+            title={`Semana ${idx + 1}: ${ok}/${regs.length} (${pct}%)`}
+          >
+            <span>Sem {idx + 1}</span>
             <strong>{pct}%</strong>
           </div>
         );
@@ -59,15 +80,28 @@ const WeekChips: React.FC<{ cells: Date[]; logsMap: Map<string, DailyLog>; meets
   );
 };
 
-const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-const DOW = ["Lu","Ma","Mi","Ju","Vi","Sa","Do"];
+const MONTHS = [
+  "Ene",
+  "Feb",
+  "Mar",
+  "Abr",
+  "May",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dic",
+];
+const DOW = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
 
 const StreakPage: React.FC = () => {
   const { weeklyStats, userTdee, getLogsForDateRange } = useIntake();
 
   const safeGoal = userTdee || 2000;
   const tol5 = safeGoal * 0.05;
-  const tol10 = safeGoal * 0.10;
+  const tol10 = safeGoal * 0.1;
   const meetsGoal = (k: number) => Math.abs(k - safeGoal) <= tol5;
 
   const todayISO = getTodayISO();
@@ -78,7 +112,10 @@ const StreakPage: React.FC = () => {
   // racha
   const currentStreak = weeklyStats?.currentStreak ?? 0;
   const longestStreak = weeklyStats?.longestStreak ?? 0;
-  const currentStreakSet = useMemo(() => new Set(getLastNDays(currentStreak)), [currentStreak]);
+  const currentStreakSet = useMemo(
+    () => new Set(getLastNDays(currentStreak)),
+    [currentStreak]
+  );
 
   // matriz mensual (siempre 6 filas)
   const { first, cells } = useMemo(
@@ -90,17 +127,26 @@ const StreakPage: React.FC = () => {
   // logs para las 42 fechas visibles
   const allISO = useMemo(() => cells.map(toISO), [cells]);
   const logs = getLogsForDateRange(allISO);
-  const logsMap = useMemo(() => new Map(logs.map(l => [l.dateISO, l] as const)), [logs]);
-
-  // últimos registros (extra)
-  const lastRegisteredDays: DailyLog[] = useMemo(
-    () => logs.filter(l => l.totalKcal > 0).sort((a,b)=> a.dateISO < b.dateISO ? 1 : -1).slice(0,10),
+  const logsMap = useMemo(
+    () => new Map(logs.map((l) => [l.dateISO, l] as const)),
     [logs]
   );
 
-  const prevMonth = () => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
-  const nextMonth = () => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
-  const goToday   = () => setViewDate(new Date());
+  // últimos registros (extra)
+  const lastRegisteredDays: DailyLog[] = useMemo(
+    () =>
+      logs
+        .filter((l) => l.totalKcal > 0)
+        .sort((a, b) => (a.dateISO < b.dateISO ? 1 : -1))
+        .slice(0, 10),
+    [logs]
+  );
+
+  const prevMonth = () =>
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+  const nextMonth = () =>
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+  const goToday = () => setViewDate(new Date());
 
   // teclado ← →
   useEffect(() => {
@@ -115,28 +161,47 @@ const StreakPage: React.FC = () => {
 
   // gestos touch
   const touchStart = useRef<number | null>(null);
-  const onTouchStart = (e: React.TouchEvent) => { touchStart.current = e.touches[0].clientX; };
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStart.current = e.touches[0].clientX;
+  };
   const onTouchEnd = (e: React.TouchEvent) => {
     if (touchStart.current == null) return;
     const dx = e.changedTouches[0].clientX - touchStart.current;
-    if (Math.abs(dx) > 40) { dx < 0 ? nextMonth() : prevMonth(); }
+    if (Math.abs(dx) > 40) {
+      dx < 0 ? nextMonth() : prevMonth();
+    }
     touchStart.current = null;
   };
 
   return (
     <div className={styles.page}>
-      <AppHeader title="Racha de Metas" />
+      <AppHeader title="Racha de Metas" showStreakLink />
 
+      {/* IMPORTANTE: sin paddingBottom aquí, lo maneja el CSS de .page */}
       <main className="container">
         <div className={styles.headerRow}>
-          <h1 className={styles.h1}><Flame size={28}/> Racha de Metas Calóricas</h1>
+          <h1 className={styles.h1}>
+            <Flame size={28} /> Racha de Metas Calóricas
+          </h1>
         </div>
 
         {/* Métricas */}
         <div className={styles.overviewGrid}>
-          <StatCard icon={<Flame size={40}/>} value={currentStreak} label="Días consecutivos (actual)"/>
-          <StatCard icon={<Star size={40}/>} value={longestStreak} label="Racha más larga"/>
-          <StatCard icon={<CheckCircle size={40}/>} value={`${formatNumber(safeGoal)} ± ${formatNumber(tol5)}`} label="Rango meta (±5%)"/>
+          <StatCard
+            icon={<Flame size={40} />}
+            value={currentStreak}
+            label="Días consecutivos (actual)"
+          />
+          <StatCard
+            icon={<Star size={40} />}
+            value={longestStreak}
+            label="Racha más larga"
+          />
+          <StatCard
+            icon={<CheckCircle size={40} />}
+            value={`${formatNumber(safeGoal)} ± ${formatNumber(tol5)}`}
+            label="Rango meta (±5%)"
+          />
         </div>
 
         {/* Calendario mensual */}
@@ -147,31 +212,63 @@ const StreakPage: React.FC = () => {
           aria-label="Calendario de racha mensual"
         >
           <div className={styles.calHeader}>
-            <button className="btn btn-secondary" onClick={prevMonth} aria-label="Mes anterior">
-              <ChevronLeft size={18}/>
+            <button
+              className="btn btn-secondary"
+              onClick={prevMonth}
+              aria-label="Mes anterior"
+            >
+              <ChevronLeft size={18} />
             </button>
 
             <h3 className={styles.calTitle}>{monthTitle}</h3>
 
             <div className={styles.headerActions}>
-              <button className="btn btn-secondary" onClick={goToday} aria-label="Ir a hoy">
-                <Home size={16}/> Hoy
+              <button
+                className="btn btn-secondary"
+                onClick={goToday}
+                aria-label="Ir a hoy"
+              >
+                <Home size={16} /> Hoy
               </button>
-              <label className={styles.compactToggle} title="Reducir espacios para ver más contenido">
-                <input type="checkbox" checked={compact} onChange={(e)=>setCompact(e.target.checked)} />
+              <label
+                className={styles.compactToggle}
+                title="Reducir espacios para ver más contenido"
+              >
+                <input
+                  type="checkbox"
+                  checked={compact}
+                  onChange={(e) => setCompact(e.target.checked)}
+                />
                 <span>Compacto</span>
               </label>
-              <label className={styles.compactToggle} title="Ocultar días sin registro">
-                <input type="checkbox" checked={onlyWithData} onChange={(e)=>setOnlyWithData(e.target.checked)} />
+              <label
+                className={styles.compactToggle}
+                title="Ocultar días sin registro"
+              >
+                <input
+                  type="checkbox"
+                  checked={onlyWithData}
+                  onChange={(e) => setOnlyWithData(e.target.checked)}
+                />
                 <span>Solo con registro</span>
               </label>
-              <button className="btn btn-secondary" onClick={nextMonth} aria-label="Mes siguiente">
-                <ChevronRight size={18}/>
+              <button
+                className="btn btn-secondary"
+                onClick={nextMonth}
+                aria-label="Mes siguiente"
+              >
+                <ChevronRight size={18} />
               </button>
             </div>
           </div>
 
-          <div className={styles.dowRow}>{DOW.map(d => <div key={d} className={styles.dow}>{d}</div>)}</div>
+          <div className={styles.dowRow}>
+            {DOW.map((d) => (
+              <div key={d} className={styles.dow}>
+                {d}
+              </div>
+            ))}
+          </div>
 
           <div className={styles.grid}>
             {cells.map((d) => {
@@ -192,11 +289,14 @@ const StreakPage: React.FC = () => {
               }
 
               if (onlyWithData && kcal === 0) {
-                // Mostrar aún así las celdas del mes para mantener cuadrícula (atenuadas)
                 return (
                   <div
                     key={iso}
-                    className={[styles.cell, styles.cellMuted, !inMonth ? styles.cellMuted : ""].join(" ")}
+                    className={[
+                      styles.cell,
+                      styles.cellMuted,
+                      !inMonth ? styles.cellMuted : "",
+                    ].join(" ")}
                     aria-hidden
                   >
                     <span className={styles.dateNum}>{d.getDate()}</span>
@@ -212,31 +312,45 @@ const StreakPage: React.FC = () => {
                     inMonth ? "" : styles.cellMuted,
                     stateClass,
                     inStreak ? styles.cellStreak : "",
-                    isToday ? styles.cellToday : ""
+                    isToday ? styles.cellToday : "",
                   ].join(" ")}
                   tabIndex={0}
-                  aria-label={kcal > 0 ? `${iso}: ${formatKcal(kcal)}` : `${iso}: Sin registro`}
+                  aria-label={
+                    kcal > 0
+                      ? `${iso}: ${formatKcal(kcal)}`
+                      : `${iso}: Sin registro`
+                  }
                 >
                   <span className={styles.dateNum}>{d.getDate()}</span>
-                  {/* puntito de estado */}
-                  <span className={styles.dot}/>
-                  {/* Tooltip accesible */}
-                  <div className={styles.tooltip} role="dialog" aria-hidden="true">
+                  <span className={styles.dot} />
+                  <div
+                    className={styles.tooltip}
+                    role="dialog"
+                    aria-hidden="true"
+                  >
                     <span className={styles.tooltipTitle}>{iso}</span>
                     <span className={styles.tooltipLine}>
-                      {kcal > 0 ? `Consumido: ${formatKcal(kcal)}` : "Sin registro"}
+                      {kcal > 0
+                        ? `Consumido: ${formatKcal(kcal)}`
+                        : "Sin registro"}
                     </span>
                     {kcal > 0 && (
                       <span
                         className={
-                          styles.tooltipBadge + " " + (
-                            Math.abs(kcal - safeGoal) <= tol5 ? styles.badgeOk :
-                            Math.abs(kcal - safeGoal) <= tol10 ? styles.badgeNear : styles.badgeFail
-                          )
+                          styles.tooltipBadge +
+                          " " +
+                          (Math.abs(kcal - safeGoal) <= tol5
+                            ? styles.badgeOk
+                            : Math.abs(kcal - safeGoal) <= tol10
+                            ? styles.badgeNear
+                            : styles.badgeFail)
                         }
                       >
-                        {Math.abs(kcal - safeGoal) <= tol5 ? "En meta" :
-                         Math.abs(kcal - safeGoal) <= tol10 ? "Cerca" : "Fuera"}
+                        {Math.abs(kcal - safeGoal) <= tol5
+                          ? "En meta"
+                          : Math.abs(kcal - safeGoal) <= tol10
+                          ? "Cerca"
+                          : "Fuera"}
                       </span>
                     )}
                   </div>
@@ -247,16 +361,50 @@ const StreakPage: React.FC = () => {
 
           {/* Leyenda */}
           <div className={styles.legend}>
-            <div className={styles.legendItem}><span className={`${styles.legendDot} ${styles.legOk}`}/><span>Meta alcanzada (±5%)</span></div>
-            <div className={styles.legendItem}><span className={`${styles.legendDot} ${styles.legNear}`}/><span>Cerca (±10%)</span></div>
-            <div className={styles.legendItem}><span className={`${styles.legendDot} ${styles.legFail}`}/><span>Fuera de meta</span></div>
-            <div className={styles.legendItem}><span className={`${styles.legendDot} ${styles.legEmpty}`}/><span>Sin registro</span></div>
-            <div className={styles.legendItem}><span className={`${styles.legendDot} ${styles.legStreak}`}/><span>Racha actual</span></div>
-            <div className={styles.legendItem}><span className={`${styles.legendDot} ${styles.legToday}`}/><span>Hoy</span></div>
+            <div className={styles.legendItem}>
+              <span
+                className={`${styles.legendDot} ${styles.legOk}`}
+              />
+              <span>Meta alcanzada (±5%)</span>
+            </div>
+            <div className={styles.legendItem}>
+              <span
+                className={`${styles.legendDot} ${styles.legNear}`}
+              />
+              <span>Cerca (±10%)</span>
+            </div>
+            <div className={styles.legendItem}>
+              <span
+                className={`${styles.legendDot} ${styles.legFail}`}
+              />
+              <span>Fuera de meta</span>
+            </div>
+            <div className={styles.legendItem}>
+              <span
+                className={`${styles.legendDot} ${styles.legEmpty}`}
+              />
+              <span>Sin registro</span>
+            </div>
+            <div className={styles.legendItem}>
+              <span
+                className={`${styles.legendDot} ${styles.legStreak}`}
+              />
+              <span>Racha actual</span>
+            </div>
+            <div className={styles.legendItem}>
+              <span
+                className={`${styles.legendDot} ${styles.legToday}`}
+              />
+              <span>Hoy</span>
+            </div>
           </div>
 
           {/* Píldoras de meses */}
-          <div className={styles.monthPills} role="tablist" aria-label="Seleccionar mes">
+          <div
+            className={styles.monthPills}
+            role="tablist"
+            aria-label="Seleccionar mes"
+          >
             {MONTHS.map((m, idx) => {
               const active = idx === first.getMonth();
               return (
@@ -264,8 +412,12 @@ const StreakPage: React.FC = () => {
                   key={m}
                   role="tab"
                   aria-selected={active}
-                  className={`${styles.monthPill} ${active ? styles.monthPillActive : ""}`}
-                  onClick={() => setViewDate(new Date(first.getFullYear(), idx, 1))}
+                  className={`${styles.monthPill} ${
+                    active ? styles.monthPillActive : ""
+                  }`}
+                  onClick={() =>
+                    setViewDate(new Date(first.getFullYear(), idx, 1))
+                  }
                 >
                   {m}
                 </button>
@@ -285,7 +437,10 @@ const StreakPage: React.FC = () => {
           ) : (
             <ul className={styles.logList}>
               {lastRegisteredDays.map((l) => (
-                <li key={l.dateISO}><span>{l.dateISO}</span><strong>{formatKcal(l.totalKcal)}</strong></li>
+                <li key={l.dateISO}>
+                  <span>{l.dateISO}</span>
+                  <strong>{formatKcal(l.totalKcal)}</strong>
+                </li>
               ))}
             </ul>
           )}
@@ -296,3 +451,4 @@ const StreakPage: React.FC = () => {
 };
 
 export default StreakPage;
+
