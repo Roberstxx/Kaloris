@@ -505,6 +505,35 @@ const Settings: React.FC = () => {
             Cerrar sesión
           </button>
         </section>
+        {/* Legal */}
+<section className="card" style={{ background: "var(--surface-elevated)", marginTop: "1rem" }}>
+  <h3 style={{ marginBottom: "1rem" }}>Legal</h3>
+
+  <div style={{ display: "flex", flexDirection: "column", gap: ".75rem" }}>
+    
+    <button
+      className="btn btn-secondary"
+      onClick={() => navigate("/legal")}
+      style={{ justifyContent: "flex-start", textAlign: "left" }}
+    >
+      Términos y Condiciones
+    </button>
+
+    <button
+      className="btn btn-secondary"
+      onClick={() => navigate("/legal")}
+      style={{ justifyContent: "flex-start", textAlign: "left" }}
+    >
+      Política de Privacidad
+    </button>
+
+  </div>
+
+  <small style={{ color: "var(--text-tertiary)", marginTop: "1rem", display: "block" }}>
+    Estos documentos explican cómo manejamos tus datos y el uso de la aplicación.
+  </small>
+</section>
+
       </main>
 
       {/* Toast */}
