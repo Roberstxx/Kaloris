@@ -12,7 +12,7 @@ import Historial from "./pages/Historial";
 import Settings from "./pages/Settings";
 import StreakPage from "./pages/Streak";
 import SplashLoader from "./pages/SplashLoader";
-import Legal from "./pages/Legal"; // ⬅️ AGREGA ESTO
+import Legal from "./pages/Legal"; 
 
 const App = () => (
   <SessionProvider>
@@ -51,4 +51,5 @@ const App = () => (
 );
 
 export default App;
+
 
