@@ -12,6 +12,7 @@ import Historial from "./pages/Historial";
 import Settings from "./pages/Settings";
 import StreakPage from "./pages/Streak";
 import SplashLoader from "./pages/SplashLoader";
+import Legal from "./pages/Legal"; // ⬅️ AGREGA ESTO
 
 const App = () => (
   <SessionProvider>
@@ -19,15 +20,28 @@ const App = () => (
       <IntakeProvider>
         <BrowserRouter>
           <Routes>
+
+            {/* Públicas */}
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+
+            {/* Página legal (PÚBLICA) */}
+            <Route path="/legal" element={<Legal />} />  {/* ⬅️ AQUI */}
+
+            {/* Splash (página del loader) */}
             <Route path="/splash" element={<SplashLoader />} />
+
+            {/* Solo usuarios autenticados */}
             <Route path="/registro" element={<RequireAuth><Registro /></RequireAuth>} />
+
+            {/* Perfil completo */}
             <Route path="/dashboard" element={<RequireProfile><Dashboard /></RequireProfile>} />
             <Route path="/historial" element={<RequireProfile><Historial /></RequireProfile>} />
             <Route path="/settings" element={<RequireProfile><Settings /></RequireProfile>} />
             <Route path="/streak" element={<RequireProfile><StreakPage /></RequireProfile>} />
+
+            {/* Catch-all */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </BrowserRouter>
