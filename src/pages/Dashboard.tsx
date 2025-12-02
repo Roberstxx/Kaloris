@@ -19,9 +19,11 @@ import { exportToPDF } from "../utils/pdf";
 import { resolveMealSlot } from "../utils/meals";
 import type { MealSlot } from "../utils/meals";
 import foodsData from "../data/foods.seed.json";
+import { formatKcal } from "../utils/format";
 
 import styles from "./Dashboard.module.css";
 import AppHeader from "@/components/ui/AppHeader";
+import { toast } from "@/components/ui/use-toast";
 
 /** Normaliza texto para búsquedas */
 const normalize = (s: string) =>
@@ -95,6 +97,15 @@ const Dashboard: React.FC = () => {
   const foods: FoodItem[] = foodsData as FoodItem[];
   const foodsMap = useMemo(() => new Map(foods.map((f) => [f.id, f.name])), [foods]);
 
+  const notifyEntry = (label: string, kcal: number) => {
+    const safeLabel = label.trim() || "Alimento";
+    toast({
+      title: "¡Comida registrada!",
+      description: `${safeLabel} · ${formatKcal(kcal)}`,
+      duration: 2600,
+    });
+  };
+
   useEffect(() => {
     if (!isAuthenticated) navigate("/login");
   }, [isAuthenticated, navigate]);
@@ -113,6 +124,7 @@ const Dashboard: React.FC = () => {
   // ===== Acciones =====
   const handleAddFood = (food: FoodItem) => {
     addEntry({ foodId: food.id, kcalPerUnit: food.kcalPerServing, units: 1 });
+    notifyEntry(food.name, food.kcalPerServing);
   };
 
   const handleAddManual = () => {
@@ -122,6 +134,7 @@ const Dashboard: React.FC = () => {
       kcalPerUnit: manualFood.kcal,
       units: manualFood.units,
     });
+    notifyEntry(manualFood.name, manualFood.kcal * manualFood.units);
     setManualFood({ name: "", kcal: 0, units: 1 });
     setShowAddManual(false);
   };
