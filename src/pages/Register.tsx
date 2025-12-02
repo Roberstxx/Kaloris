@@ -201,7 +201,7 @@ export default function Register() {
 
             <button type="submit" className={styles.cta} disabled={loading}>
               <span className={styles.ctaIcon} aria-hidden>
-                👤
+                
               </span>
               {loading ? "Creando..." : "Crear Cuenta"}
             </button>
