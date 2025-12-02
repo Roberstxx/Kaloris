@@ -80,7 +80,7 @@
   {"id":"le4","name":"Salsa picante","category":"Libres de energía","kcalPerServing":0,"servingName":"al gusto","kcalPer100g":20},
   {"id":"le5","name":"Limón","category":"Libres de energía","kcalPerServing":0,"servingName":"al gusto","kcalPer100g":29},
 
-  /* === EXTRA DEL PDF: CEREALES SIN GRASA (ids nuevos) === */
+
   {"id":"c13","name":"Amaranto tostado","category":"Cereales sin grasa","kcalPerServing":70,"servingName":"1/4 taza","kcalPer100g":230},
   {"id":"c14","name":"Cereal de caja con azúcar","category":"Cereales sin grasa","kcalPerServing":70,"servingName":"1/3 taza","kcalPer100g":230},
   {"id":"c15","name":"Cereal de caja sin azúcar","category":"Cereales sin grasa","kcalPerServing":70,"servingName":"1/2 taza","kcalPer100g":230},
@@ -96,7 +96,7 @@
   {"id":"c25","name":"Salvado de maíz","category":"Cereales sin grasa","kcalPerServing":70,"servingName":"6 cucharadas","kcalPer100g":230},
   {"id":"c26","name":"Salvado de trigo","category":"Cereales sin grasa","kcalPerServing":70,"servingName":"8 cucharadas","kcalPer100g":230},
 
-  /* === EXTRA: CEREALES CON GRASA === */
+
   {"id":"c27","name":"Barra de granola","category":"Cereales con grasa","kcalPerServing":115,"servingName":"1/2 pieza","kcalPer100g":400},
   {"id":"c28","name":"Galleta con chispas de chocolate","category":"Cereales con grasa","kcalPerServing":115,"servingName":"3 piezas","kcalPer100g":400},
   {"id":"c29","name":"Galleta de avena con pasas","category":"Cereales con grasa","kcalPerServing":115,"servingName":"2 piezas","kcalPer100g":400},
@@ -109,7 +109,6 @@
   {"id":"c35","name":"Totopos y nachos","category":"Cereales con grasa","kcalPerServing":115,"servingName":"4 piezas","kcalPer100g":400},
   {"id":"c36","name":"Waffle","category":"Cereales con grasa","kcalPerServing":115,"servingName":"1 pieza","kcalPer100g":400},
 
-  /* === EXTRA: VERDURAS LIBRES === */
   {"id":"v11","name":"Acelga cocida","category":"Verduras libres","kcalPerServing":0,"servingName":"1/2 taza","kcalPer100g":20},
   {"id":"v12","name":"Acelga cruda","category":"Verduras libres","kcalPerServing":0,"servingName":"2 tazas","kcalPer100g":20},
   {"id":"v13","name":"Apio crudo","category":"Verduras libres","kcalPerServing":0,"servingName":"2 tazas","kcalPer100g":20},
@@ -121,14 +120,14 @@
   {"id":"v19","name":"Salsa mexicana/pico de gallo","category":"Verduras libres","kcalPerServing":0,"servingName":"1/2 taza","kcalPer100g":20},
   {"id":"v20","name":"Tomate verde","category":"Verduras libres","kcalPerServing":0,"servingName":"5 piezas","kcalPer100g":20},
 
-  /* === EXTRA: VERDURAS II (25 kcal) === */
+  
   {"id":"v21","name":"Brócoli crudo","category":"Verduras II","kcalPerServing":25,"servingName":"1 taza","kcalPer100g":35},
   {"id":"v22","name":"Calabaza de castilla cocida","category":"Verduras II","kcalPerServing":25,"servingName":"1/2 taza","kcalPer100g":35},
   {"id":"v23","name":"Cebolla cocida","category":"Verduras II","kcalPerServing":25,"servingName":"1/4 taza","kcalPer100g":40},
   {"id":"v24","name":"Chícharo","category":"Verduras II","kcalPerServing":25,"servingName":"3 cucharadas","kcalPer100g":80},
   {"id":"v25","name":"Jicama picada","category":"Verduras II","kcalPerServing":25,"servingName":"1/2 taza","kcalPer100g":35},
 
-  /* === EXTRA: FRUTAS === */
+  
   {"id":"f16","name":"Agua de coco","category":"Frutas","kcalPerServing":60,"servingName":"1 1/2 taza","kcalPer100g":80},
   {"id":"f17","name":"Arándano","category":"Frutas","kcalPerServing":60,"servingName":"1/2 taza","kcalPer100g":80},
   {"id":"f18","name":"Ciruela","category":"Frutas","kcalPerServing":60,"servingName":"3 piezas","kcalPer100g":80},
@@ -145,3 +144,4 @@
   {"id":"f29","name":"Tuna","category":"Frutas","kcalPerServing":60,"servingName":"2 piezas","kcalPer100g":80},
   {"id":"f30","name":"Uva roja o verde","category":"Frutas","kcalPerServing":60,"servingName":"15 piezas","kcalPer100g":80}
 ]
+
