@@ -1,6 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Download, Undo, RotateCcw, Plus } from "lucide-react";
+import {
+  Download,
+  Undo,
+  RotateCcw,
+  Plus,
+  BarChart3,
+  BookOpen,
+  TrendingUp,
+  CheckCircle,
+  Clock,
+  Scale,
+  AlertTriangle,
+} from "lucide-react";
 
 import { useSession } from "../context/SessionContext";
 import { useIntake } from "../context/IntakeContext";
@@ -101,7 +113,7 @@ const Dashboard: React.FC = () => {
     const safeLabel = label.trim() || "Alimento";
     toast({
       title: "¡Comida registrada!",
-      description: `${safeLabel} · ${formatKcal(kcal)}`,
+      description: `Has consumido ${safeLabel} · ${formatKcal(kcal)}`,
       duration: 2600,
     });
   };
@@ -164,27 +176,27 @@ const Dashboard: React.FC = () => {
 
   let tone: GoalTone = "ok";
   let statusTitle = "Dentro de tu meta";
-  let statusEmoji = "✅";
+  let StatusIcon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }> = CheckCircle;
 
   if (todayTotal === 0) {
     tone = "low";
     statusTitle = "Aún no registras nada";
-    statusEmoji = "🕒";
+    StatusIcon = Clock;
   } else if (remaining > dailyGoal * 0.25) {
     // bastante por debajo
     tone = "low";
     statusTitle = "Por debajo de tu meta";
-    statusEmoji = "⚖️";
+    StatusIcon = Scale;
   } else if (remaining >= 0) {
     // dentro o ligeramente debajo
     tone = "ok";
     statusTitle = "Dentro de tu meta";
-    statusEmoji = "✅";
+    StatusIcon = CheckCircle;
   } else {
     // por encima
     tone = "over";
     statusTitle = "Sobre tu meta hoy";
-    statusEmoji = "⚠️";
+    StatusIcon = AlertTriangle;
   }
 
   const [motivationText, setMotivationText] = useState<string>("");
@@ -270,7 +282,9 @@ const Dashboard: React.FC = () => {
                       : styles.goalStatusLow
                   }`}
                 >
-                  <span className={styles.goalIcon}>{statusEmoji}</span>
+                  <span className={styles.goalIcon}>
+                    <StatusIcon size={20} />
+                  </span>
                   <div>
                     <p className={styles.goalTitle}>{statusTitle}</p>
                     {fullMotivation && (
@@ -282,7 +296,10 @@ const Dashboard: React.FC = () => {
 
               {/* ---------- MACRONUTRIENTES DINÁMICOS ---------- */}
               <div className={styles.widget}>
-                <h3>📊 Macronutrientes</h3>
+                <h3>
+                  <BarChart3 size={20} style={{ marginRight: 8 }} />
+                  Macronutrientes
+                </h3>
                 <MacrosSummary />
               </div>
             </aside>
@@ -293,7 +310,7 @@ const Dashboard: React.FC = () => {
                 <SearchBar
                   value={searchQuery}
                   onChange={setSearchQuery}
-                  placeholder="🔍 Buscar alimentos, porción o marca…"
+                  placeholder="Buscar alimentos, porción o marca…"
                 />
                 <CategoryFilter
                   selectedCategory={selectedCategory}
@@ -380,7 +397,10 @@ const Dashboard: React.FC = () => {
             {/* ---------- DERECHA: DIARIO + TOTALES + RACHA ---------- */}
             <aside className={styles.rightCol}>
               <div className={styles.widget}>
-                <h3>📜 Mi Diario de Hoy</h3>
+                <h3>
+                  <BookOpen size={20} style={{ marginRight: 8 }} />
+                  Mi Diario de Hoy
+                </h3>
 
                 <div className={styles.intakeList}>
                   {todayEntries.map((entry) => (
@@ -408,7 +428,10 @@ const Dashboard: React.FC = () => {
               </div>
 
               <div className={styles.widget}>
-                <h3>📈 Total por Comida</h3>
+                <h3>
+                  <TrendingUp size={20} style={{ marginRight: 8 }} />
+                  Total por Comida
+                </h3>
                 <ul className={styles.mealSummary}>
                   <li>
                     <span>Desayuno</span>
@@ -457,4 +480,3 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-
