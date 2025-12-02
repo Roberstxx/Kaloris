@@ -4,19 +4,19 @@
   align-items: center;
   justify-content: center;
   padding: 3rem 1.5rem;
-  background: radial-gradient(circle at top, rgba(14, 165, 233, 0.2), transparent 55%),
-    linear-gradient(160deg, #0f172a 0%, #020617 100%);
+  background:
+    radial-gradient(900px 520px at 50% 0%, color-mix(in srgb, var(--brand) 12%, transparent), transparent),
+    var(--gradient-hero);
 }
 
 .card {
   width: min(520px, 100%);
   padding: clamp(2rem, 5vw, 3rem);
-  border-radius: 28px;
-  background: rgba(15, 23, 42, 0.88);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.45);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(145deg, hsl(222 47% 13%), hsl(220 43% 10%));
+  border: 1px solid hsl(222 36% 20%);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
   color: #e2e8f0;
-  backdrop-filter: blur(12px);
 }
 
 .header {
@@ -34,7 +34,7 @@
 
 .subtitle {
   margin: 0;
-  color: rgba(148, 163, 184, 0.85);
+  color: #cbd5e1;
   font-size: 1rem;
 }
 
@@ -51,16 +51,16 @@
 .label {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #cbd5f5;
+  color: #cbd5e1;
 }
 
 .input,
 .select {
   height: 48px;
   border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: rgba(15, 23, 42, 0.65);
-  color: #f8fafc;
+  border: 1px solid hsl(215 30% 25%);
+  background: hsla(215, 28%, 17%, 0.75);
+  color: #e2e8f0;
   padding: 0 1rem;
   font-size: 1rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -69,17 +69,17 @@
 .input:focus,
 .select:focus {
   outline: none;
-  border-color: rgba(56, 189, 248, 0.9);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 25%, transparent);
 }
 
 .error {
   margin-top: 0.4rem;
   padding: 0.75rem 1rem;
   border-radius: 12px;
-  background: rgba(248, 113, 113, 0.12);
-  border: 1px solid rgba(248, 113, 113, 0.35);
-  color: #fecaca;
+  background: color-mix(in srgb, var(--danger) 12%, hsl(222 47% 12%));
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, hsl(222 36% 20%));
+  color: var(--danger);
   font-size: 0.9rem;
 }
 
@@ -95,16 +95,16 @@
   width: 100%;
   font-weight: 700;
   font-size: 1rem;
-  color: #041322;
-  background: linear-gradient(140deg, #22d3ee, #0ea5e9);
-  box-shadow: 0 20px 40px rgba(14, 165, 233, 0.25);
+  color: #fff;
+  background: var(--gradient-brand);
+  box-shadow: var(--shadow-brand);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 28px 60px rgba(14, 165, 233, 0.3);
+  box-shadow: 0 28px 60px color-mix(in srgb, var(--brand) 35%, transparent);
 }
 
 .button:active {
@@ -121,6 +121,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: inherit;
 }
 
 @media (max-width: 480px) {
