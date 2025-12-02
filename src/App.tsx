@@ -12,7 +12,8 @@ import Historial from "./pages/Historial";
 import Settings from "./pages/Settings";
 import StreakPage from "./pages/Streak";
 import SplashLoader from "./pages/SplashLoader";
-import Legal from "./pages/Legal"; 
+import Legal from "./pages/Legal";
+import { Toaster } from "./components/ui/toaster";
 
 const App = () => (
   <SessionProvider>
@@ -44,6 +45,7 @@ const App = () => (
             {/* Catch-all */}
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
+          <Toaster />
         </BrowserRouter>
       </IntakeProvider>
     </ThemeProvider>
