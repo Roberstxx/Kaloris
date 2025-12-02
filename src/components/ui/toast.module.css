@@ -34,8 +34,8 @@
 
 @media (max-width: 640px) {
   .viewport {
-    left: 0.75rem;
-    right: 0.75rem;
+    inset: 0.75rem 0.75rem auto 0.75rem;
+    align-items: center;
   }
 
   .toast {

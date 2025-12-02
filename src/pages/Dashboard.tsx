@@ -100,7 +100,7 @@ const Dashboard: React.FC = () => {
   const notifyEntry = (label: string, kcal: number) => {
     const safeLabel = label.trim() || "Alimento";
     toast({
-      title: "Registro guardado",
+      title: "¡Comida registrada!",
       description: `${safeLabel} · ${formatKcal(kcal)}`,
       duration: 2600,
     });
